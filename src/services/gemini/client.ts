@@ -18,12 +18,14 @@ export async function generateClient(c: { env: GeminiBindings }) {
 export async function generateResponse(
   c: { env: GeminiBindings },
   contents: ContentListUnion,
+  systemInstruction?: string,
 ): Promise<string | undefined> {
   const response = await (
     await generateClient(c)
   ).models.generateContent({
     config: {
       systemInstruction:
+        systemInstruction ||
         "Du er en hjælpsom assistant til taxachauffører i København. Svar kun med tekst, ikke markdown!",
     },
     model: googleModels.flash,

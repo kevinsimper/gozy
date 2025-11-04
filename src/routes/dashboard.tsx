@@ -4,21 +4,28 @@ import { getUserFromCookie } from "../services/auth";
 import { findUserById } from "../models/user";
 import { Layout } from "../views/layout";
 import { DashboardPage } from "../views/dashboard";
+import { DashboardHeader } from "../views/dashboard/header";
+import { ChatPage } from "../views/dashboard/chat";
 import { findUserDocumentsByUserId } from "../models/userDocument";
 import {
   uploadUserDocument,
   deleteUserDocumentWithFile,
 } from "../lib/userDocument";
+import { sendMessage } from "../lib/chat";
 
 type Bindings = {
   DB: D1Database;
   COOKIE_SECRET: string;
   FILES: R2Bucket;
+  GEMINI_API_KEY: string;
 };
 
 declare module "hono" {
   interface ContextRenderer {
-    (content: string | Promise<string>, props: { title: string }): Response;
+    (
+      content: string | Promise<string>,
+      props: { title: string; currentPath?: string },
+    ): Response;
   }
 }
 
@@ -26,8 +33,16 @@ export const dashboardRoutes = new Hono<{ Bindings: Bindings }>()
   .use(
     "*",
     jsxRenderer(
-      ({ children, title }) => {
-        return <Layout title={title}>{children}</Layout>;
+      ({ children, title }, c) => {
+        const currentPath = c.req.path;
+        return (
+          <Layout title={title}>
+            <div style="min-height: 100vh; background: #f9fafb;">
+              <DashboardHeader currentPath={currentPath} />
+              {children}
+            </div>
+          </Layout>
+        );
       },
       {
         docType: true,
@@ -71,7 +86,7 @@ export const dashboardRoutes = new Hono<{ Bindings: Bindings }>()
     return c.render(
       <div style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
         <h1 style="font-size: 2rem; font-weight: bold; margin-bottom: 2rem;">
-          My Documents
+          Dokumenter
         </h1>
 
         <div style="background: white; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1.5rem; margin-bottom: 2rem;">
@@ -257,5 +272,67 @@ export const dashboardRoutes = new Hono<{ Bindings: Bindings }>()
     } catch (error) {
       console.error("Delete error:", error);
       return c.redirect("/dashboard/documents?error=delete_failed");
+    }
+  })
+  .get("/chat", async (c) => {
+    const userIdStr = await getUserFromCookie(c);
+
+    if (!userIdStr) {
+      return c.redirect("/login");
+    }
+
+    return c.render(<ChatPage />, { title: "Chat med Gozy" });
+  })
+  .post("/chat", async (c) => {
+    const userIdStr = await getUserFromCookie(c);
+
+    if (!userIdStr) {
+      return c.redirect("/login");
+    }
+
+    try {
+      const userId = parseInt(userIdStr, 10);
+      const formData = await c.req.formData();
+      const message = formData.get("message");
+
+      if (!message || typeof message !== "string") {
+        return c.redirect("/dashboard/chat");
+      }
+
+      const documents = await findUserDocumentsByUserId(c, userId);
+
+      const documentData = await Promise.all(
+        documents.map(async (doc) => {
+          const fileObject = await c.env.FILES.get(doc.file.storageKey);
+          if (!fileObject) {
+            return null;
+          }
+          const buffer = await fileObject.arrayBuffer();
+          return {
+            filename: doc.file.originalFilename,
+            mimeType: doc.file.mimeType,
+            data: Buffer.from(buffer).toString("base64"),
+            documentType: doc.documentType,
+          };
+        }),
+      );
+
+      const validDocuments = documentData.filter(
+        (doc): doc is NonNullable<typeof doc> => doc !== null,
+      );
+
+      const response = await sendMessage(
+        c,
+        message,
+        validDocuments.length > 0 ? validDocuments : undefined,
+      );
+
+      return c.render(
+        <ChatPage userMessage={message} assistantMessage={response} />,
+        { title: "Chat med Gozy" },
+      );
+    } catch (error) {
+      console.error("Chat error:", error);
+      return c.redirect("/dashboard/chat?error=chat_failed");
     }
   });
