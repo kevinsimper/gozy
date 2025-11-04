@@ -1,19 +1,12 @@
 import { drizzle } from "drizzle-orm/d1";
 import { eq } from "drizzle-orm";
 import { filesTable } from "../db/schema";
-import type { Context } from "hono";
-
-type DatabaseContext = {
-  Bindings: {
-    DB: D1Database;
-  };
-};
 
 export type File = typeof filesTable.$inferSelect;
 export type NewFile = typeof filesTable.$inferInsert;
 
-export async function createFile<Env extends DatabaseContext>(
-  c: Context<Env>,
+export async function createFile(
+  c: { env: { DB: D1Database } },
   data: {
     storageKey: string;
     originalFilename: string;
@@ -39,8 +32,8 @@ export async function createFile<Env extends DatabaseContext>(
   return result;
 }
 
-export async function findFileByPublicId<Env extends DatabaseContext>(
-  c: Context<Env>,
+export async function findFileByPublicId(
+  c: { env: { DB: D1Database } },
   publicId: string,
 ): Promise<File | undefined> {
   const db = drizzle(c.env.DB);
@@ -52,8 +45,8 @@ export async function findFileByPublicId<Env extends DatabaseContext>(
   return result;
 }
 
-export async function findFileById<Env extends DatabaseContext>(
-  c: Context<Env>,
+export async function findFileById(
+  c: { env: { DB: D1Database } },
   fileId: number,
 ): Promise<File | undefined> {
   const db = drizzle(c.env.DB);
@@ -65,8 +58,8 @@ export async function findFileById<Env extends DatabaseContext>(
   return result;
 }
 
-export async function deleteFile<Env extends DatabaseContext>(
-  c: Context<Env>,
+export async function deleteFile(
+  c: { env: { DB: D1Database } },
   publicId: string,
 ): Promise<void> {
   const db = drizzle(c.env.DB);

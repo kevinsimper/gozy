@@ -1,4 +1,4 @@
-import { int, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { index, int, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { nanoid } from "nanoid";
 
 export const usersTable = sqliteTable("users", {
@@ -37,3 +37,31 @@ export const filesTable = sqliteTable("files", {
 });
 
 export type File = typeof filesTable.$inferSelect;
+
+export const userDocumentsTable = sqliteTable(
+  "user_documents",
+  {
+    id: int().primaryKey({ autoIncrement: true }),
+    publicId: text("public_id")
+      .notNull()
+      .unique()
+      .$defaultFn(() => nanoid()),
+    userId: int("user_id").notNull(),
+    fileId: int("file_id").notNull(),
+    documentType: text("document_type").notNull(),
+    createdAt: int("created_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+    updatedAt: int("updated_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => ({
+    userIdCreatedAtIdx: index("user_id_created_at_idx").on(
+      table.userId,
+      table.createdAt,
+    ),
+  }),
+);
+
+export type UserDocument = typeof userDocumentsTable.$inferSelect;
