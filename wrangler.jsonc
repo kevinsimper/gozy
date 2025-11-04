@@ -1,0 +1,18 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "gozy-dev",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-09-17",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    "ENVIRONMENT": "dev"
+  },
+  "env": {
+    "production": {
+      "name": "gozy",
+      "vars": {
+        "ENVIRONMENT": "production"
+      }
+    }
+  }
+}
