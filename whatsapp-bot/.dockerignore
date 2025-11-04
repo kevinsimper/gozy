@@ -1,0 +1,8 @@
+node_modules
+npm-debug.log
+dist
+.wwebjs_auth
+.wwebjs_cache
+*.log
+.env
+.DS_Store
