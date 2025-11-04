@@ -34,7 +34,7 @@ client.on("ready", () => {
   setTimeout(async () => {
     await client.sendMessage(
       "4540360565@c.us",
-      "Reminder: Your document expires soon!"
+      "Reminder: Your document expires soon!",
     );
     console.log("Sent scheduled message");
   }, 5000);
@@ -64,7 +64,7 @@ client.on("message_create", async (msg) => {
       await msg.reply(`Received your ${media.mimetype} file!`);
     } else {
       console.log(
-        "Failed to download media - file may be deleted or unavailable"
+        "Failed to download media - file may be deleted or unavailable",
       );
       await msg.reply("Sorry, I couldn't download that file.");
     }
@@ -83,7 +83,7 @@ client.on("message_create", async (msg) => {
     } catch (error) {
       console.error("Error sending local file:", error);
       await msg.reply(
-        "Error: Could not send local file. Make sure ./assets/demo.png exists."
+        "Error: Could not send local file. Make sure ./assets/demo.png exists.",
       );
     }
   }
@@ -92,7 +92,7 @@ client.on("message_create", async (msg) => {
     try {
       await msg.reply("Downloading image from URL...");
       const media = await MessageMedia.fromUrl(
-        "https://via.assets.so/img.jpg?w=400&h=300&bg=e5e7eb&f=png"
+        "https://via.assets.so/img.jpg?w=400&h=300&bg=e5e7eb&f=png",
       );
       await client.sendMessage(msg.from, media, {
         caption: "Here's an image downloaded from URL",
@@ -110,6 +110,14 @@ client.on("disconnected", (reason) => {
 
 client.on("auth_failure", (message) => {
   console.error("Authentication failure:", message);
+});
+
+// Handle graceful shutdown
+process.on("SIGINT", async () => {
+  console.log("\nReceived SIGINT, shutting down gracefully...");
+  await client.destroy();
+  console.log("Client destroyed, exiting...");
+  process.exit(0);
 });
 
 console.log("Starting WhatsApp bot...");
