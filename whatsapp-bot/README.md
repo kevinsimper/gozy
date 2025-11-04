@@ -62,6 +62,7 @@ Send `!ping` to the bot to test the connection. It should reply with `pong`.
 ## Architecture
 
 The bot:
+
 1. Connects to WhatsApp using whatsapp-web.js
 2. Listens for incoming messages
 3. Forwards messages to the configured webhook URL
