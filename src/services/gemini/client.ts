@@ -18,11 +18,10 @@ export async function generateClient(c: { env: GeminiBindings }) {
 export async function generateResponse(
   c: { env: GeminiBindings },
   contents: ContentListUnion,
-  systemInstruction?: string,
+  systemInstruction?: string
 ): Promise<string | undefined> {
-  const response = await (
-    await generateClient(c)
-  ).models.generateContent({
+  const client = await generateClient(c);
+  const response = await client.models.generateContent({
     config: {
       systemInstruction:
         systemInstruction ||

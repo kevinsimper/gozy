@@ -5,6 +5,7 @@ import { generateResponse } from "./services/gemini/client";
 import { loginRoutes } from "./routes/login";
 import { dashboardRoutes } from "./routes/dashboard";
 import { uploadRoutes } from "./routes/upload";
+import { whatsappWebhookRoutes } from "./routes/api/whatsapp";
 import { logout } from "./services/auth";
 
 type Bindings = {
@@ -12,6 +13,7 @@ type Bindings = {
   GEMINI_API_KEY: string;
   FILES: R2Bucket;
   COOKIE_SECRET: string;
+  WHATSAPP_WEBHOOK_TOKEN: string;
 };
 
 const app = new Hono<{ Bindings: Bindings }>();
@@ -19,6 +21,7 @@ const app = new Hono<{ Bindings: Bindings }>();
 app.route("/login", loginRoutes);
 app.route("/dashboard", dashboardRoutes);
 app.route("/files", uploadRoutes);
+app.route("/api", whatsappWebhookRoutes);
 
 app.get("/", (c) => {
   return c.text("Hello World");
