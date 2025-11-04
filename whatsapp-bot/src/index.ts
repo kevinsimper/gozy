@@ -29,6 +29,15 @@ client.on("authenticated", () => {
 
 client.on("ready", () => {
   console.log("Bot is ready and connected!");
+
+  // Schedule a message in 5 seconds
+  setTimeout(async () => {
+    await client.sendMessage(
+      "4540360565@c.us",
+      "Reminder: Your document expires soon!"
+    );
+    console.log("Sent scheduled message");
+  }, 5000);
 });
 
 client.on("message_create", async (msg) => {
