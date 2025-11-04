@@ -7,12 +7,29 @@
   "vars": {
     "ENVIRONMENT": "dev"
   },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "gozy-dev",
+      "database_id": "012c3487-d989-4641-b3d9-0e86d08e5990",
+      "migrations_dir": "drizzle"
+    }
+  ],
   "env": {
     "production": {
       "name": "gozy",
       "vars": {
         "ENVIRONMENT": "production"
-      }
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "gozy",
+          "database_id": "012c3487-d989-4641-b3d9-0e86d08e5990",
+          "migrations_dir": "drizzle",
+          "remote": true
+        }
+      ]
     }
   }
 }
