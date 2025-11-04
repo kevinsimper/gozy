@@ -1,10 +1,12 @@
 import { Hono } from "hono";
 import { bearerAuth } from "hono/bearer-auth";
 import { z } from "zod";
+import { generateResponse, googleModels } from "../../services/gemini/client";
 
 type Bindings = {
   DB: D1Database;
   WHATSAPP_WEBHOOK_TOKEN: string;
+  GEMINI_API_KEY: string;
 };
 
 const whatsappWebhookSchema = z.object({
@@ -44,10 +46,23 @@ export const whatsappWebhookRoutes = new Hono<{ Bindings: Bindings }>().post(
       console.log(
         `Received message from ${message.from}: ${message.text || "[media]"}`,
       );
-      // TODO: Add message processing logic here
+
+      if (!message.text) {
+        return c.json({
+          success: true,
+          response: "I can only respond to text messages for now.",
+        });
+      }
+
+      const geminiResponse = await generateResponse(
+        c,
+        message.text,
+        "Du er en hjælpsom assistant til taxachauffører i København. Svar ALTID kort og præcist i 1-2 sætninger. Svar kun med tekst, ikke markdown!",
+      );
 
       return c.json({
         success: true,
+        response: geminiResponse,
       });
     } catch (error) {
       console.error("Error processing webhook:", error);

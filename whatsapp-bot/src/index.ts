@@ -43,15 +43,39 @@ client.on("ready", () => {
 });
 
 client.on("message_create", async (msg) => {
-  console.log(`Message from ${msg.from} #${msg.id}: ${msg.body}`);
+  console.log(`Message from ${msg.from} #${msg.id._serialized}: ${msg.body}`);
 
-  // Send to webhook API
-  await sendToWebhook({
-    from: msg.from,
-    text: msg.body || undefined,
-    messageId: msg.id._serialized,
-    timestamp: msg.timestamp,
-  });
+  // Only respond to !ask commands
+  if (msg.body.startsWith("!ask ")) {
+    const question = msg.body.slice(5).trim();
+
+    if (!question) {
+      await msg.reply("Please provide a question after !ask");
+      return;
+    }
+
+    // Send to webhook API and get response
+    const aiResponse = await sendToWebhook({
+      from: msg.from,
+      text: question,
+      messageId: msg.id._serialized,
+      timestamp: msg.timestamp,
+    });
+
+    // Reply with AI response if available
+    if (aiResponse) {
+      // Calculate delay proportional to message length
+      // Base delay: 500-1500ms + (length * 20-40ms per character)
+      const baseDelay = 500 + Math.random() * 1000;
+      const lengthDelay = aiResponse.length * (20 + Math.random() * 20);
+      const totalDelay = Math.min(baseDelay + lengthDelay, 5000); // Cap at 5 seconds
+
+      console.log(`Waiting ${Math.round(totalDelay)}ms before replying...`);
+      await new Promise((resolve) => setTimeout(resolve, totalDelay));
+
+      await msg.reply(aiResponse);
+    }
+  }
 
   if (msg.hasMedia) {
     console.log("Message has media, downloading...");
@@ -65,7 +89,10 @@ client.on("message_create", async (msg) => {
 
       const extension = media.mimetype.split("/")[1].split(";")[0];
       const timestamp = Date.now();
-      const filename = media.filename || `media_${timestamp}.${extension}`;
+      const originalName = media.filename
+        ? media.filename.replace(/\.[^/.]+$/, "")
+        : "media";
+      const filename = `${originalName}_${timestamp}.${extension}`;
       const filepath = path.join("downloads", filename);
 
       fs.writeFileSync(filepath, media.data, "base64");

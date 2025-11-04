@@ -9,7 +9,14 @@ type WebhookPayload = {
   timestamp: number;
 };
 
-export async function sendToWebhook(payload: WebhookPayload): Promise<void> {
+type WebhookResponse = {
+  success: boolean;
+  response?: string;
+};
+
+export async function sendToWebhook(
+  payload: WebhookPayload,
+): Promise<string | null> {
   try {
     const response = await fetch(`${API_URL}/api/whatsapp`, {
       method: "POST",
@@ -23,12 +30,14 @@ export async function sendToWebhook(payload: WebhookPayload): Promise<void> {
     if (!response.ok) {
       const error = await response.text();
       console.error(`Webhook API error (${response.status}):`, error);
-      return;
+      return null;
     }
 
-    const result = await response.json();
+    const result: WebhookResponse = await response.json();
     console.log("Webhook API response:", result);
+    return result.response || null;
   } catch (error) {
     console.error("Failed to send to webhook:", error);
+    return null;
   }
 }
