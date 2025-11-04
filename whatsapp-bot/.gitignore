@@ -5,3 +5,6 @@ dist
 *.log
 .env
 .DS_Store
+
+assets
+downloads
