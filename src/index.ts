@@ -2,17 +2,29 @@ import { Hono } from "hono";
 import { drizzle } from "drizzle-orm/d1";
 import { usersTable } from "./db/schema";
 import { generateResponse } from "./services/gemini/client";
+import { loginRoutes } from "./routes/login";
+import { dashboardRoutes } from "./routes/dashboard";
+import { logout } from "./services/auth";
 
 type Bindings = {
   DB: D1Database;
   GEMINI_API_KEY: string;
   FILES: R2Bucket;
+  COOKIE_SECRET: string;
 };
 
 const app = new Hono<{ Bindings: Bindings }>();
 
+app.route("/login", loginRoutes);
+app.route("/dashboard", dashboardRoutes);
+
 app.get("/", (c) => {
   return c.text("Hello World");
+});
+
+app.post("/logout", (c) => {
+  logout(c);
+  return c.redirect("/login");
 });
 
 app.get("/users", async (c) => {

@@ -35,15 +35,26 @@ let autoHelpTimeout: NodeJS.Timeout;
 
 export function command(name: string): boolean;
 export function command(name: string, description: string): boolean;
-export function command(name: string, description: string, usage: string): boolean;
-export function command(name: string, description?: string, usage?: string): boolean {
+export function command(
+  name: string,
+  description: string,
+  usage: string,
+): boolean;
+export function command(
+  name: string,
+  description?: string,
+  usage?: string,
+): boolean {
   // Register command for help
   if (description || usage) {
     commands.push({ name, description, usage });
   }
 
   // Set up auto-help on first command() call
-  if (!autoHelpTimeout && (!commandName || flags.includes("--help") || flags.includes("-h"))) {
+  if (
+    !autoHelpTimeout &&
+    (!commandName || flags.includes("--help") || flags.includes("-h"))
+  ) {
     autoHelpTimeout = setTimeout(() => {
       if (!helpCalled) {
         help();
@@ -114,7 +125,9 @@ function displayHelp(): void {
 
   if (registeredFlags.length > 0) {
     console.log("\nOptions:");
-    const maxFlagLength = Math.max(...registeredFlags.map((flag) => flag.name.length));
+    const maxFlagLength = Math.max(
+      ...registeredFlags.map((flag) => flag.name.length),
+    );
 
     for (const flag of registeredFlags) {
       const padding = " ".repeat(maxFlagLength - flag.name.length + 2);

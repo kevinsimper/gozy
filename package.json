@@ -29,7 +29,8 @@
   "dependencies": {
     "@google/genai": "^1.28.0",
     "drizzle-orm": "^0.44.7",
-    "hono": "^4.10.4"
+    "hono": "^4.10.4",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.8.11",
