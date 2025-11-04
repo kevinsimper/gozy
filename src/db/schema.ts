@@ -12,3 +12,5 @@ export const usersTable = sqliteTable("users", {
     .notNull()
     .$defaultFn(() => new Date()),
 });
+
+export type User = typeof usersTable.$inferSelect;
