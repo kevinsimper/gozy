@@ -1,9 +1,11 @@
 import { Hono } from "hono";
 import { drizzle } from "drizzle-orm/d1";
 import { usersTable } from "./db/schema";
+import { generateResponse } from "./services/gemini/client";
 
 type Bindings = {
   DB: D1Database;
+  GEMINI_API_KEY: string;
 };
 
 const app = new Hono<{ Bindings: Bindings }>();
@@ -16,6 +18,12 @@ app.get("/users", async (c) => {
   const db = drizzle(c.env.DB);
   const result = await db.select().from(usersTable).all();
   return c.json(result);
+});
+
+app.get("/gemini", async (c) => {
+  const query = c.req.query("q") || "Hej, hvad kan du hjælpe mig med?";
+  const response = await generateResponse(c, query);
+  return c.json({ query, response });
 });
 
 export default app;
