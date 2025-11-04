@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy --minify --env production",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npm run test:types && npm run test:unit",
+    "test:types": "tsc --noEmit",
+    "test:unit": "vitest run",
+    "format": "prettier --write --cache --log-level=warn .",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
     "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
@@ -29,9 +32,12 @@
     "hono": "^4.10.4"
   },
   "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.8.11",
     "@cloudflare/workers-types": "^4.20250405.0",
     "drizzle-kit": "^0.31.6",
+    "prettier": "^3.6.2",
     "typescript": "^5.8.3",
+    "vitest": "^3.0.9",
     "wrangler": "^4.44.0"
   }
 }

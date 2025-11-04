@@ -1,4 +1,5 @@
 # Gozy MVP - Development Estimate
+
 **Taxi Driver Trade Union Platform - Copenhagen**
 
 **Tech Stack:** Cloudflare Workers + D1 (SQLite) + Prisma + Gemini LLM + WhatsApp Business API
@@ -8,15 +9,14 @@
 ## Infrastructure Setup (Week 1: 5-7 days)
 
 ### Core Infrastructure
+
 - **Cloudflare Workers setup** - 1 day
   - Worker configuration, routing, environment setup
   - Domain configuration and DNS
-  
 - **D1 Database + Prisma** - 2 days
   - Schema design (users, documents, reminders, leads, compliance)
   - Prisma client setup for Cloudflare Workers
   - Migrations and seed data
-  
 - **WhatsApp Business API Integration** - 2 days
   - Webhook setup and verification
   - Message sending/receiving
@@ -36,6 +36,7 @@
 ## Phase 1: Core Onboarding Flow (Week 2-3: 10 days)
 
 ### MVP Onboarding Features
+
 - **QR Code → WhatsApp onboarding** - 2 days
   - Generate unique QR codes for RTT physical visits
   - Link customer to WhatsApp conversation
@@ -70,6 +71,7 @@
 ## Phase 2: Compliance & Reminders (Week 4-5: 8 days)
 
 ### Compliance Dashboard
+
 - **Document upload system** - 2 days
   - Multi-document upload (inspection, insurance, driver's license, criminal record, leasing)
   - File validation and storage in R2
@@ -98,6 +100,7 @@
 ## Phase 3: Lead Generation & CRM (Week 6: 5 days)
 
 ### CRM Integration
+
 - **Lead tracking system** - 2 days
   - Lead schema (insurance, car, rental, RTT booking)
   - Status tracking workflow
@@ -124,6 +127,7 @@
 ## Phase 4: Booking & Support (Week 7: 5 days)
 
 ### RTT Integration & Support
+
 - **Book en tid (RTT appointment booking)** - 2 days
   - Calendar availability check (API or manual)
   - Booking confirmation flow
@@ -151,6 +155,7 @@
 ## Phase 5: Nice-to-Have Features (Week 8-9: 7 days)
 
 ### Extended Services
+
 - **Rental car booking (Lejebil)** - 2 days
   - Availability check
   - Booking flow
@@ -178,6 +183,7 @@
 ## Testing & Deployment (Week 10: 5 days)
 
 ### Quality Assurance
+
 - **Integration testing** - 2 days
   - WhatsApp flow testing
   - Gemini conversation testing
@@ -206,13 +212,16 @@
 ## Total Estimate: 51 Days (~10 Weeks / 2.5 Months)
 
 ### Critical Path (MVP for Launch)
+
 **Recommended first launch: Phases 1-4 = 34 days (7 weeks)**
+
 - Core onboarding ✓
 - Compliance & reminders ✓
 - Basic lead generation ✓
 - RTT booking & support ✓
 
 ### Key Assumptions
+
 1. WhatsApp Business API account already approved (can take 2-4 weeks)
 2. RTT willing to provide API/webhook access or manual process
 3. Single developer working full-time
@@ -220,6 +229,7 @@
 5. Partner integrations (insurance, car dealers) require manual lead handoff initially
 
 ### Risks & Dependencies
+
 - **WhatsApp API approval delays** - Start application immediately
 - **RTT integration complexity** - May need manual processes initially
 - **Gemini Danish language quality** - May need fine-tuning or Claude fallback
@@ -227,6 +237,7 @@
 - **GDPR complexity** - May need legal consultation
 
 ### Cost Estimate (Monthly Operational)
+
 - Cloudflare Workers: $5/month (included in free tier initially)
 - D1 Database: Free tier (5 million rows)
 - R2 Storage: ~$0.015/GB stored
@@ -239,15 +250,19 @@
 ## Recommended Approach
 
 ### Sprint 1-2 (Weeks 1-3): Foundation
+
 Build infrastructure + core onboarding flow. Get first driver through complete flow.
 
-### Sprint 3-4 (Weeks 4-5): Compliance  
+### Sprint 3-4 (Weeks 4-5): Compliance
+
 Add compliance features. This is the core value proposition.
 
 ### Sprint 5-6 (Weeks 6-7): Revenue
+
 Add lead generation and booking. Start generating revenue.
 
 ### Sprint 7+ (Week 8+): Scale
+
 Add nice-to-have features based on user feedback.
 
 **Suggested team: 1 full-stack developer + 1 part-time for testing/support**

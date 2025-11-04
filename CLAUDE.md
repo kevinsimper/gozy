@@ -32,6 +32,7 @@ Since we use SQLite with Cloudflare D1, follow these practices:
 1. **Avoid Foreign Key Constraints**: Use `relationMode = "prisma"`
 2. **Use Indexes Instead of Unique Constraints**: For flexibility
 3. **Standard Indexing Pattern for Lists**:
+
    ```prisma
    model Example {
      id        Int      @id @default(autoincrement())
@@ -40,6 +41,7 @@ Since we use SQLite with Cloudflare D1, follow these practices:
      @@index([createdAt(sort: Desc), id(sort: Desc)])
    }
    ```
+
 4. **Index on ID for Referenced Models**: Add `@@index([id])` when referenced
 5. **Application-Level Validation**: Handle uniqueness in code, not database
 
