@@ -30,6 +30,7 @@
     "@google/genai": "^1.28.0",
     "drizzle-orm": "^0.44.7",
     "hono": "^4.10.4",
+    "nanoid": "^5.1.6",
     "zod": "^4.1.12"
   },
   "devDependencies": {

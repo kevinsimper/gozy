@@ -1,4 +1,5 @@
 import { int, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { nanoid } from "nanoid";
 
 export const usersTable = sqliteTable("users", {
   id: int().primaryKey({ autoIncrement: true }),
@@ -14,3 +15,25 @@ export const usersTable = sqliteTable("users", {
 });
 
 export type User = typeof usersTable.$inferSelect;
+
+export const filesTable = sqliteTable("files", {
+  id: int().primaryKey({ autoIncrement: true }),
+  publicId: text("public_id")
+    .notNull()
+    .unique()
+    .$defaultFn(() => nanoid()),
+  storageKey: text("storage_key").notNull(),
+  originalFilename: text("original_filename").notNull(),
+  mimeType: text("mime_type").notNull(),
+  size: int().notNull(),
+  compressedSize: int("compressed_size"),
+  compression: text({ enum: ["BROTLI"] }),
+  createdAt: int("created_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+  updatedAt: int("updated_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
+
+export type File = typeof filesTable.$inferSelect;
