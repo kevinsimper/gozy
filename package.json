@@ -9,6 +9,7 @@
     "test": "npm run test:types && npm run test:unit",
     "test:types": "tsc --noEmit",
     "test:unit": "vitest run",
+    "test:evals": "node --import tsx --test 'evals/**/*.eval.ts'",
     "format": "prettier --write --cache --log-level=warn .",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
@@ -27,6 +28,7 @@
   },
   "homepage": "https://github.com/kevinsimper/gozy#readme",
   "dependencies": {
+    "@casperlabs/ts-results": "^3.3.5",
     "@google/genai": "^1.28.0",
     "drizzle-orm": "^0.44.7",
     "hono": "^4.10.4",
@@ -38,8 +40,10 @@
     "@cloudflare/workers-types": "^4.20250405.0",
     "drizzle-kit": "^0.31.6",
     "prettier": "^3.6.2",
+    "tslib": "^2.6.3",
+    "tsx": "^4.20.6",
     "typescript": "^5.8.3",
     "vitest": "^3.0.9",
-    "wrangler": "^4.44.0"
+    "wrangler": "^4.46.0"
   }
 }

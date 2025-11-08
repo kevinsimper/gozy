@@ -9,7 +9,7 @@ Gozy is a WhatsApp-based platform for Copenhagen taxi drivers that helps manage 
 ### Framework & Runtime
 
 - **Cloudflare Workers**: Edge computing runtime
-- **D1 Database**: SQLite with Prisma ORM
+- **D1 Database**: SQLite with Drizzle ORM
 - **R2 Storage**: Object storage for documents
 
 ### AI & Integrations
@@ -23,27 +23,33 @@ Gozy is a WhatsApp-based platform for Copenhagen taxi drivers that helps manage 
 - **Zod**: Runtime type validation
 - **TypeScript**: Strict typing throughout
 
-## Database & Prisma Guidelines
+## Database Migrations
 
-### SQLite Constraints and Indexing
+**Workflow**: Modify schema → Generate migration → Apply migration
 
-Since we use SQLite with Cloudflare D1, follow these practices:
+### Generate Migration
 
-1. **Avoid Foreign Key Constraints**: Use `relationMode = "prisma"`
-2. **Use Indexes Instead of Unique Constraints**: For flexibility
-3. **Standard Indexing Pattern for Lists**:
+```bash
+npm run db:generate  # Creates SQL migration in drizzle/
+```
 
-   ```prisma
-   model Example {
-     id        Int      @id @default(autoincrement())
-     createdAt DateTime @default(now())
+### Apply Migration
 
-     @@index([createdAt(sort: Desc), id(sort: Desc)])
-   }
-   ```
+```bash
+npm run db:migrate:local   # Apply to local database
+npm run db:migrate:remote  # Apply to production database
+```
 
-4. **Index on ID for Referenced Models**: Add `@@index([id])` when referenced
-5. **Application-Level Validation**: Handle uniqueness in code, not database
+### Migration Files
+
+- Located in `drizzle/` directory
+- Auto-numbered (e.g., `0001_wakeful_corsair.sql`)
+- Applied sequentially by Wrangler
+
+### Schema Location
+
+- Schema defined in `src/db/schema.ts`
+- Uses Drizzle ORM with SQLite dialect
 
 ## Development Commands
 
@@ -57,11 +63,11 @@ npm run format       # Format code with Prettier
 
 ### Database Operations
 
-Workflow: Update schema → Generate client → Create migration
-
 ```bash
-npm run db:generate  # Generate Prisma client types
-npx wrangler d1 execute DB --local --command "SELECT * FROM User LIMIT 5"
+npm run db:generate        # Generate migration from schema changes
+npm run db:migrate:local   # Apply migrations locally
+npm run db:migrate:remote  # Apply migrations to production
+npx wrangler d1 execute DB --local --command "SELECT * FROM users LIMIT 5"
 ```
 
 ### Deployment
@@ -75,7 +81,8 @@ npm run deploy:production   # Deploy to production
 
 ```
 src/
-├── models/          # Database access (Prisma)
+├── db/              # Database schema (Drizzle)
+├── models/          # Database access layer
 ├── services/        # External integrations (WhatsApp, Gemini)
 ├── routes/          # HTTP route handlers
 ├── lib/             # Business logic
@@ -84,9 +91,19 @@ src/
 
 Root:
 ├── docs/            # Documentation
-├── prisma/          # Database schema and migrations
+├── drizzle/         # Database migrations
 └── tests/           # End-to-end tests
 ```
+
+### Architecture Guidelines
+
+- **services/**: External API integrations only. NO business logic. Only API client code, type definitions, and low-level communication with external services.
+  - ❌ Bad: Function declarations with business rules in `services/gemini/client.ts`
+  - ✅ Good: Generic Gemini API wrapper, function declarations moved to `lib/` or co-located with business logic
+
+- **lib/**: Business logic, orchestration, function call handlers. This is where application-specific logic lives.
+
+- **models/**: Database queries only. No business logic, just CRUD operations on database entities.
 
 ## Memories & Guidelines
 

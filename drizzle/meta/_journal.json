@@ -29,6 +29,27 @@
       "when": 1762253505331,
       "tag": "0003_massive_ulik",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1762508536388,
+      "tag": "0004_lame_nocturne",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1762531325495,
+      "tag": "0005_famous_scarlet_witch",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1762543274737,
+      "tag": "0006_unknown_arclight",
+      "breakpoints": true
     }
   ]
 }
