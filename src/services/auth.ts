@@ -14,6 +14,9 @@ export async function setUserCookie<Env extends AuthContext>(
   c: Context<Env>,
   userId: string,
 ): Promise<void> {
+  if (!c.env.COOKIE_SECRET) {
+    throw new Error("COOKIE_SECRET environment variable is not set");
+  }
   await setSignedCookie(c, cookieName, userId, c.env.COOKIE_SECRET, {
     httpOnly: true,
     secure: true,
@@ -25,6 +28,9 @@ export async function setUserCookie<Env extends AuthContext>(
 export async function getUserFromCookie<Env extends AuthContext>(
   c: Context<Env>,
 ): Promise<string | undefined> {
+  if (!c.env.COOKIE_SECRET) {
+    throw new Error("COOKIE_SECRET environment variable is not set");
+  }
   const userIdStr = await getSignedCookie(c, c.env.COOKIE_SECRET, cookieName);
   const userIdSchema = z.string();
   const result = userIdSchema.safeParse(userIdStr);
