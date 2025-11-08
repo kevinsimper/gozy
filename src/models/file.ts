@@ -2,7 +2,7 @@ import { drizzle } from "drizzle-orm/d1";
 import { eq } from "drizzle-orm";
 import { filesTable } from "../db/schema";
 
-export type File = typeof filesTable.$inferSelect;
+export type DatabaseFile = typeof filesTable.$inferSelect;
 export type NewFile = typeof filesTable.$inferInsert;
 
 export async function createFile(
@@ -15,7 +15,7 @@ export async function createFile(
     compressedSize?: number;
     compression?: "BROTLI";
   },
-): Promise<File> {
+): Promise<DatabaseFile> {
   const db = drizzle(c.env.DB);
   const result = await db
     .insert(filesTable)
@@ -35,7 +35,7 @@ export async function createFile(
 export async function findFileByPublicId(
   c: { env: { DB: D1Database } },
   publicId: string,
-): Promise<File | undefined> {
+): Promise<DatabaseFile | undefined> {
   const db = drizzle(c.env.DB);
   const result = await db
     .select()
@@ -48,7 +48,7 @@ export async function findFileByPublicId(
 export async function findFileById(
   c: { env: { DB: D1Database } },
   fileId: number,
-): Promise<File | undefined> {
+): Promise<DatabaseFile | undefined> {
   const db = drizzle(c.env.DB);
   const result = await db
     .select()

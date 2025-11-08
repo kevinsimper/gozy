@@ -99,3 +99,16 @@ export async function createUser<Env extends DatabaseContext>(
     .get();
   return result;
 }
+
+export async function updateUser<Env extends DatabaseContext>(
+  c: Context<Env>,
+  userId: number,
+  updates: { name?: string; email?: string },
+): Promise<void> {
+  const db = drizzle(c.env.DB);
+  await db
+    .update(usersTable)
+    .set(updates)
+    .where(eq(usersTable.id, userId))
+    .run();
+}

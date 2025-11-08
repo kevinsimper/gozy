@@ -1,5 +1,6 @@
 import { drizzle } from "drizzle-orm/d1";
 import { desc, eq } from "drizzle-orm";
+import * as schema from "../db/schema";
 import { userDocumentsTable, filesTable } from "../db/schema";
 
 export type UserDocument = typeof userDocumentsTable.$inferSelect;
@@ -46,6 +47,22 @@ export async function findUserDocumentsByUserId(
     .where(eq(userDocumentsTable.userId, userId))
     .orderBy(desc(userDocumentsTable.createdAt))
     .all();
+  return result;
+}
+
+export async function findUserDocumentByPublicId(
+  c: { env: { DB: D1Database } },
+  publicId: string,
+): Promise<
+  (UserDocument & { file: typeof filesTable.$inferSelect }) | undefined
+> {
+  const db = drizzle(c.env.DB, { schema });
+  const result = await db.query.userDocumentsTable.findFirst({
+    where: eq(userDocumentsTable.publicId, publicId),
+    with: {
+      file: true,
+    },
+  });
   return result;
 }
 
