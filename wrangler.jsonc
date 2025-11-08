@@ -1,9 +1,13 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "gozy-dev",
-  "main": "src/index.ts",
+  "main": "src/index.tsx",
   "compatibility_date": "2025-09-17",
   "compatibility_flags": ["nodejs_compat"],
+  "upload_source_maps": true,
+  "assets": {
+    "directory": "./static",
+  },
   "vars": {
     "ENVIRONMENT": "dev",
   },
@@ -26,6 +30,11 @@
       "name": "gozy",
       "vars": {
         "ENVIRONMENT": "production",
+      },
+      "upload_source_maps": true,
+      "observability": {
+        "enabled": true,
+        "head_sampling_rate": 1,
       },
       "r2_buckets": [
         {
