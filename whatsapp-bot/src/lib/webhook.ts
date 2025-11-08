@@ -4,7 +4,8 @@ const WEBHOOK_TOKEN = process.env.WEBHOOK_TOKEN || "";
 type WebhookPayload = {
   from: string;
   text?: string;
-  mediaUrl?: string;
+  mediaData?: string;
+  mediaMimeType?: string;
   messageId: string;
   timestamp: number;
 };
