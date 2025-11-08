@@ -3,7 +3,11 @@ import {
   findUserDocumentsByUserId,
   deleteUserDocument as deleteUserDocumentModel,
 } from "../models/userDocument";
-import { createFile, deleteFile as deleteFileModel } from "../models/file";
+import {
+  createFile,
+  deleteFile as deleteFileModel,
+  findFileById,
+} from "../models/file";
 
 export async function uploadUserDocument(
   c: { env: { DB: D1Database; FILES: R2Bucket } },
@@ -26,6 +30,44 @@ export async function uploadUserDocument(
     originalFilename: file.name,
     mimeType: file.type,
     size: file.size,
+  });
+
+  await createUserDocumentModel(c, {
+    userId,
+    fileId: fileRecord.id,
+    documentType,
+  });
+}
+
+export async function saveConversationFileAsUserDocument(
+  c: { env: { DB: D1Database; FILES: R2Bucket } },
+  userId: number,
+  messageFileId: number,
+  documentType: string,
+): Promise<void> {
+  const sourceFile = await findFileById(c, messageFileId);
+  if (!sourceFile) {
+    throw new Error("Message file not found");
+  }
+
+  const sourceObject = await c.env.FILES.get(sourceFile.storageKey);
+  if (!sourceObject) {
+    throw new Error("File not found in storage");
+  }
+
+  const timestamp = Date.now();
+  const randomSuffix = Math.random().toString(36).substring(2, 8);
+  const newStorageKey = `user-documents/${userId}/${timestamp}-${randomSuffix}-${sourceFile.originalFilename}`;
+
+  await c.env.FILES.put(newStorageKey, sourceObject.body, {
+    httpMetadata: sourceObject.httpMetadata,
+  });
+
+  const fileRecord = await createFile(c, {
+    storageKey: newStorageKey,
+    originalFilename: sourceFile.originalFilename,
+    mimeType: sourceFile.mimeType,
+    size: sourceFile.size,
   });
 
   await createUserDocumentModel(c, {
