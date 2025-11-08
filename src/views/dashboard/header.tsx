@@ -1,4 +1,5 @@
 import { raw } from "hono/html";
+import { lk, AppLink } from "../../lib/links";
 
 type DashboardHeaderProps = {
   currentPath?: string;
@@ -13,15 +14,17 @@ export function DashboardHeader(props: DashboardHeaderProps) {
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900">Gozy</h1>
+              <a href={lk(AppLink.Dashboard)}>
+                <img src="/gozy_logo.png" alt="Gozy" className="h-10" />
+              </a>
             </div>
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex gap-6">
               <a
-                href="/dashboard"
+                href={lk(AppLink.Dashboard)}
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  currentPath === "/dashboard"
+                  currentPath === lk(AppLink.Dashboard)
                     ? "bg-blue-100 text-blue-700"
                     : "text-gray-700 hover:bg-gray-100"
                 }`}
@@ -29,9 +32,9 @@ export function DashboardHeader(props: DashboardHeaderProps) {
                 Dashboard
               </a>
               <a
-                href="/dashboard/documents"
+                href={lk(AppLink.DashboardDocuments)}
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  currentPath === "/dashboard/documents"
+                  currentPath === lk(AppLink.DashboardDocuments)
                     ? "bg-blue-100 text-blue-700"
                     : "text-gray-700 hover:bg-gray-100"
                 }`}
@@ -39,20 +42,30 @@ export function DashboardHeader(props: DashboardHeaderProps) {
                 Dokumenter
               </a>
               <a
-                href="/dashboard/chat"
+                href={lk(AppLink.DashboardChat)}
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  currentPath === "/dashboard/chat"
+                  currentPath === lk(AppLink.DashboardChat)
                     ? "bg-blue-100 text-blue-700"
                     : "text-gray-700 hover:bg-gray-100"
                 }`}
               >
                 Chat
               </a>
+              <a
+                href={lk(AppLink.DashboardProfile)}
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  currentPath === lk(AppLink.DashboardProfile)
+                    ? "bg-blue-100 text-blue-700"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                Profil
+              </a>
             </nav>
 
             {/* Desktop Logout */}
             <div className="hidden md:block">
-              <form method="post" action="/logout">
+              <form method="post" action={lk(AppLink.Logout)}>
                 <button
                   type="submit"
                   className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
@@ -114,9 +127,9 @@ export function DashboardHeader(props: DashboardHeaderProps) {
 
         <nav className="p-4">
           <a
-            href="/dashboard"
+            href={lk(AppLink.Dashboard)}
             className={`block py-3 px-3 rounded-md text-base font-medium transition-colors ${
-              currentPath === "/dashboard"
+              currentPath === lk(AppLink.Dashboard)
                 ? "bg-blue-100 text-blue-700"
                 : "text-gray-700 hover:bg-gray-100"
             }`}
@@ -124,9 +137,9 @@ export function DashboardHeader(props: DashboardHeaderProps) {
             Dashboard
           </a>
           <a
-            href="/dashboard/documents"
+            href={lk(AppLink.DashboardDocuments)}
             className={`block py-3 px-3 rounded-md text-base font-medium transition-colors ${
-              currentPath === "/dashboard/documents"
+              currentPath === lk(AppLink.DashboardDocuments)
                 ? "bg-blue-100 text-blue-700"
                 : "text-gray-700 hover:bg-gray-100"
             }`}
@@ -134,18 +147,28 @@ export function DashboardHeader(props: DashboardHeaderProps) {
             Dokumenter
           </a>
           <a
-            href="/dashboard/chat"
+            href={lk(AppLink.DashboardChat)}
             className={`block py-3 px-3 rounded-md text-base font-medium transition-colors ${
-              currentPath === "/dashboard/chat"
+              currentPath === lk(AppLink.DashboardChat)
                 ? "bg-blue-100 text-blue-700"
                 : "text-gray-700 hover:bg-gray-100"
             }`}
           >
             Chat
           </a>
+          <a
+            href={lk(AppLink.DashboardProfile)}
+            className={`block py-3 px-3 rounded-md text-base font-medium transition-colors ${
+              currentPath === lk(AppLink.DashboardProfile)
+                ? "bg-blue-100 text-blue-700"
+                : "text-gray-700 hover:bg-gray-100"
+            }`}
+          >
+            Profil
+          </a>
 
           <div className="border-t border-gray-200 mt-4 pt-4">
-            <form method="post" action="/logout">
+            <form method="post" action={lk(AppLink.Logout)}>
               <button
                 type="submit"
                 className="block w-full text-center py-3 text-base font-medium bg-gray-100 rounded-md hover:bg-gray-200"

@@ -13,7 +13,17 @@ export function Layout(props: PropsWithChildren<LayoutProps>) {
       <head>
         <meta charset="UTF-8" />
         <title>${props.title}</title>
+        <link rel="icon" href="/gozy_logo.png" type="image/png" />
         <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+        <script
+          src="https://unpkg.com/htmx.org@2.0.4"
+          integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
+          crossorigin="anonymous"
+        ></script>
+        <script
+          src="https://unpkg.com/htmx-ext-sse@2.2.2/sse.js"
+          crossorigin="anonymous"
+        ></script>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <style type="text/tailwindcss">
           @theme {
