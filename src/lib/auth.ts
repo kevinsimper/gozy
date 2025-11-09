@@ -19,13 +19,12 @@ type AuthContext = {
 export async function redirectIfSignedIn<Env extends AuthContext>(
   c: Context<Env>,
 ): Promise<Response | undefined> {
-  const userIdStr = await getUserFromCookie(c);
+  const userId = await getUserFromCookie(c);
 
-  if (!userIdStr) {
+  if (!userId) {
     return undefined;
   }
 
-  const userId = parseInt(userIdStr, 10);
   const user = await findUserById(c, userId);
 
   if (user) {
@@ -46,13 +45,12 @@ export async function redirectIfSignedIn<Env extends AuthContext>(
 export async function requireAuth<Env extends AuthContext>(
   c: Context<Env>,
 ): Promise<{ userId: number } | Response> {
-  const userIdStr = await getUserFromCookie(c);
+  const userId = await getUserFromCookie(c);
 
-  if (!userIdStr) {
+  if (!userId) {
     return c.redirect(lk(AppLink.Login));
   }
 
-  const userId = parseInt(userIdStr, 10);
   const user = await findUserById(c, userId);
 
   if (!user) {

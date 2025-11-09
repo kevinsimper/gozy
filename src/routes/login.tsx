@@ -177,7 +177,7 @@ export const loginRoutes = new Hono<{ Bindings: Bindings }>()
 
     await clearLoginPin(c, user.id);
     await updateLastLogin(c, user.id);
-    await setUserCookie(c, user.id.toString());
+    await setUserCookie(c, user.id);
 
     return c.redirect(lk(AppLink.Dashboard));
   });

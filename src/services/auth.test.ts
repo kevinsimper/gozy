@@ -10,10 +10,10 @@ test("setUserCookie should set a signed cookie with userId", async () => {
       COOKIE_SECRET: "secret",
     },
   } as any;
-  const userId = "123";
+  const userId = 123;
   await setUserCookie(c, userId);
 
-  expect(setSignedCookie).toHaveBeenCalledWith(c, "userId", userId, "secret", {
+  expect(setSignedCookie).toHaveBeenCalledWith(c, "userId", "123", "secret", {
     expires: expect.any(Date),
     httpOnly: true,
     sameSite: "Lax",
@@ -27,7 +27,7 @@ test("getUserFromCookie should get the userId from the signed cookie", async () 
       COOKIE_SECRET: "secret",
     },
   } as any;
-  const expectedUserId = "456";
+  const expectedUserId = 456;
   vi.mocked(getSignedCookie).mockResolvedValue("456");
 
   const actualUserId = await getUserFromCookie(c);
