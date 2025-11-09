@@ -50,6 +50,9 @@ export const userDocumentsTable = sqliteTable(
     userId: int("user_id").notNull(),
     fileId: int("file_id").notNull(),
     documentType: text("document_type").notNull(),
+    expiryDate: int("expiry_date", { mode: "timestamp" }),
+    description: text(),
+    reminderDaysBefore: int("reminder_days_before"),
     createdAt: int("created_at", { mode: "timestamp" })
       .notNull()
       .$defaultFn(() => new Date()),
@@ -62,10 +65,29 @@ export const userDocumentsTable = sqliteTable(
       table.userId,
       table.createdAt,
     ),
+    expiryDateIdx: index("user_documents_expiry_date_idx").on(table.expiryDate),
   }),
 );
 
 export type UserDocument = typeof userDocumentsTable.$inferSelect;
+
+export const remindersTable = sqliteTable(
+  "reminders",
+  {
+    id: int().primaryKey({ autoIncrement: true }),
+    userId: int("user_id").notNull(),
+    documentId: int("document_id").notNull(),
+    sentAt: int("sent_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => ({
+    documentIdIdx: index("reminders_document_id_idx").on(table.documentId),
+    userIdIdx: index("reminders_user_id_idx").on(table.userId),
+  }),
+);
+
+export type Reminder = typeof remindersTable.$inferSelect;
 
 export const messagesTable = sqliteTable(
   "messages",
@@ -161,3 +183,45 @@ export const vehicleOffersRelations = relations(
 export const usersRelations = relations(usersTable, ({ many }) => ({
   vehicleOffers: many(vehicleOffersTable),
 }));
+
+export const pageviewsTable = sqliteTable(
+  "pageviews",
+  {
+    id: int().primaryKey({ autoIncrement: true }),
+    userId: int("user_id").notNull(),
+    method: text().notNull(),
+    path: text().notNull(),
+    createdAt: int("created_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => ({
+    idIdx: index("pageviews_id_idx").on(table.id),
+    userIdCreatedAtIdx: index("pageviews_user_id_created_at_idx").on(
+      table.userId,
+      table.createdAt,
+    ),
+  }),
+);
+
+export type Pageview = typeof pageviewsTable.$inferSelect;
+
+export const eventLogsTable = sqliteTable(
+  "event_logs",
+  {
+    id: int().primaryKey({ autoIncrement: true }),
+    event: text().notNull(),
+    log: text(),
+    detailsLink: text("details_link"),
+    userId: int("user_id"),
+    createdAt: int("created_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => ({
+    idIdx: index("event_logs_id_idx").on(table.id),
+    userIdIdx: index("event_logs_user_id_idx").on(table.userId),
+  }),
+);
+
+export type EventLog = typeof eventLogsTable.$inferSelect;
