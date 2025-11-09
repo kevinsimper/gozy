@@ -1,7 +1,7 @@
 import { drizzle } from "drizzle-orm/d1";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, isNotNull, sql, and, notInArray } from "drizzle-orm";
 import * as schema from "../db/schema";
-import { userDocumentsTable, filesTable } from "../db/schema";
+import { userDocumentsTable, filesTable, remindersTable } from "../db/schema";
 
 export type UserDocument = typeof userDocumentsTable.$inferSelect;
 
@@ -11,6 +11,9 @@ export async function createUserDocument(
     userId: number;
     fileId: number;
     documentType: string;
+    expiryDate?: Date;
+    description?: string;
+    reminderDaysBefore?: number;
   },
 ): Promise<UserDocument> {
   const db = drizzle(c.env.DB);
@@ -20,6 +23,9 @@ export async function createUserDocument(
       userId: data.userId,
       fileId: data.fileId,
       documentType: data.documentType,
+      expiryDate: data.expiryDate,
+      description: data.description,
+      reminderDaysBefore: data.reminderDaysBefore,
     })
     .returning()
     .get();
@@ -38,6 +44,9 @@ export async function findUserDocumentsByUserId(
       userId: userDocumentsTable.userId,
       fileId: userDocumentsTable.fileId,
       documentType: userDocumentsTable.documentType,
+      expiryDate: userDocumentsTable.expiryDate,
+      description: userDocumentsTable.description,
+      reminderDaysBefore: userDocumentsTable.reminderDaysBefore,
       createdAt: userDocumentsTable.createdAt,
       updatedAt: userDocumentsTable.updatedAt,
       file: filesTable,
@@ -66,6 +75,29 @@ export async function findUserDocumentByPublicId(
   return result;
 }
 
+export async function updateUserDocument(
+  c: { env: { DB: D1Database } },
+  publicId: string,
+  data: {
+    documentType?: string;
+    expiryDate?: Date | null;
+    description?: string | null;
+    reminderDaysBefore?: number | null;
+  },
+): Promise<UserDocument> {
+  const db = drizzle(c.env.DB);
+  const result = await db
+    .update(userDocumentsTable)
+    .set({
+      ...data,
+      updatedAt: new Date(),
+    })
+    .where(eq(userDocumentsTable.publicId, publicId))
+    .returning()
+    .get();
+  return result;
+}
+
 export async function deleteUserDocument(
   c: { env: { DB: D1Database } },
   publicId: string,
@@ -75,4 +107,50 @@ export async function deleteUserDocument(
     .delete(userDocumentsTable)
     .where(eq(userDocumentsTable.publicId, publicId))
     .run();
+}
+
+export async function findDocumentsDueForReminder(c: {
+  env: { DB: D1Database };
+}): Promise<
+  Array<
+    UserDocument & { user: { id: number; name: string; phoneNumber: string } }
+  >
+> {
+  const db = drizzle(c.env.DB);
+
+  const remindedDocumentIds = db
+    .select({ documentId: remindersTable.documentId })
+    .from(remindersTable);
+
+  const result = await db
+    .select({
+      id: userDocumentsTable.id,
+      publicId: userDocumentsTable.publicId,
+      userId: userDocumentsTable.userId,
+      fileId: userDocumentsTable.fileId,
+      documentType: userDocumentsTable.documentType,
+      expiryDate: userDocumentsTable.expiryDate,
+      description: userDocumentsTable.description,
+      reminderDaysBefore: userDocumentsTable.reminderDaysBefore,
+      createdAt: userDocumentsTable.createdAt,
+      updatedAt: userDocumentsTable.updatedAt,
+      user: {
+        id: sql<number>`users.id`,
+        name: sql<string>`users.name`,
+        phoneNumber: sql<string>`users.phone_number`,
+      },
+    })
+    .from(userDocumentsTable)
+    .innerJoin(sql`users`, sql`users.id = ${userDocumentsTable.userId}`)
+    .where(
+      and(
+        isNotNull(userDocumentsTable.expiryDate),
+        isNotNull(userDocumentsTable.reminderDaysBefore),
+        sql`date(${userDocumentsTable.expiryDate} / 1000, 'unixepoch', '-' || ${userDocumentsTable.reminderDaysBefore} || ' days') <= date('now')`,
+        notInArray(userDocumentsTable.id, remindedDocumentIds),
+      ),
+    )
+    .all();
+
+  return result;
 }

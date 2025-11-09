@@ -11,6 +11,9 @@
   "vars": {
     "ENVIRONMENT": "dev",
   },
+  "triggers": {
+    "crons": ["0 8 * * *"],
+  },
   "r2_buckets": [
     {
       "binding": "FILES",
@@ -32,6 +35,9 @@
         "ENVIRONMENT": "production",
       },
       "upload_source_maps": true,
+      "triggers": {
+        "crons": ["0 8 * * *"],
+      },
       "observability": {
         "enabled": true,
         "head_sampling_rate": 1,

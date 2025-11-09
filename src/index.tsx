@@ -126,3 +126,5 @@ app.onError((error, c) => {
 });
 
 export default app;
+
+export { handleDocumentReminders as scheduled } from "./scheduled/reminders";
