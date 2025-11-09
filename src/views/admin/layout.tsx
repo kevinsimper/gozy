@@ -1,6 +1,7 @@
 import { PropsWithChildren } from "hono/jsx";
 import { AppLink, lk } from "../../lib/links";
 import { html, raw } from "hono/html";
+import { getAllTableNames, formatTableName } from "../../lib/tableRegistry";
 
 export function AdminLayout({ children }: PropsWithChildren) {
   return (
@@ -71,6 +72,38 @@ export function AdminLayout({ children }: PropsWithChildren) {
                 </svg>
                 Documents
               </a>
+            </div>
+
+            <div class="mt-4">
+              <div class="px-2 py-1.5 text-xs font-semibold text-gray-500 uppercase">
+                Tables
+              </div>
+              <div class="space-y-0.5 py-1.5">
+                {getAllTableNames().map((tableName) => (
+                  <a
+                    key={tableName}
+                    href={lk(AppLink.AdminTable, { tableName })}
+                    class="flex items-center w-full justify-start h-8 text-xs rounded px-2 py-1.5 hover:bg-gray-800 text-gray-300 hover:text-white transition-colors"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="mr-1.5 h-3.5 w-3.5"
+                    >
+                      <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                      <path d="M3 9h18" />
+                      <path d="M3 15h18" />
+                      <path d="M9 3v18" />
+                    </svg>
+                    {formatTableName(tableName)}
+                  </a>
+                ))}
+              </div>
             </div>
           </div>
           <div class="p-3 mt-auto border-t border-gray-800">
