@@ -9,6 +9,7 @@ export enum AppLink {
   Dashboard = "/dashboard",
   DashboardDocuments = "/dashboard/documents",
   DashboardDocumentsUpload = "/dashboard/documents/upload",
+  DashboardDocumentsEdit = "/dashboard/documents/:publicId/edit",
   DashboardDocumentsPreview = "/dashboard/documents/:publicId/preview",
   DashboardDocumentsDelete = "/dashboard/documents/:publicId/delete",
   DashboardChat = "/dashboard/chat",
@@ -17,10 +18,14 @@ export enum AppLink {
   Files = "/files/:publicId",
   AdminDashboard = "/admin",
   AdminDocuments = "/admin/documents",
+  AdminTable = "/admin/tables/:tableName",
+  AdminTableDetail = "/admin/tables/:tableName/:id",
 }
 
 type RouteParams = {
   publicId?: string;
+  tableName?: string;
+  id?: string;
   query?: Record<string, string>;
 };
 
@@ -56,6 +61,14 @@ export function lk(
   if (params) {
     if (params.publicId) {
       path = path.replace(":publicId", params.publicId);
+    }
+
+    if (params.tableName) {
+      path = path.replace(":tableName", params.tableName);
+    }
+
+    if (params.id) {
+      path = path.replace(":id", params.id);
     }
 
     if (params.query) {

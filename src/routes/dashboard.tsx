@@ -9,9 +9,11 @@ import { DashboardHeader } from "../views/dashboard/header";
 import { ChatPage } from "../views/dashboard/chat";
 import { ProfilePage } from "../views/dashboard/profile";
 import { UploadPage } from "../views/dashboard/upload";
+import { DocumentEditPage } from "../views/dashboard/documentEdit";
 import {
   findUserDocumentsByUserId,
   findUserDocumentByPublicId,
+  updateUserDocument,
 } from "../models/userDocument";
 import {
   uploadUserDocument,
@@ -27,6 +29,7 @@ import {
   getMessagesWithFiles,
   getMessageByPublicId,
 } from "../models/message";
+import { createPageview } from "../models/pageview";
 
 type Bindings = {
   DB: D1Database;
@@ -66,6 +69,56 @@ const profileForm = HForm(profileFormDefinition, {
   hxIndicator: "#profile-spinner",
 });
 
+const documentEditFields = [
+  {
+    name: "documentType",
+    label: "Dokumenttype",
+    htmlType: "select" as const,
+    required: true,
+    options: [
+      { value: "", text: "Vælg dokumenttype" },
+      { value: "taximeter_certificate", text: "Taximeterattest" },
+      { value: "vehicle_inspection", text: "Synsrapport" },
+      { value: "taxi_id", text: "Taxi ID" },
+      { value: "winter_tires", text: "Vinterdæk" },
+      { value: "drivers_license", text: "Kørekort" },
+      { value: "vehicle_registration", text: "Registreringsattest" },
+      { value: "insurance", text: "Forsikring" },
+      { value: "tax_card", text: "Skattekort" },
+      { value: "criminal_record", text: "Straffeattest" },
+      { value: "leasing_agreement", text: "Leasingaftale" },
+      { value: "other", text: "Andet" },
+    ],
+    zodSchema: z.string().min(1, "Dokumenttype er påkrævet"),
+  },
+  {
+    name: "expiryDate",
+    label: "Udløbsdato",
+    htmlType: "date" as const,
+    zodSchema: z.string().optional(),
+  },
+  {
+    name: "reminderDaysBefore",
+    label: "Påmind dage før udløb",
+    htmlType: "number" as const,
+    placeholder: "f.eks. 60 for forsikring",
+    zodSchema: z.coerce.number().int().min(1).optional(),
+  },
+  {
+    name: "description",
+    label: "Beskrivelse (valgfri)",
+    htmlType: "textarea" as const,
+    rows: 4,
+    placeholder: "Tilføj noter om dokumentet",
+    zodSchema: z.string().optional(),
+  },
+] as const;
+
+const {
+  schema: documentEditSchema,
+  formDefinition: documentEditFormDefinition,
+} = buildZodSchema(documentEditFields);
+
 export const dashboardRoutes = new Hono<{ Bindings: Bindings }>()
   .use(
     "*",
@@ -86,14 +139,27 @@ export const dashboardRoutes = new Hono<{ Bindings: Bindings }>()
       },
     ),
   )
-  .get("/", async (c) => {
-    const userIdStr = await getUserFromCookie(c);
+  .use("*", async (c, next) => {
+    const userId = await getUserFromCookie(c);
 
-    if (!userIdStr) {
-      return c.redirect(lk(AppLink.Login));
+    if (userId) {
+      createPageview(c, {
+        userId,
+        method: c.req.method,
+        path: c.req.path,
+      }).catch((error) => {
+        console.error("Failed to log pageview:", error);
+      });
     }
 
-    const userId = parseInt(userIdStr, 10);
+    return next();
+  })
+  .get("/", async (c) => {
+    const userId = await getUserFromCookie(c);
+
+    if (!userId) {
+      return c.redirect(lk(AppLink.Login));
+    }
     const user = await findUserById(c, userId);
 
     if (!user) {
@@ -111,13 +177,11 @@ export const dashboardRoutes = new Hono<{ Bindings: Bindings }>()
     );
   })
   .get("/documents", async (c) => {
-    const userIdStr = await getUserFromCookie(c);
+    const userId = await getUserFromCookie(c);
 
-    if (!userIdStr) {
+    if (!userId) {
       return c.redirect(lk(AppLink.Login));
     }
-
-    const userId = parseInt(userIdStr, 10);
     const user = await findUserById(c, userId);
 
     if (!user) {
@@ -171,6 +235,9 @@ export const dashboardRoutes = new Hono<{ Bindings: Bindings }>()
                       Filename
                     </th>
                     <th className="text-left p-3 font-semibold text-gray-700">
+                      Expiry Date
+                    </th>
+                    <th className="text-left p-3 font-semibold text-gray-700">
                       Size
                     </th>
                     <th className="text-left p-3 font-semibold text-gray-700">
@@ -182,49 +249,85 @@ export const dashboardRoutes = new Hono<{ Bindings: Bindings }>()
                   </tr>
                 </thead>
                 <tbody>
-                  {documents.map((doc) => (
-                    <tr key={doc.id} className="border-b border-gray-200">
-                      <td className="p-3">
-                        <span className="bg-blue-100 text-blue-800 py-1 px-3 rounded text-sm">
-                          {doc.documentType.replace(/_/g, " ")}
-                        </span>
-                      </td>
-                      <td className="p-3">{doc.file.originalFilename}</td>
-                      <td className="p-3 text-gray-500">
-                        {Math.round(doc.file.size / 1024)} KB
-                      </td>
-                      <td className="p-3 text-gray-500">
-                        {new Date(doc.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="p-3">
-                        <div className="flex gap-2">
-                          <a
-                            href={lk(AppLink.DashboardDocumentsPreview, {
-                              publicId: doc.publicId,
-                            })}
-                            target="_blank"
-                            className="text-blue-600 no-underline font-medium"
-                          >
-                            View
-                          </a>
-                          <form
-                            method="post"
-                            action={lk(AppLink.DashboardDocumentsDelete, {
-                              publicId: doc.publicId,
-                            })}
-                            className="inline"
-                          >
-                            <button
-                              type="submit"
-                              className="text-red-600 bg-transparent border-0 cursor-pointer font-medium p-0"
+                  {documents.map((doc) => {
+                    const isExpired =
+                      doc.expiryDate && new Date(doc.expiryDate) < new Date();
+                    const isExpiringSoon =
+                      doc.expiryDate &&
+                      !isExpired &&
+                      doc.reminderDaysBefore &&
+                      new Date(doc.expiryDate).getTime() - Date.now() <
+                        doc.reminderDaysBefore * 24 * 60 * 60 * 1000;
+
+                    return (
+                      <tr key={doc.id} className="border-b border-gray-200">
+                        <td className="p-3">
+                          <span className="bg-blue-100 text-blue-800 py-1 px-3 rounded text-sm">
+                            {doc.documentType.replace(/_/g, " ")}
+                          </span>
+                        </td>
+                        <td className="p-3">{doc.file.originalFilename}</td>
+                        <td className="p-3">
+                          {doc.expiryDate ? (
+                            <span
+                              className={`text-sm ${isExpired ? "text-red-600 font-semibold" : isExpiringSoon ? "text-orange-600 font-semibold" : "text-gray-700"}`}
                             >
-                              Delete
-                            </button>
-                          </form>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                              {new Date(doc.expiryDate).toLocaleDateString(
+                                "da-DK",
+                              )}
+                              {isExpired && " (udløbet)"}
+                              {isExpiringSoon && " (snart udløb)"}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400 text-sm">
+                              Ingen udløbsdato
+                            </span>
+                          )}
+                        </td>
+                        <td className="p-3 text-gray-500">
+                          {Math.round(doc.file.size / 1024)} KB
+                        </td>
+                        <td className="p-3 text-gray-500">
+                          {new Date(doc.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="p-3">
+                          <div className="flex gap-2">
+                            <a
+                              href={lk(AppLink.DashboardDocumentsEdit, {
+                                publicId: doc.publicId,
+                              })}
+                              className="text-blue-600 no-underline font-medium"
+                            >
+                              Edit
+                            </a>
+                            <a
+                              href={lk(AppLink.DashboardDocumentsPreview, {
+                                publicId: doc.publicId,
+                              })}
+                              target="_blank"
+                              className="text-blue-600 no-underline font-medium"
+                            >
+                              View
+                            </a>
+                            <form
+                              method="post"
+                              action={lk(AppLink.DashboardDocumentsDelete, {
+                                publicId: doc.publicId,
+                              })}
+                              className="inline"
+                            >
+                              <button
+                                type="submit"
+                                className="text-red-600 bg-transparent border-0 cursor-pointer font-medium p-0"
+                              >
+                                Delete
+                              </button>
+                            </form>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -235,22 +338,20 @@ export const dashboardRoutes = new Hono<{ Bindings: Bindings }>()
     );
   })
   .get("/documents/upload", async (c) => {
-    const userIdStr = await getUserFromCookie(c);
+    const userId = await getUserFromCookie(c);
 
-    if (!userIdStr) {
+    if (!userId) {
       return c.redirect(lk(AppLink.Login));
     }
 
     return c.render(<UploadPage />, { title: "Upload Document" });
   })
   .post("/documents/upload", async (c) => {
-    const userIdStr = await getUserFromCookie(c);
+    const userId = await getUserFromCookie(c);
 
-    if (!userIdStr) {
+    if (!userId) {
       return c.redirect(lk(AppLink.Login));
     }
-
-    const userId = parseInt(userIdStr, 10);
 
     try {
       const formData = await c.req.formData();
@@ -282,13 +383,11 @@ export const dashboardRoutes = new Hono<{ Bindings: Bindings }>()
     }
   })
   .get("/documents/:publicId/preview", async (c) => {
-    const userIdStr = await getUserFromCookie(c);
+    const userId = await getUserFromCookie(c);
 
-    if (!userIdStr) {
+    if (!userId) {
       return c.redirect(lk(AppLink.Login));
     }
-
-    const userId = parseInt(userIdStr, 10);
     const publicId = c.req.param("publicId");
 
     try {
@@ -319,13 +418,11 @@ export const dashboardRoutes = new Hono<{ Bindings: Bindings }>()
     }
   })
   .post("/documents/:publicId/delete", async (c) => {
-    const userIdStr = await getUserFromCookie(c);
+    const userId = await getUserFromCookie(c);
 
-    if (!userIdStr) {
+    if (!userId) {
       return c.redirect(lk(AppLink.Login));
     }
-
-    const userId = parseInt(userIdStr, 10);
     const publicId = c.req.param("publicId");
 
     try {
@@ -338,14 +435,121 @@ export const dashboardRoutes = new Hono<{ Bindings: Bindings }>()
       );
     }
   })
-  .get("/chat/files/:publicId", async (c) => {
-    const userIdStr = await getUserFromCookie(c);
+  .get("/documents/:publicId/edit", async (c) => {
+    const userId = await getUserFromCookie(c);
 
-    if (!userIdStr) {
+    if (!userId) {
       return c.redirect(lk(AppLink.Login));
     }
+    const publicId = c.req.param("publicId");
 
-    const userId = parseInt(userIdStr, 10);
+    const document = await findUserDocumentByPublicId(c, publicId);
+
+    if (!document || document.userId !== userId) {
+      return c.notFound();
+    }
+
+    const documentEditForm = HForm(documentEditFormDefinition, {
+      id: "document-form",
+      hxPost: `/dashboard/documents/${publicId}/edit`,
+      hxTarget: "#document-form-container",
+      hxSwap: "innerHTML",
+      hxIndicator: "#document-spinner",
+    });
+
+    const formHtml = documentEditForm.render({
+      documentType: document.documentType,
+      expiryDate: document.expiryDate
+        ? new Date(document.expiryDate).toISOString().split("T")[0]
+        : "",
+      reminderDaysBefore: document.reminderDaysBefore
+        ? document.reminderDaysBefore
+        : undefined,
+      description: document.description || "",
+    });
+
+    return c.render(
+      <DocumentEditPage document={document} formHtml={formHtml} />,
+      {
+        title: "Rediger dokument",
+      },
+    );
+  })
+  .post("/documents/:publicId/edit", async (c) => {
+    const userId = await getUserFromCookie(c);
+
+    if (!userId) {
+      return c.redirect(lk(AppLink.Login));
+    }
+    const publicId = c.req.param("publicId");
+
+    const document = await findUserDocumentByPublicId(c, publicId);
+
+    if (!document || document.userId !== userId) {
+      return c.notFound();
+    }
+
+    const documentEditForm = HForm(documentEditFormDefinition, {
+      id: "document-form",
+      hxPost: `/dashboard/documents/${publicId}/edit`,
+      hxTarget: "#document-form-container",
+      hxSwap: "innerHTML",
+      hxIndicator: "#document-spinner",
+    });
+
+    const body = await c.req.parseBody();
+    const parseResult = documentEditSchema.safeParse(body);
+
+    if (!parseResult.success) {
+      const errors = documentEditForm.handleValidation(parseResult);
+      const formHtml = documentEditForm.render(body, errors);
+      return c.html(formHtml);
+    }
+
+    await updateUserDocument(c, publicId, {
+      documentType: parseResult.data.documentType,
+      expiryDate: parseResult.data.expiryDate
+        ? new Date(parseResult.data.expiryDate)
+        : null,
+      reminderDaysBefore: parseResult.data.reminderDaysBefore || null,
+      description: parseResult.data.description || null,
+    });
+
+    const updatedDocument = await findUserDocumentByPublicId(c, publicId);
+    if (!updatedDocument) {
+      return c.notFound();
+    }
+
+    const formHtml = documentEditForm.render({
+      documentType: updatedDocument.documentType,
+      expiryDate: updatedDocument.expiryDate
+        ? new Date(updatedDocument.expiryDate).toISOString().split("T")[0]
+        : "",
+      reminderDaysBefore: updatedDocument.reminderDaysBefore
+        ? updatedDocument.reminderDaysBefore
+        : undefined,
+      description: updatedDocument.description || "",
+    });
+
+    const successFormHtml = (
+      <div>
+        <div className="mb-4 rounded bg-green-100 border border-green-300 px-4 py-3 text-green-700 text-sm">
+          Dokument opdateret succesfuldt
+        </div>
+        {formHtml}
+        <span id="document-spinner" className="htmx-indicator">
+          Behandler...
+        </span>
+      </div>
+    );
+    return c.html(successFormHtml);
+  })
+  .get("/chat/files/:publicId", async (c) => {
+    const userId = await getUserFromCookie(c);
+
+    if (!userId) {
+      return c.redirect(lk(AppLink.Login));
+    }
     const publicId = c.req.param("publicId");
 
     try {
@@ -374,13 +578,11 @@ export const dashboardRoutes = new Hono<{ Bindings: Bindings }>()
     }
   })
   .get("/chat", async (c) => {
-    const userIdStr = await getUserFromCookie(c);
+    const userId = await getUserFromCookie(c);
 
-    if (!userIdStr) {
+    if (!userId) {
       return c.redirect(lk(AppLink.Login));
     }
-
-    const userId = parseInt(userIdStr, 10);
     const messages = await getMessagesWithFiles(c, userId, 50);
 
     return c.render(<ChatPage messages={messages} />, {
@@ -388,14 +590,13 @@ export const dashboardRoutes = new Hono<{ Bindings: Bindings }>()
     });
   })
   .post("/chat", async (c) => {
-    const userIdStr = await getUserFromCookie(c);
+    const userId = await getUserFromCookie(c);
 
-    if (!userIdStr) {
+    if (!userId) {
       return c.redirect(lk(AppLink.Login));
     }
 
     try {
-      const userId = parseInt(userIdStr, 10);
       const formData = await c.req.formData();
       const messageInput = formData.get("message");
       const fileInput = formData.get("file");
@@ -446,13 +647,11 @@ export const dashboardRoutes = new Hono<{ Bindings: Bindings }>()
     }
   })
   .get("/profile", async (c) => {
-    const userIdStr = await getUserFromCookie(c);
+    const userId = await getUserFromCookie(c);
 
-    if (!userIdStr) {
+    if (!userId) {
       return c.redirect(lk(AppLink.Login));
     }
-
-    const userId = parseInt(userIdStr, 10);
     const user = await findUserById(c, userId);
 
     if (!user) {
@@ -466,13 +665,11 @@ export const dashboardRoutes = new Hono<{ Bindings: Bindings }>()
     });
   })
   .post("/profile", async (c) => {
-    const userIdStr = await getUserFromCookie(c);
+    const userId = await getUserFromCookie(c);
 
-    if (!userIdStr) {
+    if (!userId) {
       return c.redirect(lk(AppLink.Login));
     }
-
-    const userId = parseInt(userIdStr, 10);
     const user = await findUserById(c, userId);
 
     if (!user) {
