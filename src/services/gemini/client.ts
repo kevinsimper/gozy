@@ -39,10 +39,16 @@ const saveMessageFileToDocumentsSchema = z.object({
     .describe("The ID of the file from the conversation message to save"),
   documentType: z
     .enum([
+      "taximeter_certificate",
+      "vehicle_inspection",
+      "taxi_id",
+      "winter_tires",
       "drivers_license",
       "vehicle_registration",
       "insurance",
       "tax_card",
+      "criminal_record",
+      "leasing_agreement",
       "other",
     ])
     .describe("The type of document being saved"),
