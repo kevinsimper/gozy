@@ -2,7 +2,7 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    exclude: ["node_modules/**"],
+    exclude: ["node_modules/**", "whatsapp-bot/**"],
     // Suppress console output during tests
     silent: true,
     // Enable happy-dom environment

@@ -5,6 +5,7 @@ import { handleTextMessage } from "../../lib/conversation";
 import { Bindings } from "../../index";
 import { uploadAndCreateFile } from "../../lib/fileUpload";
 import { DatabaseFile } from "../../models/file";
+import { sendEmail } from "../../lib/email";
 
 export const whatsappMockRoute = new Hono<{ Bindings: Bindings }>()
   .use(

@@ -14,12 +14,15 @@ export enum AppLink {
   DashboardDocumentsDelete = "/dashboard/documents/:publicId/delete",
   DashboardChat = "/dashboard/chat",
   DashboardProfile = "/dashboard/profile",
+  DashboardCarLead = "/dashboard/car-lead",
   ApiWhatsapp = "/api/whatsapp",
   Files = "/files/:publicId",
   AdminDashboard = "/admin",
   AdminDocuments = "/admin/documents",
   AdminTable = "/admin/tables/:tableName",
   AdminTableDetail = "/admin/tables/:tableName/:id",
+  AdminUserDetail = "/admin/users/:id",
+  AdminUserSendMessage = "/admin/users/:id/send-message",
 }
 
 type RouteParams = {

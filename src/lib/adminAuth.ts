@@ -3,11 +3,7 @@ import { getUserFromCookie } from "../services/auth";
 import { findUserById } from "../models/user";
 import { AppLink, lk } from "./links";
 import { html } from "hono/html";
-
-type Bindings = {
-  DB: D1Database;
-  COOKIE_SECRET: string;
-};
+import { Bindings } from "..";
 
 const ALLOWED_ADMIN_PHONE_NUMBERS = ["+4540360565", "+4520586016"];
 

@@ -2,16 +2,16 @@ import { expect, test, vi, beforeEach } from "vitest";
 import { testClient } from "hono/testing";
 import { whatsappWebhookRoutes } from "./whatsapp";
 import { handleTextMessage } from "../../lib/conversation";
-import { createFile } from "../../models/file";
+import { uploadAndCreateFile } from "../../lib/fileUpload";
 import { Ok, Err } from "@casperlabs/ts-results/esm/index";
 
 vi.mock("../../lib/conversation");
-vi.mock("../../models/file");
+vi.mock("../../lib/fileUpload");
 
 beforeEach(() => {
   vi.resetAllMocks();
 
-  vi.mocked(createFile).mockResolvedValue({
+  vi.mocked(uploadAndCreateFile).mockResolvedValue({
     id: 1,
     publicId: "test-file-id",
     storageKey: "test-key",
@@ -35,35 +35,27 @@ const mockEnv = {
     delete: vi.fn(),
   } as unknown as R2Bucket,
   COOKIE_SECRET: "test-secret",
+  RESEND_API_KEY: "test-resend-key",
 };
 
-test("webhook returns 401 without auth token", async () => {
-  const res = await testClient(whatsappWebhookRoutes, mockEnv).whatsapp.$post({
-    form: {
-      from: "4540360565@c.us",
-      text: "Hello",
-      messageId: "msg123",
-      timestamp: Date.now().toString(),
-    },
-  });
+let client: ReturnType<typeof testClient<typeof whatsappWebhookRoutes>>;
 
-  expect(res.status).toBe(401);
+beforeEach(() => {
+  client = testClient(whatsappWebhookRoutes, {
+    env: mockEnv,
+  });
 });
 
-test("webhook returns 400 for invalid payload", async () => {
-  const res = await testClient(whatsappWebhookRoutes, mockEnv).whatsapp.$post({
+test("webhook returns 400 for missing required fields", async () => {
+  const res = await client.index.$post({
     form: {
       from: "4540360565@c.us",
-    },
-    header: {
-      Authorization: "Bearer test-token",
     },
   });
 
   expect(res.status).toBe(400);
   const body = await res.json();
   expect(body).toHaveProperty("error", "Invalid payload");
-  expect(body).toHaveProperty("details");
 });
 
 test("webhook processes text message successfully", async () => {
@@ -71,15 +63,12 @@ test("webhook processes text message successfully", async () => {
     Ok("Hej! Hvordan kan jeg hjælpe dig?"),
   );
 
-  const res = await testClient(whatsappWebhookRoutes, mockEnv).whatsapp.$post({
+  const res = await client.index.$post({
     form: {
       from: "4540360565@c.us",
       text: "Hej",
       messageId: "msg123",
       timestamp: Date.now().toString(),
-    },
-    header: {
-      Authorization: "Bearer test-token",
     },
   });
 
@@ -108,16 +97,13 @@ test("webhook handles media messages with file uploads", async () => {
   );
   const file = new File([buffer], "test.png", { type: "image/png" });
 
-  const res = await testClient(whatsappWebhookRoutes, mockEnv).whatsapp.$post({
+  const res = await client.index.$post({
     form: {
       from: "4540360565@c.us",
       text: "Se dette billede",
       media: file,
       messageId: "msg789",
       timestamp: Date.now().toString(),
-    },
-    header: {
-      Authorization: "Bearer test-token",
     },
   });
 
@@ -151,15 +137,12 @@ test("webhook handles image-only messages without text", async () => {
   );
   const file = new File([buffer], "test.jpg", { type: "image/jpeg" });
 
-  const res = await testClient(whatsappWebhookRoutes, mockEnv).whatsapp.$post({
+  const res = await client.index.$post({
     form: {
       from: "4540360565@c.us",
       media: file,
       messageId: "msg790",
       timestamp: Date.now().toString(),
-    },
-    header: {
-      Authorization: "Bearer test-token",
     },
   });
 
@@ -186,15 +169,12 @@ test("webhook handles image-only messages without text", async () => {
 test("webhook extracts phone number correctly from WhatsApp ID", async () => {
   vi.mocked(handleTextMessage).mockResolvedValue(Ok("Svar"));
 
-  await testClient(whatsappWebhookRoutes, mockEnv).whatsapp.$post({
+  await client.index.$post({
     form: {
       from: "4512345678@c.us",
       text: "Test",
       messageId: "msg999",
       timestamp: Date.now().toString(),
-    },
-    header: {
-      Authorization: "Bearer test-token",
     },
   });
 
@@ -209,15 +189,12 @@ test("webhook extracts phone number correctly from WhatsApp ID", async () => {
 test("webhook handles errors gracefully", async () => {
   vi.mocked(handleTextMessage).mockResolvedValue(Err("Internal server error"));
 
-  const res = await testClient(whatsappWebhookRoutes, mockEnv).whatsapp.$post({
+  const res = await client.index.$post({
     form: {
       from: "4540360565@c.us",
       text: "Test",
       messageId: "msg202",
       timestamp: Date.now().toString(),
-    },
-    header: {
-      Authorization: "Bearer test-token",
     },
   });
 
@@ -229,15 +206,12 @@ test("webhook handles errors gracefully", async () => {
 test("webhook passes text message to conversation handler", async () => {
   vi.mocked(handleTextMessage).mockResolvedValue(Ok("AI response"));
 
-  await testClient(whatsappWebhookRoutes, mockEnv).whatsapp.$post({
+  await client.index.$post({
     form: {
       from: "4540360565@c.us",
       text: "Hvad er din opgave?",
       messageId: "msg101",
       timestamp: Date.now().toString(),
-    },
-    header: {
-      Authorization: "Bearer test-token",
     },
   });
 

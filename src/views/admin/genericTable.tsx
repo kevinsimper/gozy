@@ -80,19 +80,30 @@ export function GenericTableView({
               ) : (
                 rows.map((row, idx) => {
                   const recordId = String(row.id);
+                  const detailLink =
+                    tableName === "users"
+                      ? lk(AppLink.AdminUserDetail, { id: recordId })
+                      : lk(AppLink.AdminTableDetail, {
+                          tableName,
+                          id: recordId,
+                        });
                   return (
                     <tr
                       key={idx}
-                      class="border-b border-gray-800 last:border-0 hover:bg-gray-800/30 cursor-pointer"
-                      onclick={`window.location.href='${lk(AppLink.AdminTableDetail, { tableName, id: recordId })}'`}
+                      class="border-b border-gray-800 last:border-0"
                     >
                       {columns.map((column) => (
                         <td
                           key={column}
                           class="p-3 text-gray-300 text-xs max-w-xs truncate"
-                          title={formatValue(row[column])}
                         >
-                          {formatValue(row[column])}
+                          <a
+                            href={detailLink}
+                            class="block hover:text-white"
+                            title={formatValue(row[column])}
+                          >
+                            {formatValue(row[column])}
+                          </a>
                         </td>
                       ))}
                     </tr>
