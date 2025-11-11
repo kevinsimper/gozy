@@ -51,31 +51,9 @@ export function UploadPage() {
               style="display: block; width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 0.875rem;"
             />
             <p style="margin-top: 0.5rem; font-size: 0.875rem; color: #6b7280;">
-              Maximum file size: 10MB. Supported formats: PDF, images,
-              documents.
+              Maximum file size: 10MB. AI will automatically detect document
+              type and expiry date.
             </p>
-          </div>
-
-          <div>
-            <label
-              for="documentType"
-              style="display: block; font-weight: 500; margin-bottom: 0.5rem; font-size: 0.875rem; color: #374151;"
-            >
-              Document Type
-            </label>
-            <select
-              name="documentType"
-              id="documentType"
-              required
-              style="display: block; width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem; background: white; font-size: 0.875rem;"
-            >
-              <option value="">Select a document type</option>
-              <option value="drivers_license">Driver's License</option>
-              <option value="vehicle_registration">Vehicle Registration</option>
-              <option value="insurance">Insurance</option>
-              <option value="tax_card">Tax Card</option>
-              <option value="other">Other</option>
-            </select>
           </div>
 
           <div style="display: flex; gap: 1rem;">

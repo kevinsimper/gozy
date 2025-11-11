@@ -17,6 +17,12 @@ import { AppLink, lk } from "../../lib/links";
 import { buildZodSchema } from "../../services/hform/formbuilder";
 import { HForm } from "../../services/hform/form";
 import type { Bindings } from "../../index";
+import { DOCUMENT_TYPES } from "../../lib/documentTypes";
+import {
+  ViewToggle,
+  CardsView,
+  TableView,
+} from "../../views/dashboard/documentsView";
 
 const documentEditFields = [
   {
@@ -24,20 +30,7 @@ const documentEditFields = [
     label: "Dokumenttype",
     htmlType: "select" as const,
     required: true,
-    options: [
-      { value: "", text: "Vælg dokumenttype" },
-      { value: "taximeter_certificate", text: "Taximeterattest" },
-      { value: "vehicle_inspection", text: "Synsrapport" },
-      { value: "taxi_id", text: "Taxi ID" },
-      { value: "winter_tires", text: "Vinterdæk" },
-      { value: "drivers_license", text: "Kørekort" },
-      { value: "vehicle_registration", text: "Registreringsattest" },
-      { value: "insurance", text: "Forsikring" },
-      { value: "tax_card", text: "Skattekort" },
-      { value: "criminal_record", text: "Straffeattest" },
-      { value: "leasing_agreement", text: "Leasingaftale" },
-      { value: "other", text: "Andet" },
-    ],
+    options: [{ value: "", text: "Vælg dokumenttype" }, ...DOCUMENT_TYPES],
     zodSchema: z.string().min(1, "Dokumenttype er påkrævet"),
   },
   {
@@ -82,152 +75,45 @@ export const documentsRoutes = new Hono<{ Bindings: Bindings }>()
     }
 
     const documents = await findUserDocumentsByUserId(c, userId);
+    const viewParam = c.req.query("view");
+    const currentView: "cards" | "table" =
+      viewParam === "table" ? "table" : "cards";
 
     return c.render(
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">Dokumenter</h1>
-
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-gray-800">
-              Your Documents
-            </h2>
-            <a
-              href={lk(AppLink.DashboardDocumentsUpload)}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium no-underline inline-flex items-center gap-2"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-              Upload Document
-            </a>
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center gap-4">
+            <h1 className="text-3xl font-bold text-gray-900">Dokumenter</h1>
+            <ViewToggle currentView={currentView} />
           </div>
-          {documents.length === 0 ? (
-            <p className="text-gray-500 py-8 text-center">
-              No documents uploaded yet.
-            </p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="border-b-2 border-gray-200">
-                    <th className="text-left p-3 font-semibold text-gray-700">
-                      Type
-                    </th>
-                    <th className="text-left p-3 font-semibold text-gray-700">
-                      Filename
-                    </th>
-                    <th className="text-left p-3 font-semibold text-gray-700">
-                      Expiry Date
-                    </th>
-                    <th className="text-left p-3 font-semibold text-gray-700">
-                      Size
-                    </th>
-                    <th className="text-left p-3 font-semibold text-gray-700">
-                      Uploaded
-                    </th>
-                    <th className="text-left p-3 font-semibold text-gray-700">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {documents.map((doc) => {
-                    const isExpired =
-                      doc.expiryDate && new Date(doc.expiryDate) < new Date();
-                    const isExpiringSoon =
-                      doc.expiryDate &&
-                      !isExpired &&
-                      doc.reminderDaysBefore &&
-                      new Date(doc.expiryDate).getTime() - Date.now() <
-                        doc.reminderDaysBefore * 24 * 60 * 60 * 1000;
-
-                    return (
-                      <tr key={doc.id} className="border-b border-gray-200">
-                        <td className="p-3">
-                          <span className="bg-blue-100 text-blue-800 py-1 px-3 rounded text-sm">
-                            {doc.documentType.replace(/_/g, " ")}
-                          </span>
-                        </td>
-                        <td className="p-3">{doc.file.originalFilename}</td>
-                        <td className="p-3">
-                          {doc.expiryDate ? (
-                            <span
-                              className={`text-sm ${isExpired ? "text-red-600 font-semibold" : isExpiringSoon ? "text-orange-600 font-semibold" : "text-gray-700"}`}
-                            >
-                              {new Date(doc.expiryDate).toLocaleDateString(
-                                "da-DK",
-                              )}
-                              {isExpired && " (udløbet)"}
-                              {isExpiringSoon && " (snart udløb)"}
-                            </span>
-                          ) : (
-                            <span className="text-gray-400 text-sm">
-                              Ingen udløbsdato
-                            </span>
-                          )}
-                        </td>
-                        <td className="p-3 text-gray-500">
-                          {Math.round(doc.file.size / 1024)} KB
-                        </td>
-                        <td className="p-3 text-gray-500">
-                          {new Date(doc.createdAt).toLocaleDateString()}
-                        </td>
-                        <td className="p-3">
-                          <div className="flex gap-2">
-                            <a
-                              href={lk(AppLink.DashboardDocumentsEdit, {
-                                publicId: doc.publicId,
-                              })}
-                              className="text-blue-600 no-underline font-medium"
-                            >
-                              Edit
-                            </a>
-                            <a
-                              href={lk(AppLink.DashboardDocumentsPreview, {
-                                publicId: doc.publicId,
-                              })}
-                              target="_blank"
-                              className="text-blue-600 no-underline font-medium"
-                            >
-                              View
-                            </a>
-                            <form
-                              method="post"
-                              action={lk(AppLink.DashboardDocumentsDelete, {
-                                publicId: doc.publicId,
-                              })}
-                              className="inline"
-                            >
-                              <button
-                                type="submit"
-                                className="text-red-600 bg-transparent border-0 cursor-pointer font-medium p-0"
-                              >
-                                Delete
-                              </button>
-                            </form>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
+          <a
+            href={lk(AppLink.DashboardDocumentsUpload)}
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium no-underline inline-flex items-center gap-2 hover:bg-blue-700 transition-colors"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            Upload dokument
+          </a>
         </div>
+
+        {currentView === "cards" ? (
+          <CardsView documents={documents} />
+        ) : (
+          <TableView documents={documents} />
+        )}
       </div>,
-      { title: "My Documents" },
+      { title: "Mine dokumenter" },
     );
   })
   .get("/upload", async (c) => {
@@ -257,13 +143,14 @@ export const documentsRoutes = new Hono<{ Bindings: Bindings }>()
         );
       }
 
-      if (!documentType || typeof documentType !== "string") {
-        return c.redirect(
-          lk(AppLink.DashboardDocumentsUpload, { query: { error: "no_type" } }),
-        );
-      }
-
-      await uploadUserDocument(c, userId, file, documentType);
+      await uploadUserDocument(
+        c,
+        userId,
+        file,
+        documentType && typeof documentType === "string"
+          ? documentType
+          : undefined,
+      );
 
       return c.redirect(lk(AppLink.DashboardDocuments));
     } catch (error) {
