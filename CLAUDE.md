@@ -121,6 +121,7 @@ Root:
 - Do not use echo >>
 - Do not use emojis
 - Avoid nested ternary operators
+- Lowercase file names
 
 ## MVP Phases (See gozy_mvp_estimate.md)
 
