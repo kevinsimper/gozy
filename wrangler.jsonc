@@ -12,6 +12,7 @@
     "ENVIRONMENT": "dev",
     "WHATSAPP_BOT_URL": "http://localhost:3000",
     "WHATSAPP_BOT_TOKEN": "dev-token",
+    "DEV": "false",
   },
   "triggers": {
     "crons": ["0 8 * * *"],
@@ -37,6 +38,7 @@
         "ENVIRONMENT": "production",
         "WHATSAPP_BOT_URL": "https://your-whatsapp-bot-url.com",
         "WHATSAPP_BOT_TOKEN": "production-token",
+        "DEV": "false",
       },
       "upload_source_maps": true,
       "triggers": {

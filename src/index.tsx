@@ -26,6 +26,7 @@ export type Bindings = {
   RESEND_API_KEY: string;
   WHATSAPP_BOT_TOKEN: string;
   WHATSAPP_BOT_URL: string;
+  DEV: string;
 };
 
 const app = new Hono<{ Bindings: Bindings }>();
@@ -126,6 +127,14 @@ app.onError((error, c) => {
   }
 
   return c.json({ error: "Internal Server Error" }, 500);
+});
+
+app.post("/create", (c) => {
+  if (c.env.DEV === "true") {
+    return c.json({ error: "DEV mode is enabled" }, 400);
+  }
+
+  return c.json({ message: "DEV mode is disabled" }, 200);
 });
 
 export default app;
