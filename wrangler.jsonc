@@ -11,7 +11,7 @@
   "vars": {
     "ENVIRONMENT": "dev",
     "WHATSAPP_BOT_URL": "http://localhost:3000",
-    "WHATSAPP_BOT_TOKEN": "dev-token",
+    "WHATSAPP_BOT_TOKEN": "dev-bot-token-change-in-production",
     "DEV": "false",
   },
   "triggers": {
