@@ -1,5 +1,4 @@
 import { Hono } from "hono";
-import { bearerAuth } from "hono/bearer-auth";
 import { z } from "zod";
 import { handleTextMessage } from "../../lib/conversation";
 import { Bindings } from "../../index";
@@ -22,12 +21,7 @@ function extractPhoneNumber(whatsappId: string): string {
 }
 
 export const whatsappWebhookRoutes = new Hono<{ Bindings: Bindings }>().post(
-  "/whatsapp",
-  async (c, next) => {
-    const token = c.env.WHATSAPP_WEBHOOK_TOKEN;
-    const bearer = bearerAuth({ token });
-    return bearer(c, next);
-  },
+  "/",
   async (c) => {
     const body = await c.req.parseBody();
     const parsed = whatsappWebhookSchema.safeParse(body);

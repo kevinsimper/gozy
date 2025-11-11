@@ -3,9 +3,9 @@ import { drizzle } from "drizzle-orm/d1";
 import { usersTable } from "./db/schema";
 import { generateResponse } from "./services/gemini/client";
 import { loginRoutes } from "./routes/login";
-import { dashboardRoutes } from "./routes/dashboard";
+import { dashboardRoutes } from "./routes/dashboard/index";
 import { adminRoutes } from "./routes/admin";
-import { whatsappWebhookRoutes } from "./routes/api/whatsapp";
+import { apiRoutes } from "./routes/api/index";
 import { whatsappMockRoute } from "./routes/dev/whatsapp-mock";
 import { logout } from "./services/auth";
 import { jsxRenderer } from "hono/jsx-renderer";
@@ -22,7 +22,10 @@ export type Bindings = {
   GEMINI_API_KEY: string;
   FILES: R2Bucket;
   COOKIE_SECRET: string;
-  WHATSAPP_WEBHOOK_TOKEN: string;
+  GOZY_API_TOKEN: string;
+  RESEND_API_KEY: string;
+  WHATSAPP_BOT_TOKEN: string;
+  WHATSAPP_BOT_URL: string;
 };
 
 const app = new Hono<{ Bindings: Bindings }>();
@@ -42,7 +45,7 @@ app.use(
 app.route("/login", loginRoutes);
 app.route("/dashboard", dashboardRoutes);
 app.route("/admin", adminRoutes);
-app.route("/api", whatsappWebhookRoutes);
+app.route("/api", apiRoutes);
 app.route("/dev", whatsappMockRoute);
 
 app.get("/", (c) => {
