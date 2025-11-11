@@ -13,10 +13,13 @@ import { LoginForm } from "../views/public/LoginForm";
 import { PinVerificationForm } from "../views/public/PinVerificationForm";
 import { AppLink, lk } from "../lib/links";
 import { redirectIfSignedIn } from "../lib/auth";
+import { sendLoginPin } from "../lib/login";
 
 type Bindings = {
   DB: D1Database;
   COOKIE_SECRET: string;
+  WHATSAPP_BOT_URL: string;
+  WHATSAPP_BOT_TOKEN: string;
 };
 
 declare module "hono" {
@@ -41,7 +44,7 @@ const pinSchema = z.object({
 });
 
 function generatePin(): string {
-  return "1234";
+  return Math.floor(1000 + Math.random() * 9000).toString();
 }
 
 export const loginRoutes = new Hono<{ Bindings: Bindings }>()
@@ -98,6 +101,26 @@ export const loginRoutes = new Hono<{ Bindings: Bindings }>()
     console.log(
       `Generated PIN ${pin} for user ${user.id} (${user.phoneNumber})`,
     );
+
+    try {
+      await sendLoginPin(
+        c.env.WHATSAPP_BOT_URL,
+        c.env.WHATSAPP_BOT_TOKEN,
+        user.phoneNumber,
+        pin,
+      );
+    } catch (error) {
+      console.error("Failed to send PIN via WhatsApp:", error);
+      return c.render(
+        <LoginForm
+          error="Kunne ikke sende PIN-kode. Prøv venligst igen."
+          phoneNumber={parsed.data.phoneNumber.replace("+45", "")}
+        />,
+        {
+          title: "Gozy - Log ind",
+        },
+      );
+    }
 
     return c.render(
       <PinVerificationForm phoneNumber={parsed.data.phoneNumber} />,
