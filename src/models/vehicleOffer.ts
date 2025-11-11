@@ -12,19 +12,27 @@ type DatabaseContext = {
 export type VehicleOffer = typeof vehicleOffersTable.$inferSelect;
 
 export type VehicleOfferInput = {
+  carType?: string;
   brand?: string;
   budget?: number;
   model?: string;
   financing?: "lease" | "loan" | "cash";
+  leasingDuration?: string;
+  taxiEquipment?: boolean;
+  taxiCompany?: string;
   timeframe?: string;
   notes?: string;
 };
 
 export type VehicleOfferUpdate = {
+  carType?: string;
   brand?: string;
   budget?: number;
   model?: string;
   financing?: "lease" | "loan" | "cash";
+  leasingDuration?: string;
+  taxiEquipment?: boolean;
+  taxiCompany?: string;
   timeframe?: string;
   notes?: string;
   status?: "collecting_info" | "submitted" | "responded";
@@ -40,10 +48,14 @@ export async function createVehicleOffer<Env extends DatabaseContext>(
     .insert(vehicleOffersTable)
     .values({
       userId,
+      carType: data.carType ?? null,
       brand: data.brand ?? null,
       budget: data.budget ?? null,
       model: data.model ?? null,
       financing: data.financing ?? null,
+      leasingDuration: data.leasingDuration ?? null,
+      taxiEquipment: data.taxiEquipment ?? null,
+      taxiCompany: data.taxiCompany ?? null,
       timeframe: data.timeframe ?? null,
       notes: data.notes ?? null,
       questionsAsked: JSON.stringify([]),
@@ -86,11 +98,18 @@ export async function updateVehicleOffer<Env extends DatabaseContext>(
   };
 
   if (updates) {
+    if (updates.carType !== undefined) updateData.carType = updates.carType;
     if (updates.brand !== undefined) updateData.brand = updates.brand;
     if (updates.budget !== undefined) updateData.budget = updates.budget;
     if (updates.model !== undefined) updateData.model = updates.model;
     if (updates.financing !== undefined)
       updateData.financing = updates.financing;
+    if (updates.leasingDuration !== undefined)
+      updateData.leasingDuration = updates.leasingDuration;
+    if (updates.taxiEquipment !== undefined)
+      updateData.taxiEquipment = updates.taxiEquipment;
+    if (updates.taxiCompany !== undefined)
+      updateData.taxiCompany = updates.taxiCompany;
     if (updates.timeframe !== undefined)
       updateData.timeframe = updates.timeframe;
     if (updates.notes !== undefined) updateData.notes = updates.notes;
