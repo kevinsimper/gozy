@@ -12,6 +12,7 @@ import { documentsRoutes } from "./documents";
 import { chatRoutes } from "./chat";
 import { profileRoutes } from "./profile";
 import { carLeadRoutes } from "./carlead";
+import { serviceBookingRoutes } from "./servicebooking";
 import type { Bindings } from "../../index";
 
 declare module "hono" {
@@ -83,4 +84,5 @@ export const dashboardRoutes = new Hono<{ Bindings: Bindings }>()
   .route("/documents", documentsRoutes)
   .route("/chat", chatRoutes)
   .route("/profile", profileRoutes)
-  .route("/car-lead", carLeadRoutes);
+  .route("/car-lead", carLeadRoutes)
+  .route("/service-booking", serviceBookingRoutes);
