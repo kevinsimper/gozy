@@ -1,12 +1,7 @@
 import { findDocumentsDueForReminder } from "../models/userDocument";
 import { createReminder } from "../models/reminder";
-import { sendTextMessage } from "../services/whatsapp";
-
-type Bindings = {
-  DB: D1Database;
-  WHATSAPP_API_TOKEN: string;
-  WHATSAPP_PHONE_NUMBER_ID: string;
-};
+import { sendWhatsAppMessage } from "../lib/whatsapp";
+import type { Bindings } from "../index";
 
 export async function handleDocumentReminders(
   event: ScheduledEvent,
