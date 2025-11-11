@@ -31,19 +31,12 @@ client.on("authenticated", () => {
 
 client.on("ready", () => {
   console.log("Bot is ready and connected!");
-
-  // Schedule a message in 5 seconds
-  setTimeout(async () => {
-    await client.sendMessage(
-      "4540360565@c.us",
-      "Reminder: Your document expires soon!",
-    );
-    console.log("Sent scheduled message");
-  }, 5000);
 });
 
 client.on("message_create", async (msg) => {
-  console.log(`Message from ${msg.from} #${msg.id._serialized}: ${msg.body}`);
+  console.log(
+    `Message from ${msg.from} #${msg.id._serialized} ${msg.timestamp}: ${msg.body}`,
+  );
 
   // Handle !ask commands
   if (msg.body.startsWith("!ask ")) {
@@ -87,9 +80,6 @@ client.on("message_create", async (msg) => {
     }
     return;
   }
-
-  // Handle all other messages (including media)
-  await handleMessage(msg);
 });
 
 client.on("disconnected", (reason) => {
