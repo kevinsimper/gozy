@@ -1,10 +1,10 @@
-import pkg from "whatsapp-web.js";
-const { Client, LocalAuth, MessageMedia } = pkg;
-import qrcode from "qrcode-terminal";
-import fs from "fs";
-import path from "path";
 import "dotenv/config";
-import { sendToWebhook } from "./lib/webhook.js";
+import http from "http";
+import qrcode from "qrcode-terminal";
+import pkg from "whatsapp-web.js";
+import { sendMessage } from "./lib/messageSender.js";
+import { handleAskCommand, handleMessage } from "./lib/messageHandler.js";
+const { Client, LocalAuth, MessageMedia } = pkg;
 
 const client = new Client({
   authStrategy: new LocalAuth({
@@ -45,77 +45,16 @@ client.on("ready", () => {
 client.on("message_create", async (msg) => {
   console.log(`Message from ${msg.from} #${msg.id._serialized}: ${msg.body}`);
 
-  // Only respond to !ask commands
+  // Handle !ask commands
   if (msg.body.startsWith("!ask ")) {
-    const question = msg.body.slice(5).trim();
-
-    if (!question) {
-      await msg.reply("Please provide a question after !ask");
-      return;
-    }
-
-    // Send to webhook API and get response
-    const aiResponse = await sendToWebhook({
-      from: msg.from,
-      text: question,
-      messageId: msg.id._serialized,
-      timestamp: msg.timestamp,
-    });
-
-    // Reply with AI response if available
-    if (aiResponse) {
-      // Calculate delay proportional to message length
-      // Base delay: 500-1500ms + (length * 20-40ms per character)
-      const baseDelay = 500 + Math.random() * 1000;
-      const lengthDelay = aiResponse.length * (20 + Math.random() * 20);
-      const totalDelay = Math.min(baseDelay + lengthDelay, 5000); // Cap at 5 seconds
-
-      console.log(`Waiting ${Math.round(totalDelay)}ms before replying...`);
-      await new Promise((resolve) => setTimeout(resolve, totalDelay));
-
-      await msg.reply(aiResponse);
-    }
+    await handleAskCommand(msg);
+    return;
   }
 
-  if (msg.hasMedia) {
-    console.log("Message has media, downloading...");
-    const media = await msg.downloadMedia();
-
-    if (media) {
-      console.log("Media downloaded successfully:");
-      console.log(`- Mimetype: ${media.mimetype}`);
-      console.log(`- Filename: ${media.filename || "No filename"}`);
-      console.log(`- Size: ${media.data.length} bytes (base64)`);
-
-      const aiResponse = await sendToWebhook({
-        from: msg.from,
-        text: msg.body || undefined,
-        mediaData: media.data,
-        mediaMimeType: media.mimetype,
-        messageId: msg.id._serialized,
-        timestamp: msg.timestamp,
-      });
-
-      if (aiResponse) {
-        const baseDelay = 500 + Math.random() * 1000;
-        const lengthDelay = aiResponse.length * (20 + Math.random() * 20);
-        const totalDelay = Math.min(baseDelay + lengthDelay, 5000);
-
-        console.log(`Waiting ${Math.round(totalDelay)}ms before replying...`);
-        await new Promise((resolve) => setTimeout(resolve, totalDelay));
-
-        await msg.reply(aiResponse);
-      }
-    } else {
-      console.log(
-        "Failed to download media - file may be deleted or unavailable",
-      );
-      await msg.reply("Sorry, I couldn't download that file.");
-    }
-  }
-
+  // Handle special commands
   if (msg.body === "!ping") {
     await msg.reply("pong");
+    return;
   }
 
   if (msg.body === "!send-local") {
@@ -130,6 +69,7 @@ client.on("message_create", async (msg) => {
         "Error: Could not send local file. Make sure ./assets/demo.png exists.",
       );
     }
+    return;
   }
 
   if (msg.body === "!send-url") {
@@ -145,7 +85,11 @@ client.on("message_create", async (msg) => {
       console.error("Error sending file from URL:", error);
       await msg.reply("Error: Could not download or send file from URL.");
     }
+    return;
   }
+
+  // Handle all other messages (including media)
+  await handleMessage(msg);
 });
 
 client.on("disconnected", (reason) => {
@@ -156,9 +100,88 @@ client.on("auth_failure", (message) => {
   console.error("Authentication failure:", message);
 });
 
+// Create HTTP server for API
+const PORT = process.env.PORT || 3000;
+const WHATSAPP_BOT_TOKEN = process.env.WHATSAPP_BOT_TOKEN || "";
+
+const server = http.createServer(async (req, res) => {
+  // Enable CORS
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  if (req.method === "OPTIONS") {
+    res.writeHead(204);
+    res.end();
+    return;
+  }
+
+  if (req.method === "POST" && req.url === "/api/send-message") {
+    // Check bearer token
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.replace(/^Bearer\s+/i, "");
+
+    if (!token || token !== WHATSAPP_BOT_TOKEN) {
+      res.writeHead(401, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Unauthorized" }));
+      return;
+    }
+
+    // Parse JSON body
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk.toString();
+    });
+
+    req.on("end", async () => {
+      try {
+        const data = JSON.parse(body);
+        const { phoneNumber, message } = data;
+
+        if (!phoneNumber || !message) {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(
+            JSON.stringify({
+              error: "Missing required fields: phoneNumber, message",
+            }),
+          );
+          return;
+        }
+
+        await sendMessage(client, phoneNumber, message);
+
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ success: true }));
+      } catch (error) {
+        console.error("Error sending message:", error);
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({
+            error: "Failed to send message",
+            details: error instanceof Error ? error.message : "Unknown error",
+          }),
+        );
+      }
+    });
+
+    return;
+  }
+
+  // Handle 404
+  res.writeHead(404, { "Content-Type": "application/json" });
+  res.end(JSON.stringify({ error: "Not found" }));
+});
+
+server.listen(PORT, () => {
+  console.log(`HTTP server listening on port ${PORT}`);
+});
+
 // Handle graceful shutdown
 process.on("SIGINT", async () => {
   console.log("\nReceived SIGINT, shutting down gracefully...");
+  server.close(() => {
+    console.log("HTTP server closed");
+  });
   await client.destroy();
   console.log("Client destroyed, exiting...");
   process.exit(0);
