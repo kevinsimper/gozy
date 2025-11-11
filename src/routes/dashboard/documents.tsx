@@ -1,73 +1,22 @@
 import { Hono } from "hono";
-import { jsxRenderer } from "hono/jsx-renderer";
 import { z } from "zod";
-import { getUserFromCookie } from "../services/auth";
-import { findUserById, updateUser } from "../models/user";
-import { Layout } from "../views/layout";
-import { DashboardPage } from "../views/dashboard";
-import { DashboardHeader } from "../views/dashboard/header";
-import { ChatPage } from "../views/dashboard/chat";
-import { ProfilePage } from "../views/dashboard/profile";
-import { UploadPage } from "../views/dashboard/upload";
-import { DocumentEditPage } from "../views/dashboard/documentEdit";
+import { getUserFromCookie } from "../../services/auth";
+import { findUserById } from "../../models/user";
+import { UploadPage } from "../../views/dashboard/upload";
+import { DocumentEditPage } from "../../views/dashboard/documentEdit";
 import {
   findUserDocumentsByUserId,
   findUserDocumentByPublicId,
   updateUserDocument,
-} from "../models/userDocument";
+} from "../../models/userDocument";
 import {
   uploadUserDocument,
   deleteUserDocumentWithFile,
-} from "../lib/userDocument";
-import { generateAssistantResponse } from "../lib/conversation";
-import { uploadAndCreateFile } from "../lib/fileUpload";
-import { buildZodSchema } from "../services/hform/formbuilder";
-import { HForm } from "../services/hform/form";
-import { AppLink, lk } from "../lib/links";
-import {
-  createMessage,
-  getMessagesWithFiles,
-  getMessageByPublicId,
-} from "../models/message";
-import { createPageview } from "../models/pageview";
-
-type Bindings = {
-  DB: D1Database;
-  COOKIE_SECRET: string;
-  FILES: R2Bucket;
-  GEMINI_API_KEY: string;
-  WHATSAPP_WEBHOOK_TOKEN: string;
-};
-
-declare module "hono" {
-  interface ContextRenderer {
-    (
-      content: string | Promise<string>,
-      props: { title: string; currentPath?: string },
-    ): Response;
-  }
-}
-
-const profileFields = [
-  {
-    name: "name",
-    label: "Navn",
-    htmlType: "text" as const,
-    required: true,
-    placeholder: "Indtast dit navn",
-    zodSchema: z.string().min(2, "Navn skal være mindst 2 tegn"),
-  },
-] as const;
-
-const { schema: profileSchema, formDefinition: profileFormDefinition } =
-  buildZodSchema(profileFields);
-const profileForm = HForm(profileFormDefinition, {
-  id: "profile-form",
-  hxPost: "/dashboard/profile",
-  hxTarget: "#profile-form-container",
-  hxSwap: "innerHTML",
-  hxIndicator: "#profile-spinner",
-});
+} from "../../lib/userDocument";
+import { AppLink, lk } from "../../lib/links";
+import { buildZodSchema } from "../../services/hform/formbuilder";
+import { HForm } from "../../services/hform/form";
+import type { Bindings } from "../../index";
 
 const documentEditFields = [
   {
@@ -119,64 +68,8 @@ const {
   formDefinition: documentEditFormDefinition,
 } = buildZodSchema(documentEditFields);
 
-export const dashboardRoutes = new Hono<{ Bindings: Bindings }>()
-  .use(
-    "*",
-    jsxRenderer(
-      ({ children, title }, c) => {
-        const currentPath = c.req.path;
-        return (
-          <Layout title={title}>
-            <div style="min-height: 100vh; background: #f9fafb;">
-              <DashboardHeader currentPath={currentPath} />
-              {children}
-            </div>
-          </Layout>
-        );
-      },
-      {
-        docType: true,
-      },
-    ),
-  )
-  .use("*", async (c, next) => {
-    const userId = await getUserFromCookie(c);
-
-    if (userId) {
-      createPageview(c, {
-        userId,
-        method: c.req.method,
-        path: c.req.path,
-      }).catch((error) => {
-        console.error("Failed to log pageview:", error);
-      });
-    }
-
-    return next();
-  })
+export const documentsRoutes = new Hono<{ Bindings: Bindings }>()
   .get("/", async (c) => {
-    const userId = await getUserFromCookie(c);
-
-    if (!userId) {
-      return c.redirect(lk(AppLink.Login));
-    }
-    const user = await findUserById(c, userId);
-
-    if (!user) {
-      return c.redirect(lk(AppLink.Login));
-    }
-
-    const documents = await findUserDocumentsByUserId(c, userId);
-    const documentCount = documents.length;
-
-    return c.render(
-      <DashboardPage user={user} documentCount={documentCount} />,
-      {
-        title: "Gozy Dashboard",
-      },
-    );
-  })
-  .get("/documents", async (c) => {
     const userId = await getUserFromCookie(c);
 
     if (!userId) {
@@ -337,7 +230,7 @@ export const dashboardRoutes = new Hono<{ Bindings: Bindings }>()
       { title: "My Documents" },
     );
   })
-  .get("/documents/upload", async (c) => {
+  .get("/upload", async (c) => {
     const userId = await getUserFromCookie(c);
 
     if (!userId) {
@@ -346,7 +239,7 @@ export const dashboardRoutes = new Hono<{ Bindings: Bindings }>()
 
     return c.render(<UploadPage />, { title: "Upload Document" });
   })
-  .post("/documents/upload", async (c) => {
+  .post("/upload", async (c) => {
     const userId = await getUserFromCookie(c);
 
     if (!userId) {
@@ -382,7 +275,7 @@ export const dashboardRoutes = new Hono<{ Bindings: Bindings }>()
       );
     }
   })
-  .get("/documents/:publicId/preview", async (c) => {
+  .get("/:publicId/preview", async (c) => {
     const userId = await getUserFromCookie(c);
 
     if (!userId) {
@@ -417,7 +310,7 @@ export const dashboardRoutes = new Hono<{ Bindings: Bindings }>()
       return c.notFound();
     }
   })
-  .post("/documents/:publicId/delete", async (c) => {
+  .post("/:publicId/delete", async (c) => {
     const userId = await getUserFromCookie(c);
 
     if (!userId) {
@@ -435,7 +328,7 @@ export const dashboardRoutes = new Hono<{ Bindings: Bindings }>()
       );
     }
   })
-  .get("/documents/:publicId/edit", async (c) => {
+  .get("/:publicId/edit", async (c) => {
     const userId = await getUserFromCookie(c);
 
     if (!userId) {
@@ -475,7 +368,7 @@ export const dashboardRoutes = new Hono<{ Bindings: Bindings }>()
       },
     );
   })
-  .post("/documents/:publicId/edit", async (c) => {
+  .post("/:publicId/edit", async (c) => {
     const userId = await getUserFromCookie(c);
 
     if (!userId) {
@@ -538,168 +431,6 @@ export const dashboardRoutes = new Hono<{ Bindings: Bindings }>()
         </div>
         {formHtml}
         <span id="document-spinner" className="htmx-indicator">
-          Behandler...
-        </span>
-      </div>
-    );
-    return c.html(successFormHtml);
-  })
-  .get("/chat/files/:publicId", async (c) => {
-    const userId = await getUserFromCookie(c);
-
-    if (!userId) {
-      return c.redirect(lk(AppLink.Login));
-    }
-    const publicId = c.req.param("publicId");
-
-    try {
-      const message = await getMessageByPublicId(c, publicId);
-
-      if (!message || message.userId !== userId || !message.file) {
-        return c.notFound();
-      }
-
-      const fileObject = await c.env.FILES.get(message.file.storageKey);
-
-      if (!fileObject) {
-        return c.notFound();
-      }
-
-      const encodedFilename = encodeURIComponent(message.file.originalFilename);
-      return c.body(fileObject.body, {
-        headers: {
-          "Content-Type": message.file.mimeType,
-          "Content-Disposition": `inline; filename*=UTF-8''${encodedFilename}`,
-        },
-      });
-    } catch (error) {
-      console.error("File serve error:", error);
-      return c.notFound();
-    }
-  })
-  .get("/chat", async (c) => {
-    const userId = await getUserFromCookie(c);
-
-    if (!userId) {
-      return c.redirect(lk(AppLink.Login));
-    }
-    const messages = await getMessagesWithFiles(c, userId, 50);
-
-    return c.render(<ChatPage messages={messages} />, {
-      title: "Chat med Gozy",
-    });
-  })
-  .post("/chat", async (c) => {
-    const userId = await getUserFromCookie(c);
-
-    if (!userId) {
-      return c.redirect(lk(AppLink.Login));
-    }
-
-    try {
-      const formData = await c.req.formData();
-      const messageInput = formData.get("message");
-      const fileInput = formData.get("file");
-
-      const message =
-        messageInput && typeof messageInput === "string" ? messageInput : "";
-
-      if (!message) {
-        if (
-          !fileInput ||
-          !(fileInput instanceof File) ||
-          fileInput.size === 0
-        ) {
-          return c.redirect(lk(AppLink.DashboardChat));
-        }
-      }
-
-      // Handle optional file upload
-      let uploadedFile;
-      if (fileInput && fileInput instanceof File && fileInput.size > 0) {
-        uploadedFile = await uploadAndCreateFile(c, fileInput);
-      }
-
-      // Save user message with optional file
-      await createMessage(c, userId, "user", message || "Image", uploadedFile);
-
-      // Generate assistant response (handles conversation history, files, and function calls)
-      const responseResult = await generateAssistantResponse(c, userId);
-
-      if (!responseResult.ok) {
-        console.error("Assistant response error:", responseResult.val);
-        return c.redirect(
-          lk(AppLink.DashboardChat, { query: { error: "chat_failed" } }),
-        );
-      }
-
-      // Get updated messages including the new ones
-      const messages = await getMessagesWithFiles(c, userId, 50);
-
-      return c.render(<ChatPage messages={messages} />, {
-        title: "Chat med Gozy",
-      });
-    } catch (error) {
-      console.error("Chat error:", error);
-      return c.redirect(
-        lk(AppLink.DashboardChat, { query: { error: "chat_failed" } }),
-      );
-    }
-  })
-  .get("/profile", async (c) => {
-    const userId = await getUserFromCookie(c);
-
-    if (!userId) {
-      return c.redirect(lk(AppLink.Login));
-    }
-    const user = await findUserById(c, userId);
-
-    if (!user) {
-      return c.redirect(lk(AppLink.Login));
-    }
-
-    const formHtml = profileForm.render({ name: user.name });
-
-    return c.render(<ProfilePage user={user} formHtml={formHtml} />, {
-      title: "Profil",
-    });
-  })
-  .post("/profile", async (c) => {
-    const userId = await getUserFromCookie(c);
-
-    if (!userId) {
-      return c.redirect(lk(AppLink.Login));
-    }
-    const user = await findUserById(c, userId);
-
-    if (!user) {
-      return c.redirect(lk(AppLink.Login));
-    }
-
-    const body = await c.req.parseBody();
-    const parseResult = profileSchema.safeParse(body);
-
-    if (!parseResult.success) {
-      const errors = profileForm.handleValidation(parseResult);
-      const formHtml = profileForm.render(body, errors);
-      return c.html(formHtml);
-    }
-
-    await updateUser(c, userId, { name: parseResult.data.name });
-
-    const updatedUser = await findUserById(c, userId);
-    if (!updatedUser) {
-      return c.redirect(lk(AppLink.Login));
-    }
-
-    const formHtml = profileForm.render({ name: updatedUser.name });
-    const successFormHtml = (
-      <div>
-        <div className="mb-4 rounded bg-green-100 border border-green-300 px-4 py-3 text-green-700 text-sm">
-          Profil opdateret succesfuldt
-        </div>
-        {formHtml}
-        <span id="profile-spinner" className="htmx-indicator">
           Behandler...
         </span>
       </div>
