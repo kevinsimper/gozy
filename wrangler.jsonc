@@ -13,6 +13,7 @@
     "WHATSAPP_BOT_URL": "http://localhost:3000",
     "WHATSAPP_BOT_TOKEN": "dev-bot-token-change-in-production",
     "DEV": "false",
+    "DOMAIN": "http://localhost:3000",
   },
   "triggers": {
     "crons": ["0 8 * * *"],
@@ -39,6 +40,7 @@
         "WHATSAPP_BOT_URL": "https://your-whatsapp-bot-url.com",
         "WHATSAPP_BOT_TOKEN": "production-token",
         "DEV": "false",
+        "DOMAIN": "https://gozy.ks.workers.dev",
       },
       "upload_source_maps": true,
       "triggers": {
