@@ -229,3 +229,76 @@ export const eventLogsTable = sqliteTable(
 );
 
 export type EventLog = typeof eventLogsTable.$inferSelect;
+
+export const rttLocationsTable = sqliteTable("rtt_locations", {
+  id: int().primaryKey({ autoIncrement: true }),
+  slug: text().notNull().unique(),
+  name: text().notNull(),
+  address: text().notNull(),
+  postalCode: text("postal_code").notNull(),
+  city: text().notNull(),
+  phone: text().notNull(),
+  email: text().notNull(),
+  openingHoursMonThu: text("opening_hours_mon_thu"),
+  openingHoursFri: text("opening_hours_fri"),
+  openingHoursSat: text("opening_hours_sat"),
+  emergencyHours: text("emergency_hours"),
+  createdAt: int("created_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
+
+export type RttLocation = typeof rttLocationsTable.$inferSelect;
+
+export const rttBookingsTable = sqliteTable(
+  "rtt_bookings",
+  {
+    id: int().primaryKey({ autoIncrement: true }),
+    publicId: text("public_id")
+      .notNull()
+      .unique()
+      .$defaultFn(() => nanoid()),
+    userId: int("user_id").notNull(),
+    locationId: int("location_id").notNull(),
+    appointmentDate: int("appointment_date", { mode: "timestamp" }).notNull(),
+    appointmentHour: int("appointment_hour").notNull(),
+    description: text(),
+    notes: text(),
+    status: text({
+      enum: ["pending", "confirmed", "completed", "cancelled"],
+    })
+      .notNull()
+      .default("pending"),
+    createdAt: int("created_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+    updatedAt: int("updated_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => ({
+    userIdCreatedAtIdx: index("rtt_bookings_user_id_created_at_idx").on(
+      table.userId,
+      table.createdAt,
+    ),
+    statusIdx: index("rtt_bookings_status_idx").on(table.status),
+    locationDateHourIdx: index("rtt_bookings_location_date_hour_idx").on(
+      table.locationId,
+      table.appointmentDate,
+      table.appointmentHour,
+    ),
+  }),
+);
+
+export type RttBooking = typeof rttBookingsTable.$inferSelect;
+
+export const rttBookingsRelations = relations(rttBookingsTable, ({ one }) => ({
+  user: one(usersTable, {
+    fields: [rttBookingsTable.userId],
+    references: [usersTable.id],
+  }),
+  location: one(rttLocationsTable, {
+    fields: [rttBookingsTable.locationId],
+    references: [rttLocationsTable.id],
+  }),
+}));
