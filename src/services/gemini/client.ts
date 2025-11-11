@@ -51,14 +51,17 @@ const saveMessageFileToDocumentsSchema = z.object({
       "leasing_agreement",
       "other",
     ])
-    .describe("The type of document being saved"),
+    .optional()
+    .describe(
+      "The type of document being saved. Optional - AI will automatically detect document type and expiry date if not provided.",
+    ),
 });
 
 export const saveMessageFileToDocumentsFunction =
   createGeminiFunctionDeclaration({
     name: "save_message_file_to_documents",
     description:
-      "Saves a file from the conversation to the user's permanent document storage. Use this when the user sends an important document like a driver's license, insurance, or vehicle registration.",
+      "Saves a file from the conversation to the user's permanent document storage. Use this when the user sends an important document like a driver's license, insurance, or vehicle registration. Document type and expiry date will be automatically detected by AI if not provided.",
     schema: saveMessageFileToDocumentsSchema,
   });
 

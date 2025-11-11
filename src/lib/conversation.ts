@@ -180,7 +180,7 @@ export async function generateAssistantResponse(
         } else if (functionCall.name === "save_message_file_to_documents") {
           const args = functionCall.args as {
             messageFileId: number;
-            documentType: string;
+            documentType?: string;
           };
           try {
             await saveConversationFileAsUserDocument(
@@ -190,7 +190,7 @@ export async function generateAssistantResponse(
               args.documentType,
             );
             console.log(
-              `Saved file ${args.messageFileId} as ${args.documentType} for user ${userId}`,
+              `Saved file ${args.messageFileId} ${args.documentType ? `as ${args.documentType}` : "(AI will detect type)"} for user ${userId}`,
             );
             functionResponses.push({
               name: functionCall.name,
