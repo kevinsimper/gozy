@@ -14,5 +14,6 @@
     "jsxImportSource": "hono/jsx",
     "strictNullChecks": true,
     "noImplicitReturns": true
-  }
+  },
+  "exclude": ["whatsapp-bot"]
 }

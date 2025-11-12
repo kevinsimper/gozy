@@ -23,9 +23,7 @@ export async function formatConversationHistory(
           const fileObject = await c.env.FILES.get(msg.file.storageKey);
           if (fileObject) {
             const arrayBuffer = await fileObject.arrayBuffer();
-            const base64 = btoa(
-              String.fromCharCode(...new Uint8Array(arrayBuffer)),
-            );
+            const base64 = Buffer.from(arrayBuffer).toString("base64");
             parts.push({
               inlineData: {
                 mimeType: msg.file.mimeType,

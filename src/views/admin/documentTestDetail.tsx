@@ -38,7 +38,7 @@ export function DocumentTestDetail({
                 Gemini Extraction Results
               </h2>
               <form
-                method="POST"
+                method="post"
                 action={`/admin/document-test/${testEval.id}/rerun`}
               >
                 <button
