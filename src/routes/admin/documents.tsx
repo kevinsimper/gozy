@@ -3,9 +3,7 @@ import { drizzle } from "drizzle-orm/d1";
 import { count, desc, eq } from "drizzle-orm";
 import { usersTable, userDocumentsTable, filesTable } from "../../db/schema";
 import { requireAdmin } from "../../lib/adminAuth";
-import { AdminLayout } from "../../views/admin/layout";
 import { AdminDocuments } from "../../views/admin/documents";
-import { html } from "hono/html";
 import { Bindings } from "../..";
 
 export const documentsRoutes = new Hono<{ Bindings: Bindings }>().get(
@@ -52,24 +50,8 @@ export const documentsRoutes = new Hono<{ Bindings: Bindings }>().get(
       totalSize,
     };
 
-    return c.html(html`
-      <!DOCTYPE html>
-      <html lang="da">
-        <head>
-          <meta charset="UTF-8" />
-          <title>Documents - Admin - Gozy</title>
-          <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-          <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1.0"
-          />
-        </head>
-        <body>
-          ${AdminLayout({
-            children: AdminDocuments({ documents, stats }),
-          })}
-        </body>
-      </html>
-    `);
+    return c.render(<AdminDocuments documents={documents} stats={stats} />, {
+      title: "Documents - Admin - Gozy",
+    });
   },
 );

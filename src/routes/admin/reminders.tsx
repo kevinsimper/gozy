@@ -7,10 +7,8 @@ import {
   remindersTable,
 } from "../../db/schema";
 import { requireAdmin } from "../../lib/adminAuth";
-import { AdminLayout } from "../../views/admin/layout";
 import { AdminReminders } from "../../views/admin/reminders";
 import { AppLink, lk } from "../../lib/links";
-import { html } from "hono/html";
 import { sendWhatsAppMessage } from "../../lib/whatsapp";
 import { updateUserDocument } from "../../models/userDocument";
 import { createReminder } from "../../models/reminder";
@@ -87,25 +85,9 @@ export const remindersRoutes = new Hono<{ Bindings: Bindings }>()
       remindersSent: documents.filter((d) => d.hasReminder).length,
     };
 
-    return c.html(html`
-      <!DOCTYPE html>
-      <html lang="da">
-        <head>
-          <meta charset="UTF-8" />
-          <title>Reminders - Admin - Gozy</title>
-          <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-          <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1.0"
-          />
-        </head>
-        <body>
-          ${AdminLayout({
-            children: AdminReminders({ documents, stats }),
-          })}
-        </body>
-      </html>
-    `);
+    return c.render(<AdminReminders documents={documents} stats={stats} />, {
+      title: "Reminders - Admin - Gozy",
+    });
   })
   .post("/:id/update-expiry", async (c) => {
     const user = await requireAdmin(c);

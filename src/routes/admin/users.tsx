@@ -3,7 +3,6 @@ import { drizzle } from "drizzle-orm/d1";
 import { eq } from "drizzle-orm";
 import { usersTable } from "../../db/schema";
 import { requireAdmin } from "../../lib/adminAuth";
-import { AdminLayout } from "../../views/admin/layout";
 import { UserDetail } from "../../views/admin/userdetail";
 import { AppLink, lk } from "../../lib/links";
 import { html } from "hono/html";
@@ -57,25 +56,9 @@ export const usersRoutes = new Hono<{ Bindings: Bindings }>()
       );
     }
 
-    return c.html(html`
-      <!DOCTYPE html>
-      <html lang="da">
-        <head>
-          <meta charset="UTF-8" />
-          <title>${targetUser.name} - User - Admin - Gozy</title>
-          <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-          <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1.0"
-          />
-        </head>
-        <body>
-          ${AdminLayout({
-            children: UserDetail({ user: targetUser }),
-          })}
-        </body>
-      </html>
-    `);
+    return c.render(<UserDetail user={targetUser} />, {
+      title: `${targetUser.name} - User - Admin - Gozy`,
+    });
   })
   .post("/:id/send-message", async (c) => {
     const user = await requireAdmin(c);
@@ -100,28 +83,12 @@ export const usersRoutes = new Hono<{ Bindings: Bindings }>()
     const message = formData.get("message");
 
     if (!message || typeof message !== "string" || message.trim() === "") {
-      return c.html(html`
-        <!DOCTYPE html>
-        <html lang="da">
-          <head>
-            <meta charset="UTF-8" />
-            <title>${targetUser.name} - User - Admin - Gozy</title>
-            <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-            <meta
-              name="viewport"
-              content="width=device-width, initial-scale=1.0"
-            />
-          </head>
-          <body>
-            ${AdminLayout({
-              children: UserDetail({
-                user: targetUser,
-                messageError: "Message cannot be empty",
-              }),
-            })}
-          </body>
-        </html>
-      `);
+      return c.render(
+        <UserDetail user={targetUser} messageError="Message cannot be empty" />,
+        {
+          title: `${targetUser.name} - User - Admin - Gozy`,
+        },
+      );
     }
 
     const result = await sendWhatsAppMessage(
@@ -131,27 +98,14 @@ export const usersRoutes = new Hono<{ Bindings: Bindings }>()
       message.trim(),
     );
 
-    return c.html(html`
-      <!DOCTYPE html>
-      <html lang="da">
-        <head>
-          <meta charset="UTF-8" />
-          <title>${targetUser.name} - User - Admin - Gozy</title>
-          <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-          <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1.0"
-          />
-        </head>
-        <body>
-          ${AdminLayout({
-            children: UserDetail({
-              user: targetUser,
-              messageSent: result.success,
-              messageError: result.error,
-            }),
-          })}
-        </body>
-      </html>
-    `);
+    return c.render(
+      <UserDetail
+        user={targetUser}
+        messageSent={result.success}
+        messageError={result.error}
+      />,
+      {
+        title: `${targetUser.name} - User - Admin - Gozy`,
+      },
+    );
   });

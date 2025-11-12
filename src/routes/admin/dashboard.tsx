@@ -3,9 +3,7 @@ import { drizzle } from "drizzle-orm/d1";
 import { count, gte, desc } from "drizzle-orm";
 import { usersTable } from "../../db/schema";
 import { requireAdmin } from "../../lib/adminAuth";
-import { AdminLayout } from "../../views/admin/layout";
 import { AdminDashboard } from "../../views/admin/dashboard";
-import { html } from "hono/html";
 import { Bindings } from "../..";
 
 export const dashboardRoutes = new Hono<{ Bindings: Bindings }>().get(
@@ -60,24 +58,8 @@ export const dashboardRoutes = new Hono<{ Bindings: Bindings }>().get(
       recentUsers,
     };
 
-    return c.html(html`
-      <!DOCTYPE html>
-      <html lang="da">
-        <head>
-          <meta charset="UTF-8" />
-          <title>Admin Dashboard - Gozy</title>
-          <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-          <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1.0"
-          />
-        </head>
-        <body>
-          ${AdminLayout({
-            children: AdminDashboard({ stats }),
-          })}
-        </body>
-      </html>
-    `);
+    return c.render(<AdminDashboard stats={stats} />, {
+      title: "Admin Dashboard - Gozy",
+    });
   },
 );

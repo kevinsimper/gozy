@@ -2,7 +2,6 @@ import { Hono } from "hono";
 import { drizzle } from "drizzle-orm/d1";
 import { count, desc, eq, getTableColumns } from "drizzle-orm";
 import { requireAdmin } from "../../lib/adminAuth";
-import { AdminLayout } from "../../views/admin/layout";
 import { GenericTableView } from "../../views/admin/genericTable";
 import { GenericTableDetail } from "../../views/admin/genericTableDetail";
 import { AppLink, lk } from "../../lib/links";
@@ -68,30 +67,17 @@ export const tablesRoutes = new Hono<{ Bindings: Bindings }>()
       .get();
     const totalCount = totalCountResult?.count || 0;
 
-    return c.html(html`
-      <!DOCTYPE html>
-      <html lang="da">
-        <head>
-          <meta charset="UTF-8" />
-          <title>${tableName} - Admin - Gozy</title>
-          <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-          <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1.0"
-          />
-        </head>
-        <body>
-          ${AdminLayout({
-            children: GenericTableView({
-              tableName,
-              columns,
-              rows,
-              totalCount,
-            }),
-          })}
-        </body>
-      </html>
-    `);
+    return c.render(
+      <GenericTableView
+        tableName={tableName}
+        columns={columns}
+        rows={rows}
+        totalCount={totalCount}
+      />,
+      {
+        title: `${tableName} - Admin - Gozy`,
+      },
+    );
   })
   .get("/:tableName/:id", async (c) => {
     const user = await requireAdmin(c);
@@ -173,23 +159,10 @@ export const tablesRoutes = new Hono<{ Bindings: Bindings }>()
       );
     }
 
-    return c.html(html`
-      <!DOCTYPE html>
-      <html lang="da">
-        <head>
-          <meta charset="UTF-8" />
-          <title>${tableName} #${id} - Admin - Gozy</title>
-          <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-          <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1.0"
-          />
-        </head>
-        <body>
-          ${AdminLayout({
-            children: GenericTableDetail({ tableName, record }),
-          })}
-        </body>
-      </html>
-    `);
+    return c.render(
+      <GenericTableDetail tableName={tableName} record={record} />,
+      {
+        title: `${tableName} #${id} - Admin - Gozy`,
+      },
+    );
   });

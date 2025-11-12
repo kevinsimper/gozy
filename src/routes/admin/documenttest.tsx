@@ -3,7 +3,6 @@ import { drizzle } from "drizzle-orm/d1";
 import { desc, eq } from "drizzle-orm";
 import { filesTable, documentTestEvalsTable } from "../../db/schema";
 import { requireAdmin } from "../../lib/adminAuth";
-import { AdminLayout } from "../../views/admin/layout";
 import { DocumentTestView } from "../../views/admin/documentTest";
 import { DocumentTestDetail } from "../../views/admin/documentTestDetail";
 import { AppLink, lk } from "../../lib/links";
@@ -76,25 +75,12 @@ export const documentTestRoutes = new Hono<{ Bindings: Bindings }>()
 
     const latestResult = evals.length > 0 ? evals[0] : undefined;
 
-    return c.html(html`
-      <!DOCTYPE html>
-      <html lang="da">
-        <head>
-          <meta charset="UTF-8" />
-          <title>Document Extraction Test - Admin - Gozy</title>
-          <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-          <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1.0"
-          />
-        </head>
-        <body>
-          ${AdminLayout({
-            children: DocumentTestView({ evals, latestResult }),
-          })}
-        </body>
-      </html>
-    `);
+    return c.render(
+      <DocumentTestView evals={evals} latestResult={latestResult} />,
+      {
+        title: "Document Extraction Test - Admin - Gozy",
+      },
+    );
   })
   .post("/upload", async (c) => {
     const user = await requireAdmin(c);
@@ -223,28 +209,15 @@ export const documentTestRoutes = new Hono<{ Bindings: Bindings }>()
             : "false",
     });
 
-    return c.html(html`
-      <!DOCTYPE html>
-      <html lang="da">
-        <head>
-          <meta charset="UTF-8" />
-          <title>Test #${id} - Admin - Gozy</title>
-          <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-          <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1.0"
-          />
-        </head>
-        <body>
-          ${AdminLayout({
-            children: DocumentTestDetail({
-              testEval,
-              updateFormHtml: await formHtml,
-            }),
-          })}
-        </body>
-      </html>
-    `);
+    return c.render(
+      <DocumentTestDetail
+        testEval={testEval}
+        updateFormHtml={await formHtml}
+      />,
+      {
+        title: `Test #${id} - Admin - Gozy`,
+      },
+    );
   })
   .post("/:id/update", async (c) => {
     const user = await requireAdmin(c);
