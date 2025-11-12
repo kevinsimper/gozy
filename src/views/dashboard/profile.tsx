@@ -1,13 +1,14 @@
-import type { User } from "../../db/schema";
+import type { User, RttLocation } from "../../db/schema";
 
 type ProfilePageProps = {
   user: User;
   formHtml: Promise<string>;
+  preferredLocation?: RttLocation | null;
   success?: boolean;
 };
 
 export function ProfilePage(props: ProfilePageProps) {
-  const { user, formHtml, success } = props;
+  const { user, formHtml, preferredLocation, success } = props;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
