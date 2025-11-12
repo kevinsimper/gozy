@@ -26,6 +26,8 @@ export enum AppLink {
   AdminReminderSend = "/admin/reminders/:id/send",
   AdminTable = "/admin/tables/:tableName",
   AdminTableDetail = "/admin/tables/:tableName/:id",
+  AdminTableEdit = "/admin/tables/:tableName/:id/edit",
+  AdminTableUpdate = "/admin/tables/:tableName/:id/update",
   AdminUserDetail = "/admin/users/:id",
   AdminUserSendMessage = "/admin/users/:id/send-message",
   AdminDocumentTest = "/admin/document-test",
@@ -34,6 +36,8 @@ export enum AppLink {
   AdminDocumentTestPreview = "/admin/document-test/:id/preview",
   AdminDocumentTestUpdate = "/admin/document-test/:id/update",
   AdminQRGenerator = "/admin/qr-generator",
+  RttCheckins = "/rtt/check-ins",
+  RttCheckinsSendMessage = "/rtt/check-ins/send-message",
 }
 
 type RouteParams = {

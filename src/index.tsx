@@ -5,6 +5,7 @@ import { generateResponse } from "./services/gemini/client";
 import { loginRoutes } from "./routes/login";
 import { dashboardRoutes } from "./routes/dashboard/index";
 import { adminRoutes } from "./routes/admin/index";
+import { rttRoutes } from "./routes/rtt/index";
 import { apiRoutes } from "./routes/api/index";
 import { whatsappMockRoute } from "./routes/dev/whatsapp-mock";
 import { logout } from "./services/auth";
@@ -46,6 +47,7 @@ app.use(
 app.route("/login", loginRoutes);
 app.route("/dashboard", dashboardRoutes);
 app.route("/admin", adminRoutes);
+app.route("/rtt", rttRoutes);
 app.route("/api", apiRoutes);
 app.route("/dev", whatsappMockRoute);
 
