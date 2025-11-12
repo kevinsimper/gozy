@@ -1,9 +1,9 @@
 import "dotenv/config";
-import http from "http";
+import { serve } from "@hono/node-server";
 import qrcode from "qrcode-terminal";
 import pkg from "whatsapp-web.js";
-import { sendMessage } from "./lib/messageSender.js";
 import { handleAskCommand, handleMessage } from "./lib/messageHandler.js";
+import { createApp } from "./server.js";
 const { Client, LocalAuth, MessageMedia } = pkg;
 
 const client = new Client({
@@ -90,81 +90,16 @@ client.on("auth_failure", (message) => {
   console.error("Authentication failure:", message);
 });
 
-// Create HTTP server for API
-const PORT = process.env.PORT || 3000;
-const WHATSAPP_BOT_TOKEN = process.env.WHATSAPP_BOT_TOKEN || "";
+// Create Hono server for API
+const PORT = Number(process.env.PORT) || 3000;
+const app = createApp(client);
 
-const server = http.createServer(async (req, res) => {
-  // Enable CORS
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-
-  if (req.method === "OPTIONS") {
-    res.writeHead(204);
-    res.end();
-    return;
-  }
-
-  if (req.method === "POST" && req.url === "/api/send-message") {
-    // Check bearer token
-    const authHeader = req.headers.authorization;
-    const token = authHeader?.replace(/^Bearer\s+/i, "");
-
-    if (!token || token !== WHATSAPP_BOT_TOKEN) {
-      res.writeHead(401, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: "Unauthorized" }));
-      return;
-    }
-
-    // Parse JSON body
-    let body = "";
-    req.on("data", (chunk) => {
-      body += chunk.toString();
-    });
-
-    req.on("end", async () => {
-      try {
-        const data = JSON.parse(body);
-        const { phoneNumber, message } = data;
-
-        if (!phoneNumber || !message) {
-          res.writeHead(400, { "Content-Type": "application/json" });
-          res.end(
-            JSON.stringify({
-              error: "Missing required fields: phoneNumber, message",
-            }),
-          );
-          return;
-        }
-
-        await sendMessage(client, phoneNumber, message);
-
-        res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ success: true }));
-      } catch (error) {
-        console.error("Error sending message:", error);
-        res.writeHead(500, { "Content-Type": "application/json" });
-        res.end(
-          JSON.stringify({
-            error: "Failed to send message",
-            details: error instanceof Error ? error.message : "Unknown error",
-          }),
-        );
-      }
-    });
-
-    return;
-  }
-
-  // Handle 404
-  res.writeHead(404, { "Content-Type": "application/json" });
-  res.end(JSON.stringify({ error: "Not found" }));
+const server = serve({
+  fetch: app.fetch,
+  port: PORT,
 });
 
-server.listen(PORT, () => {
-  console.log(`HTTP server listening on port ${PORT}`);
-});
+console.log(`HTTP server listening on port ${PORT}`);
 
 // Handle graceful shutdown
 process.on("SIGINT", async () => {
