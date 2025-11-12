@@ -8,6 +8,7 @@ import { remindersRoutes } from "./reminders";
 import { tablesRoutes } from "./tables";
 import { usersRoutes } from "./users";
 import { documentTestRoutes } from "./documenttest";
+import { qrGeneratorRoutes } from "./qrgenerator";
 
 declare module "hono" {
   interface ContextRenderer {
@@ -47,4 +48,5 @@ export const adminRoutes = new Hono<{ Bindings: Bindings }>()
   .route("/reminders", remindersRoutes)
   .route("/tables", tablesRoutes)
   .route("/users", usersRoutes)
-  .route("/document-test", documentTestRoutes);
+  .route("/document-test", documentTestRoutes)
+  .route("/qr-generator", qrGeneratorRoutes);

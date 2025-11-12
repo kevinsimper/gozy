@@ -33,11 +33,13 @@
     "drizzle-orm": "^0.44.7",
     "hono": "^4.10.4",
     "nanoid": "^5.1.6",
+    "qrcode": "^1.5.4",
     "zod": "^4.1.12"
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.8.11",
     "@cloudflare/workers-types": "^4.20250405.0",
+    "@types/node": "^24.10.1",
     "drizzle-kit": "^0.31.6",
     "prettier": "^3.6.2",
     "tslib": "^2.6.3",

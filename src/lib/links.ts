@@ -33,6 +33,7 @@ export enum AppLink {
   AdminDocumentTestDetail = "/admin/document-test/:id",
   AdminDocumentTestPreview = "/admin/document-test/:id/preview",
   AdminDocumentTestUpdate = "/admin/document-test/:id/update",
+  AdminQRGenerator = "/admin/qr-generator",
 }
 
 type RouteParams = {
