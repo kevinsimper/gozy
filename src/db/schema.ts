@@ -302,3 +302,30 @@ export const rttBookingsRelations = relations(rttBookingsTable, ({ one }) => ({
     references: [rttLocationsTable.id],
   }),
 }));
+
+export const documentTestEvalsTable = sqliteTable("document_test_evals", {
+  id: int().primaryKey({ autoIncrement: true }),
+  fileId: int("file_id").notNull(),
+  geminiDocumentType: text("gemini_document_type"),
+  geminiExpiryDate: text("gemini_expiry_date"),
+  geminiConfidence: text("gemini_confidence"),
+  geminiNotes: text("gemini_notes"),
+  expectedDocumentType: text("expected_document_type"),
+  expectedExpiryDate: text("expected_expiry_date"),
+  isCorrect: int("is_correct", { mode: "boolean" }),
+  createdAt: int("created_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
+
+export type DocumentTestEval = typeof documentTestEvalsTable.$inferSelect;
+
+export const documentTestEvalsRelations = relations(
+  documentTestEvalsTable,
+  ({ one }) => ({
+    file: one(filesTable, {
+      fields: [documentTestEvalsTable.fileId],
+      references: [filesTable.id],
+    }),
+  }),
+);
