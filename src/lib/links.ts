@@ -28,6 +28,11 @@ export enum AppLink {
   AdminTableDetail = "/admin/tables/:tableName/:id",
   AdminUserDetail = "/admin/users/:id",
   AdminUserSendMessage = "/admin/users/:id/send-message",
+  AdminDocumentTest = "/admin/document-test",
+  AdminDocumentTestUpload = "/admin/document-test/upload",
+  AdminDocumentTestDetail = "/admin/document-test/:id",
+  AdminDocumentTestPreview = "/admin/document-test/:id/preview",
+  AdminDocumentTestUpdate = "/admin/document-test/:id/update",
 }
 
 type RouteParams = {

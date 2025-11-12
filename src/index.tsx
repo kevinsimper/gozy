@@ -4,7 +4,7 @@ import { usersTable } from "./db/schema";
 import { generateResponse } from "./services/gemini/client";
 import { loginRoutes } from "./routes/login";
 import { dashboardRoutes } from "./routes/dashboard/index";
-import { adminRoutes } from "./routes/admin";
+import { adminRoutes } from "./routes/admin/index";
 import { apiRoutes } from "./routes/api/index";
 import { whatsappMockRoute } from "./routes/dev/whatsapp-mock";
 import { logout } from "./services/auth";
