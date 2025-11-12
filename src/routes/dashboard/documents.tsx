@@ -23,6 +23,8 @@ import {
   CardsView,
   TableView,
 } from "../../views/dashboard/documentsView";
+import { calculateCompliance } from "../../lib/compliance";
+import { ComplianceScore } from "../../views/dashboard/complianceScore";
 
 const documentEditFields = [
   {
@@ -79,6 +81,8 @@ export const documentsRoutes = new Hono<{ Bindings: Bindings }>()
     const currentView: "cards" | "table" =
       viewParam === "table" ? "table" : "cards";
 
+    const compliance = calculateCompliance(documents);
+
     return c.render(
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
@@ -106,6 +110,8 @@ export const documentsRoutes = new Hono<{ Bindings: Bindings }>()
             Upload dokument
           </a>
         </div>
+
+        <ComplianceScore compliance={compliance} />
 
         {currentView === "cards" ? (
           <CardsView documents={documents} />

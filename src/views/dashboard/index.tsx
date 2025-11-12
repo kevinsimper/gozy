@@ -1,9 +1,12 @@
 import type { User } from "../../db/schema";
 import { AppLink, lk } from "../../lib/links";
+import type { ComplianceData } from "../../lib/compliance";
+import { getProgressColor } from "../../lib/compliance";
 
 type DashboardPageProps = {
   user: User;
   documentCount: number;
+  compliance: ComplianceData;
 };
 
 type Feature = {
@@ -103,7 +106,8 @@ const mockNews: NewsItem[] = [
 ];
 
 export function DashboardPage(props: DashboardPageProps) {
-  const { user, documentCount } = props;
+  const { user, documentCount, compliance } = props;
+  const progressColor = getProgressColor(compliance.level);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -143,11 +147,21 @@ export function DashboardPage(props: DashboardPageProps) {
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 border border-purple-200">
+        <a
+          href={lk(AppLink.DashboardDocuments)}
+          className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 border border-purple-200 no-underline hover:shadow-md transition-shadow"
+        >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-purple-600 mb-1">Status</p>
-              <p className="text-xl font-bold text-purple-900">Aktiv</p>
+              <p className="text-sm font-medium text-purple-600 mb-1">
+                Dokumenter færdighed
+              </p>
+              <p className={`text-3xl font-bold ${progressColor}`}>
+                {compliance.percentage}%
+              </p>
+              <p className="text-xs text-purple-700 mt-1">
+                {compliance.uploadedCount} af {compliance.totalCount} uploadet
+              </p>
             </div>
             <svg
               className="w-12 h-12 text-purple-400"
@@ -163,7 +177,7 @@ export function DashboardPage(props: DashboardPageProps) {
               />
             </svg>
           </div>
-        </div>
+        </a>
 
         <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 border border-green-200">
           <div className="flex items-center justify-between">

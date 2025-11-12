@@ -14,6 +14,7 @@ import { profileRoutes } from "./profile";
 import { carLeadRoutes } from "./carlead";
 import { serviceBookingRoutes } from "./servicebooking";
 import type { Bindings } from "../../index";
+import { calculateCompliance } from "../../lib/compliance";
 
 declare module "hono" {
   interface ContextRenderer {
@@ -73,9 +74,14 @@ export const dashboardRoutes = new Hono<{ Bindings: Bindings }>()
 
     const documents = await findUserDocumentsByUserId(c, userId);
     const documentCount = documents.length;
+    const compliance = calculateCompliance(documents);
 
     return c.render(
-      <DashboardPage user={user} documentCount={documentCount} />,
+      <DashboardPage
+        user={user}
+        documentCount={documentCount}
+        compliance={compliance}
+      />,
       {
         title: "Gozy Dashboard",
       },
