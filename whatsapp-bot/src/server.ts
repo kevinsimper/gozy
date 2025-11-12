@@ -3,6 +3,11 @@ import { cors } from "hono/cors";
 import { bearerAuth } from "hono/bearer-auth";
 import { z } from "zod";
 import type pkg from "whatsapp-web.js";
+import { sendMessage } from "./lib/messageSender.js";
+import {
+  sendMediaMessage,
+  sendMessageWithMediaUrl,
+} from "./lib/mediaMessageSender.js";
 
 const WHATSAPP_BOT_TOKEN = process.env.WHATSAPP_BOT_TOKEN || "";
 
@@ -11,6 +16,8 @@ type WhatsAppClient = InstanceType<typeof pkg.Client>;
 const SendMessageSchema = z.object({
   phoneNumber: z.string().min(1),
   message: z.string().min(1),
+  mediaUrl: z.string().url().optional(),
+  caption: z.string().optional(),
 });
 
 const SendMediaSchema = z.object({
@@ -40,11 +47,20 @@ export function createApp(client: WhatsAppClient) {
         );
       }
 
-      const { phoneNumber, message } = result.data;
+      const { phoneNumber, message, mediaUrl, caption } = result.data;
 
-      // Import sendMessage function
-      const { sendMessage } = await import("./lib/messageSender.js");
-      await sendMessage(client, phoneNumber, message);
+      // If mediaUrl is provided, send as media message
+      if (mediaUrl) {
+        await sendMessageWithMediaUrl(
+          client,
+          phoneNumber,
+          mediaUrl,
+          caption || message,
+        );
+      } else {
+        // Otherwise, send as text message
+        await sendMessage(client, phoneNumber, message);
+      }
 
       return c.json({ success: true });
     } catch (error) {
@@ -87,8 +103,6 @@ export function createApp(client: WhatsAppClient) {
         );
       }
 
-      // Import sendMediaMessage function
-      const { sendMediaMessage } = await import("./lib/mediaMessageSender.js");
       await sendMediaMessage(client, phoneNumber, file, caption);
 
       return c.json({ success: true });

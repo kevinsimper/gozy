@@ -26,3 +26,19 @@ export async function sendMediaMessage(
   const options = caption ? { caption } : undefined;
   await client.sendMessage(whatsappId, media, options);
 }
+
+export async function sendMessageWithMediaUrl(
+  client: WhatsAppClient,
+  phoneNumber: string,
+  mediaUrl: string,
+  caption?: string,
+): Promise<void> {
+  const whatsappId = toWhatsAppId(phoneNumber);
+
+  // Download media from URL
+  const media = await MessageMedia.fromUrl(mediaUrl);
+
+  // Send with optional caption
+  const options = caption ? { caption } : undefined;
+  await client.sendMessage(whatsappId, media, options);
+}
