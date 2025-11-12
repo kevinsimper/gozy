@@ -76,10 +76,38 @@ export function GenericTableDetail({
           </svg>
           Back to {formatTableName(tableName)}
         </a>
-        <h1 class="text-2xl font-bold">{formatTableName(tableName)} Detail</h1>
-        <p class="text-gray-400 text-sm mt-1">
-          Record ID: {record.id as string}
-        </p>
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-2xl font-bold">
+              {formatTableName(tableName)} Detail
+            </h1>
+            <p class="text-gray-400 text-sm mt-1">
+              Record ID: {record.id as string}
+            </p>
+          </div>
+          <a
+            href={lk(AppLink.AdminTableEdit, {
+              tableName,
+              id: String(record.id),
+            })}
+            class="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded text-sm transition-colors"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="h-4 w-4 mr-2"
+            >
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+            </svg>
+            Edit
+          </a>
+        </div>
       </div>
 
       <div class="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden">
