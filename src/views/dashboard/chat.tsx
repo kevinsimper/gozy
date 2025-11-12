@@ -6,6 +6,12 @@ type ChatPageProps = {
   messages: MessageWithFile[];
 };
 
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 export function ChatPage(props: ChatPageProps) {
   const { messages } = props;
 
@@ -59,6 +65,50 @@ export function ChatPage(props: ChatPageProps) {
                           className="max-w-sm rounded mb-2"
                           style="height: 300px; width: auto; object-fit: contain;"
                         />
+                      )}
+                    {message.file &&
+                      !message.file.mimeType.startsWith("image/") && (
+                        <div className="border border-gray-300 rounded-lg p-3 mb-2 bg-white max-w-sm">
+                          <div className="flex items-start gap-3">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              className="h-6 w-6 text-gray-500 flex-shrink-0 mt-1"
+                            >
+                              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                              <polyline points="14 2 14 8 20 8" />
+                            </svg>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-900">
+                                {message.file.mimeType}
+                              </p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                {formatFileSize(message.file.size)}
+                              </p>
+                              <div className="flex gap-3 mt-2">
+                                <a
+                                  href={`/dashboard/chat/files/${message.publicId}`}
+                                  target="_blank"
+                                  className="text-xs font-medium text-blue-600 hover:text-blue-700"
+                                >
+                                  Preview
+                                </a>
+                                <a
+                                  href={`/dashboard/chat/files/${message.publicId}`}
+                                  download
+                                  className="text-xs font-medium text-blue-600 hover:text-blue-700"
+                                >
+                                  Download
+                                </a>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       )}
                     <p style="white-space: pre-wrap;">{message.content}</p>
                   </div>
