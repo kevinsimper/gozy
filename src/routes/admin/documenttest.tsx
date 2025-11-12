@@ -303,6 +303,59 @@ export const documentTestRoutes = new Hono<{ Bindings: Bindings }>()
     );
     return c.html(successFormHtml);
   })
+  .post("/:id/rerun", async (c) => {
+    const user = await requireAdmin(c);
+    if (!user || typeof user !== "object" || !("id" in user)) {
+      return user;
+    }
+
+    const id = parseInt(c.req.param("id"), 10);
+    const db = drizzle(c.env.DB);
+
+    const testEval = await db
+      .select({
+        fileId: documentTestEvalsTable.fileId,
+        file: filesTable,
+      })
+      .from(documentTestEvalsTable)
+      .innerJoin(filesTable, eq(documentTestEvalsTable.fileId, filesTable.id))
+      .where(eq(documentTestEvalsTable.id, id))
+      .get();
+
+    if (!testEval) {
+      return c.notFound();
+    }
+
+    const fileObject = await c.env.FILES.get(testEval.file.storageKey);
+
+    if (!fileObject) {
+      return c.notFound();
+    }
+
+    const arrayBuffer = await fileObject.arrayBuffer();
+    const reconstructedFile = new File(
+      [arrayBuffer],
+      testEval.file.originalFilename,
+      {
+        type: testEval.file.mimeType,
+      },
+    );
+
+    const { analyzeDocument } = await import("../../lib/documents/analysis");
+    const analysisResult = await analyzeDocument(c, reconstructedFile);
+
+    await db
+      .update(documentTestEvalsTable)
+      .set({
+        geminiDocumentType: analysisResult.documentType,
+        geminiExpiryDate: analysisResult.expiryDate,
+        geminiConfidence: analysisResult.confidence,
+        geminiNotes: analysisResult.notes,
+      })
+      .where(eq(documentTestEvalsTable.id, id));
+
+    return c.redirect(`/admin/document-test/${id}`);
+  })
   .get("/:id/preview", async (c) => {
     const user = await requireAdmin(c);
     if (!user || typeof user !== "object" || !("id" in user)) {

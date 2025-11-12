@@ -37,7 +37,7 @@ export type DocumentAnalysisResult = z.infer<
   typeof documentAnalysisResultSchema
 >;
 
-const DOCUMENT_ANALYSIS_PROMPT = `Du er en ekspert i at analysere dokumenter for taxachauffører i København.
+export const DOCUMENT_ANALYSIS_PROMPT = `Du er en ekspert i at analysere dokumenter for taxachauffører i København.
 
 Analyser dette billede og identificer:
 1. **Dokumenttype**: Hvilket af disse dokumenter er det?

@@ -1,5 +1,6 @@
 import { File, DocumentTestEval } from "../../db/schema";
 import { lk, AppLink } from "../../lib/links";
+import { DOCUMENT_ANALYSIS_PROMPT } from "../../lib/documents/analysis";
 
 type DocumentTestDetailProps = {
   testEval: DocumentTestEval & { file: File };
@@ -32,9 +33,22 @@ export function DocumentTestDetail({
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="space-y-6">
           <div class="bg-gray-900 border border-gray-800 rounded-lg p-6">
-            <h2 class="text-lg font-semibold text-white mb-4">
-              Gemini Extraction Results
-            </h2>
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-lg font-semibold text-white">
+                Gemini Extraction Results
+              </h2>
+              <form
+                method="POST"
+                action={`/admin/document-test/${testEval.id}/rerun`}
+              >
+                <button
+                  type="submit"
+                  class="px-3 py-1 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+                >
+                  Rerun Analysis
+                </button>
+              </form>
+            </div>
             <div class="space-y-3 text-sm">
               <div>
                 <span class="text-gray-400">Document Type:</span>
@@ -69,6 +83,22 @@ export function DocumentTestDetail({
                 </div>
               )}
             </div>
+          </div>
+
+          <div class="bg-gray-900 border border-gray-800 rounded-lg p-6">
+            <details class="group">
+              <summary class="text-lg font-semibold text-white cursor-pointer select-none list-none flex items-center justify-between">
+                <span>System Prompt</span>
+                <span class="text-gray-400 group-open:rotate-90 transition-transform">
+                  ▶
+                </span>
+              </summary>
+              <div class="mt-4 pt-4 border-t border-gray-800">
+                <pre class="text-xs text-gray-300 whitespace-pre-wrap font-mono bg-black/50 p-4 rounded border border-gray-700 overflow-x-auto">
+                  {DOCUMENT_ANALYSIS_PROMPT}
+                </pre>
+              </div>
+            </details>
           </div>
 
           <div class="bg-gray-900 border border-gray-800 rounded-lg p-6">
