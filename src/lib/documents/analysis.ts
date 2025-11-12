@@ -74,7 +74,7 @@ export async function analyzeDocument(
   const client = await generateClient(c);
 
   const arrayBuffer = await file.arrayBuffer();
-  const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+  const base64 = Buffer.from(arrayBuffer).toString("base64");
 
   const response = await client.models.generateContent({
     config: {
