@@ -7,6 +7,9 @@ export const usersTable = sqliteTable("users", {
   name: text().notNull(),
   phoneNumber: text("phone_number").notNull().unique(),
   email: text(),
+  role: text({ enum: ["driver", "rtt_staff", "admin"] })
+    .notNull()
+    .default("driver"),
   loginPin: text("login_pin"),
   loginPinExpiry: int("login_pin_expiry", { mode: "timestamp" }),
   lastLoginAt: int("last_login_at", { mode: "timestamp" }),
