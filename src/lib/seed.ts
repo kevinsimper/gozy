@@ -1,5 +1,5 @@
 import { drizzle } from "drizzle-orm/d1";
-import { rttLocationsTable } from "../db/schema";
+import { rttLocationsTable, usersTable } from "../db/schema";
 import { command, flag } from "../services/simple-cli/cli";
 import { getPlatform } from "../services/simple-cli/platform";
 
@@ -58,6 +58,38 @@ if (command("seed-rtt-locations", "Seed RTT locations into database")) {
 
     console.log(
       `Seeded ${locations.length} RTT locations in ${isRemote ? "production (remote)" : "staging (local)"} database`,
+    );
+
+    platform.dispose();
+  })();
+}
+
+if (command("seed-test-users", "Seed test users into database")) {
+  (async () => {
+    const platform = await getPlatform(isRemote);
+    const db = drizzle(platform.env.DB as D1Database);
+
+    const testUsers = [
+      {
+        name: "Test Driver 1",
+        phoneNumber: "+4512345001",
+        email: "testdriver1@example.com",
+        role: "driver" as const,
+      },
+      {
+        name: "Test Driver 2",
+        phoneNumber: "+4512345002",
+        email: "testdriver2@example.com",
+        role: "driver" as const,
+      },
+    ];
+
+    for (const user of testUsers) {
+      await db.insert(usersTable).values(user).run();
+    }
+
+    console.log(
+      `Seeded ${testUsers.length} test users in ${isRemote ? "production (remote)" : "staging (local)"} database`,
     );
 
     platform.dispose();
