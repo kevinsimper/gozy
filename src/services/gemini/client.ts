@@ -165,6 +165,45 @@ export const askVehicleOfferQuestionFunction = createGeminiFunctionDeclaration({
   schema: askVehicleOfferQuestionSchema,
 });
 
+const getRttLocationsSchema = z.object({});
+
+export const getRttLocationsFunction = createGeminiFunctionDeclaration({
+  name: "get_rtt_locations",
+  description:
+    "Retrieves the list of all RTT workshop locations. Use this when the user wants to check in but doesn't have a preferred location set, or when they ask about available RTT locations.",
+  schema: getRttLocationsSchema,
+});
+
+const checkInAtLocationSchema = z.object({
+  locationId: z.number().describe("The ID of the RTT location to check in at"),
+  updatePreferred: z
+    .boolean()
+    .optional()
+    .describe(
+      "Whether to save this location as the user's preferred location for future check-ins",
+    ),
+});
+
+export const checkInAtLocationFunction = createGeminiFunctionDeclaration({
+  name: "check_in_at_location",
+  description:
+    "Records a check-in for the user at the specified RTT location. Optionally updates the user's preferred location if updatePreferred is true.",
+  schema: checkInAtLocationSchema,
+});
+
+const updatePreferredLocationSchema = z.object({
+  locationId: z
+    .number()
+    .describe("The ID of the RTT location to set as preferred"),
+});
+
+export const updatePreferredLocationFunction = createGeminiFunctionDeclaration({
+  name: "update_preferred_location",
+  description:
+    "Updates the user's preferred RTT location without performing a check-in. Use this when the user wants to change their default location.",
+  schema: updatePreferredLocationSchema,
+});
+
 export type GenerateResponseResult = {
   text?: string;
   functionCalls?: FunctionCall[];

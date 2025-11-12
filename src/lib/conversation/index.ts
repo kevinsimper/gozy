@@ -10,6 +10,9 @@ import {
   updateVehicleOfferFunction,
   getOpenOffersFunction,
   askVehicleOfferQuestionFunction,
+  getRttLocationsFunction,
+  checkInAtLocationFunction,
+  updatePreferredLocationFunction,
 } from "../../services/gemini/client";
 import {
   findUserByPhoneNumber,
@@ -77,6 +80,9 @@ export async function generateAssistantResponse(
       updateVehicleOfferFunction,
       getOpenOffersFunction,
       askVehicleOfferQuestionFunction,
+      getRttLocationsFunction,
+      checkInAtLocationFunction,
+      updatePreferredLocationFunction,
     ];
 
     let currentHistory: Content[] = conversationHistory;

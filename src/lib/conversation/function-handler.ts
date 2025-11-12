@@ -1,6 +1,10 @@
 import { type Context } from "hono";
 import { Bindings } from "../..";
-import { updateUser } from "../../models/user";
+import {
+  updateUser,
+  updateUserPreferredLocation,
+  findUserById,
+} from "../../models/user";
 import { saveConversationFileAsUserDocument } from "../userDocument";
 import { findUserDocumentsByUserId } from "../../models/userDocument";
 import {
@@ -10,6 +14,11 @@ import {
   getMissingFields,
   getQuestionsAsked,
 } from "../../models/vehicleOffer";
+import { createCheckin } from "../../models/checkin";
+import {
+  findAllRttLocations,
+  findRttLocationById,
+} from "../../models/rttlocation";
 import { type FunctionCall } from "@google/genai";
 
 export async function handleFunctionCall(
@@ -156,6 +165,73 @@ export async function handleFunctionCall(
         success: true,
         messageToUser: args.question,
         updatedQuestionsAsked: getQuestionsAsked(offer),
+      },
+    };
+  } else if (functionCall.name === "get_rtt_locations") {
+    const locations = await findAllRttLocations(c);
+    console.log(`Retrieved ${locations.length} RTT locations`);
+    return {
+      name: functionCall.name,
+      response: {
+        success: true,
+        locations: locations.map((loc) => ({
+          id: loc.id,
+          name: loc.name,
+          address: loc.address,
+          city: loc.city,
+        })),
+      },
+    };
+  } else if (functionCall.name === "check_in_at_location") {
+    const args = functionCall.args as {
+      locationId: number;
+      updatePreferred?: boolean;
+    };
+    const location = await findRttLocationById(c, args.locationId);
+    if (!location) {
+      return {
+        name: functionCall.name,
+        response: { success: false, error: "Location not found" },
+      };
+    }
+    const checkin = await createCheckin(c, userId, args.locationId);
+    if (args.updatePreferred) {
+      await updateUserPreferredLocation(c, userId, args.locationId);
+      console.log(
+        `User ${userId} checked in at ${location.name} and set as preferred location`,
+      );
+    } else {
+      console.log(`User ${userId} checked in at ${location.name}`);
+    }
+    return {
+      name: functionCall.name,
+      response: {
+        success: true,
+        locationName: location.name,
+        checkedInAt: checkin.checkedInAt,
+        preferredUpdated: args.updatePreferred || false,
+      },
+    };
+  } else if (functionCall.name === "update_preferred_location") {
+    const args = functionCall.args as {
+      locationId: number;
+    };
+    const location = await findRttLocationById(c, args.locationId);
+    if (!location) {
+      return {
+        name: functionCall.name,
+        response: { success: false, error: "Location not found" },
+      };
+    }
+    await updateUserPreferredLocation(c, userId, args.locationId);
+    console.log(
+      `User ${userId} updated preferred location to ${location.name}`,
+    );
+    return {
+      name: functionCall.name,
+      response: {
+        success: true,
+        locationName: location.name,
       },
     };
   }
