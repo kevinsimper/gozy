@@ -10,6 +10,7 @@ export const usersTable = sqliteTable("users", {
   loginPin: text("login_pin"),
   loginPinExpiry: int("login_pin_expiry", { mode: "timestamp" }),
   lastLoginAt: int("last_login_at", { mode: "timestamp" }),
+  preferredRttLocationId: int("preferred_rtt_location_id"),
   createdAt: int("created_at", { mode: "timestamp" })
     .notNull()
     .$defaultFn(() => new Date()),
@@ -329,3 +330,36 @@ export const documentTestEvalsRelations = relations(
     }),
   }),
 );
+
+export const checkinsTable = sqliteTable(
+  "checkins",
+  {
+    id: int().primaryKey({ autoIncrement: true }),
+    userId: int("user_id").notNull(),
+    locationId: int("location_id").notNull(),
+    checkedInAt: int("checked_in_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => ({
+    userIdIdx: index("checkins_user_id_idx").on(table.userId),
+    locationIdIdx: index("checkins_location_id_idx").on(table.locationId),
+    userIdCheckedInAtIdx: index("checkins_user_id_checked_in_at_idx").on(
+      table.userId,
+      table.checkedInAt,
+    ),
+  }),
+);
+
+export type Checkin = typeof checkinsTable.$inferSelect;
+
+export const checkinsRelations = relations(checkinsTable, ({ one }) => ({
+  user: one(usersTable, {
+    fields: [checkinsTable.userId],
+    references: [usersTable.id],
+  }),
+  location: one(rttLocationsTable, {
+    fields: [checkinsTable.locationId],
+    references: [rttLocationsTable.id],
+  }),
+}));

@@ -112,3 +112,18 @@ export async function updateUser<Env extends DatabaseContext>(
     .where(eq(usersTable.id, userId))
     .run();
 }
+
+export async function updateUserPreferredLocation<Env extends DatabaseContext>(
+  c: Context<Env>,
+  userId: number,
+  locationId: number | null,
+): Promise<void> {
+  const db = drizzle(c.env.DB);
+  await db
+    .update(usersTable)
+    .set({
+      preferredRttLocationId: locationId,
+    })
+    .where(eq(usersTable.id, userId))
+    .run();
+}

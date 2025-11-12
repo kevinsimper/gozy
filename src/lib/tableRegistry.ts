@@ -9,6 +9,7 @@ import {
   eventLogsTable,
   rttLocationsTable,
   rttBookingsTable,
+  checkinsTable,
 } from "../db/schema";
 
 export const tableRegistry = {
@@ -22,6 +23,7 @@ export const tableRegistry = {
   event_logs: eventLogsTable,
   rtt_locations: rttLocationsTable,
   rtt_bookings: rttBookingsTable,
+  checkins: checkinsTable,
 } as const;
 
 export type TableName = keyof typeof tableRegistry;
