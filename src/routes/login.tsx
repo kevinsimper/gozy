@@ -103,12 +103,7 @@ export const loginRoutes = new Hono<{ Bindings: Bindings }>()
     );
 
     try {
-      await sendLoginPin(
-        c.env.WHATSAPP_BOT_URL,
-        c.env.WHATSAPP_BOT_TOKEN,
-        user.phoneNumber,
-        pin,
-      );
+      await sendLoginPin(c, user.phoneNumber, pin, user.id);
     } catch (error) {
       console.error("Failed to send PIN via WhatsApp:", error);
       return c.render(

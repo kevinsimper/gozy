@@ -7,7 +7,7 @@ import { dashboardRoutes } from "./routes/dashboard/index";
 import { adminRoutes } from "./routes/admin/index";
 import { rttRoutes } from "./routes/rtt/index";
 import { apiRoutes } from "./routes/api/index";
-import { whatsappMockRoute } from "./routes/dev/whatsapp-mock";
+import { devRoutes } from "./routes/dev/index";
 import { logout } from "./services/auth";
 import { jsxRenderer } from "hono/jsx-renderer";
 import { HTTPException } from "hono/http-exception";
@@ -27,6 +27,8 @@ export type Bindings = {
   RESEND_API_KEY: string;
   WHATSAPP_BOT_TOKEN: string;
   WHATSAPP_BOT_URL: string;
+  WHATSAPP_ENABLED: string;
+  ENVIRONMENT: string;
   DEV: string;
 };
 
@@ -49,7 +51,7 @@ app.route("/dashboard", dashboardRoutes);
 app.route("/admin", adminRoutes);
 app.route("/rtt", rttRoutes);
 app.route("/api", apiRoutes);
-app.route("/dev", whatsappMockRoute);
+app.route("/dev", devRoutes);
 
 app.get("/", (c) => {
   return c.render(<LandingPage />, {

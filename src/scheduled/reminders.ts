@@ -1,6 +1,6 @@
 import { findDocumentsDueForReminder } from "../models/userDocument";
 import { createReminder } from "../models/reminder";
-import { sendWhatsAppMessage } from "../lib/whatsapp";
+import { sendWhatsappMessage } from "../lib/whatsapp-sender";
 import type { Bindings } from "../index";
 
 export async function handleDocumentReminders(
@@ -31,14 +31,20 @@ ${doc.description ? `Note: ${doc.description}\n\n` : ""}Husk at forny dokumentet
 
 Du kan se og opdatere dine dokumenter på https://gozy.dk/dashboard/documents`;
 
-        // TODO: Implement WhatsApp message sending
-        console.log(`Would send reminder to ${doc.user.phoneNumber}:`, message);
-        // await sendTextMessage(
-        //   c.env.WHATSAPP_API_TOKEN,
-        //   c.env.WHATSAPP_PHONE_NUMBER_ID,
-        //   doc.user.phoneNumber,
-        //   message,
-        // );
+        const result = await sendWhatsappMessage(
+          c,
+          doc.user.phoneNumber,
+          message,
+          doc.userId,
+        );
+
+        if (!result.success) {
+          console.error(
+            `Failed to send reminder to ${doc.user.phoneNumber}:`,
+            result.error,
+          );
+          continue;
+        }
 
         await createReminder(c, {
           userId: doc.userId,

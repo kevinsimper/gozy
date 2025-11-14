@@ -4,7 +4,7 @@ import { drizzle } from "drizzle-orm/d1";
 import { eq } from "drizzle-orm";
 import { usersTable } from "../../db/schema";
 import { requireRttStaff } from "../../lib/rttAuth";
-import { sendWhatsAppMessage } from "../../lib/whatsapp";
+import { sendWhatsappMessage } from "../../lib/whatsapp-sender";
 import { AppLink, lk } from "../../lib/links";
 import { Bindings } from "../..";
 
@@ -42,11 +42,11 @@ export const rttSendMessageRoutes = new Hono<{ Bindings: Bindings }>().post(
         );
       }
 
-      const result = await sendWhatsAppMessage(
-        c.env.WHATSAPP_BOT_URL,
-        c.env.WHATSAPP_BOT_TOKEN,
+      const result = await sendWhatsappMessage(
+        c,
         driver.phoneNumber,
         validatedData.message,
+        driver.id,
       );
 
       if (result.success) {

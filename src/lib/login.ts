@@ -1,19 +1,24 @@
-import { sendWhatsAppMessage } from "./whatsapp";
+import { sendWhatsappMessage } from "./whatsapp-sender";
+import type { Context } from "hono";
 
-export async function sendLoginPin(
-  botUrl: string,
-  botToken: string,
+type LoginContext = {
+  Bindings: {
+    DB: D1Database;
+    WHATSAPP_BOT_URL: string;
+    WHATSAPP_BOT_TOKEN: string;
+    WHATSAPP_DISABLED?: string;
+  };
+};
+
+export async function sendLoginPin<Env extends LoginContext>(
+  c: Context<Env>,
   phoneNumber: string,
   pin: string,
+  userId?: number,
 ): Promise<void> {
   const message = `Din Gozy login kode er: ${pin}\n\nKoden udløber om 10 minutter.`;
 
-  const result = await sendWhatsAppMessage(
-    botUrl,
-    botToken,
-    phoneNumber,
-    message,
-  );
+  const result = await sendWhatsappMessage(c, phoneNumber, message, userId);
 
   if (!result.success) {
     throw new Error(result.error || "Failed to send login PIN");
