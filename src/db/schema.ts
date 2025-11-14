@@ -366,3 +366,30 @@ export const checkinsRelations = relations(checkinsTable, ({ one }) => ({
     references: [rttLocationsTable.id],
   }),
 }));
+
+export const whatsappMessagesTable = sqliteTable(
+  "whatsapp_messages",
+  {
+    id: int().primaryKey({ autoIncrement: true }),
+    publicId: text("public_id")
+      .notNull()
+      .unique()
+      .$defaultFn(() => nanoid()),
+    userId: int("user_id"),
+    phoneNumber: text("phone_number").notNull(),
+    message: text().notNull(),
+    type: text().notNull(),
+    status: text({ enum: ["sent", "failed"] }).notNull(),
+    createdAt: int("created_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => ({
+    userIdCreatedAtIdx: index("whatsapp_messages_user_id_created_at_idx").on(
+      table.userId,
+      table.createdAt,
+    ),
+  }),
+);
+
+export type WhatsappMessage = typeof whatsappMessagesTable.$inferSelect;
