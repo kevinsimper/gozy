@@ -49,8 +49,9 @@ npm run db:generate  # Creates SQL migration in drizzle/
 ### Apply Migration
 
 ```bash
-npm run db:migrate:local   # Apply to local database
-npm run db:migrate:remote  # Apply to production database
+npm run db:migrate:local    # Apply to local database
+npm run db:migrate:staging  # Apply to staging database
+npm run db:migrate:remote   # Apply to production database
 ```
 
 ### Migration Files
@@ -80,17 +81,19 @@ npm run format       # Format code with Prettier
 ### Database Operations
 
 ```bash
-npm run db:generate        # Generate migration from schema changes
-npm run db:migrate:local   # Apply migrations locally
-npm run db:migrate:remote  # Apply migrations to production
-npm run db:studio          # Open Drizzle Studio (database UI)
+npm run db:generate         # Generate migration from schema changes
+npm run db:migrate:local    # Apply migrations locally
+npm run db:migrate:staging  # Apply migrations to staging
+npm run db:migrate:remote   # Apply migrations to production
+npm run db:studio           # Open Drizzle Studio (database UI)
 npx wrangler d1 execute DB --local --command "SELECT * FROM users LIMIT 5"
 ```
 
 ### Deployment
 
 ```bash
-npm run deploy               # Deploy to production
+npm run deploy:staging  # Deploy to staging
+npm run deploy          # Deploy to production
 ```
 
 ## Code Organization
@@ -168,7 +171,21 @@ The project uses `wrangler.jsonc` for configuration:
 - D1 Database binding: `DB`
 - R2 Storage binding: `FILES`
 - Scheduled cron jobs: Daily at 8am (`0 8 * * *`)
-- Environment-specific configs for dev and production
+- Environment-specific configs for dev, staging, and production
+
+### Setting Up Staging Secrets
+
+Staging environment secrets must be set via Cloudflare Workers CLI:
+
+```bash
+npx wrangler secret put GEMINI_API_KEY --env staging
+npx wrangler secret put COOKIE_SECRET --env staging
+npx wrangler secret put GOZY_API_TOKEN --env staging
+npx wrangler secret put RESEND_API_KEY --env staging
+npx wrangler secret put WHATSAPP_BOT_TOKEN --env staging
+```
+
+Note: Production secrets are set similarly using `--env production`
 
 ## Key Technologies & Libraries
 
@@ -219,6 +236,7 @@ The project uses `wrangler.jsonc` for configuration:
 - **Never use `as unknown as Type`**: Validate with Zod instead
 - **Use Result types**: From @casperlabs/ts-results for error handling
 - **Validate at boundaries**: Use Zod schemas for API inputs, form data, env vars
+- **Import Bindings type**: Always import `Bindings` from `src/index.tsx` instead of redefining it. The canonical definition lives in the main entry point.
 
 ### Git Practices
 

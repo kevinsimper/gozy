@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy --minify --env production",
+    "deploy:staging": "wrangler deploy --env staging",
     "test": "npm run test:types && npm run test:unit",
     "test:types": "tsc --noEmit",
     "test:unit": "vitest run",
@@ -13,6 +14,7 @@
     "format": "prettier --write --cache --log-level=warn .",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
+    "db:migrate:staging": "wrangler d1 migrations apply DB --env staging --remote",
     "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
     "db:studio": "drizzle-kit studio"
   },

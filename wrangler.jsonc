@@ -12,6 +12,7 @@
     "ENVIRONMENT": "dev",
     "WHATSAPP_BOT_URL": "http://localhost:3000",
     "WHATSAPP_BOT_TOKEN": "dev-bot-token-change-in-production",
+    "WHATSAPP_ENABLED": "true",
     "DEV": "false",
     "DOMAIN": "http://localhost:3000",
   },
@@ -33,12 +34,47 @@
     },
   ],
   "env": {
+    "staging": {
+      "name": "gozy-staging",
+      "vars": {
+        "ENVIRONMENT": "staging",
+        "WHATSAPP_BOT_URL": "https://your-whatsapp-bot-url.com",
+        "WHATSAPP_BOT_TOKEN": "staging-token",
+        "WHATSAPP_ENABLED": "false",
+        "DEV": "false",
+        "DOMAIN": "https://gozy-staging.ks.workers.dev",
+      },
+      "upload_source_maps": true,
+      "triggers": {
+        "crons": ["0 8 * * *"],
+      },
+      "observability": {
+        "enabled": true,
+        "head_sampling_rate": 1,
+      },
+      "r2_buckets": [
+        {
+          "binding": "FILES",
+          "bucket_name": "gozy",
+        },
+      ],
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "gozy-staging",
+          "database_id": "e5a88c98-e61f-43b7-adf8-ddda478f1064",
+          "migrations_dir": "drizzle",
+          "remote": true,
+        },
+      ],
+    },
     "production": {
       "name": "gozy",
       "vars": {
         "ENVIRONMENT": "production",
         "WHATSAPP_BOT_URL": "https://your-whatsapp-bot-url.com",
         "WHATSAPP_BOT_TOKEN": "production-token",
+        "WHATSAPP_ENABLED": "true",
         "DEV": "false",
         "DOMAIN": "https://gozy.ks.workers.dev",
       },
