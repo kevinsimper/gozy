@@ -10,6 +10,8 @@ export const usersTable = sqliteTable("users", {
   role: text({ enum: ["driver", "rtt_staff", "admin"] })
     .notNull()
     .default("driver"),
+  driverType: text("driver_type", { enum: ["vehicle_owner", "driver"] }),
+  taxiId: text("taxi_id"),
   loginPin: text("login_pin"),
   loginPinExpiry: int("login_pin_expiry", { mode: "timestamp" }),
   lastLoginAt: int("last_login_at", { mode: "timestamp" }),

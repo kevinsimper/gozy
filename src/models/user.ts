@@ -127,3 +127,19 @@ export async function updateUserPreferredLocation<Env extends DatabaseContext>(
     .where(eq(usersTable.id, userId))
     .run();
 }
+
+export async function updateUserDriverInfo<Env extends DatabaseContext>(
+  c: Context<Env>,
+  userId: number,
+  updates: {
+    driverType?: "vehicle_owner" | "driver";
+    taxiId?: string;
+  },
+): Promise<void> {
+  const db = drizzle(c.env.DB);
+  await db
+    .update(usersTable)
+    .set(updates)
+    .where(eq(usersTable.id, userId))
+    .run();
+}
