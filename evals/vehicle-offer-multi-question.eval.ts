@@ -6,13 +6,28 @@ import {
   updateVehicleOfferFunction,
   getOpenOffersFunction,
   askVehicleOfferQuestionFunction,
-} from "../src/services/gemini/client";
+} from "../src/lib/conversation/functions";
 import { CONVERSATION_SYSTEM_PROMPT } from "../src/lib/prompts";
 
 const mockContext = {
   env: {
     GEMINI_API_KEY: process.env.GEMINI_API_KEY || "",
   },
+};
+
+const mockUser = {
+  id: 1,
+  name: "Test Driver",
+  phoneNumber: "+4512345678",
+  email: null,
+  role: "driver" as const,
+  driverType: "vehicle_owner" as const,
+  taxiId: "TEST123",
+  loginPin: null,
+  loginPinExpiry: null,
+  lastLoginAt: null,
+  preferredRttLocationId: null,
+  createdAt: new Date(),
 };
 
 test("AI should ask multiple questions in sequence", async () => {
@@ -31,7 +46,7 @@ test("AI should ask multiple questions in sequence", async () => {
         parts: [{ text: "jeg vil gerne have et tilbud på en bil" }],
       },
     ],
-    CONVERSATION_SYSTEM_PROMPT,
+    CONVERSATION_SYSTEM_PROMPT(mockUser),
     [
       createVehicleOfferFunction,
       updateVehicleOfferFunction,
@@ -86,7 +101,7 @@ test("AI should ask multiple questions in sequence", async () => {
         ],
       },
     ],
-    CONVERSATION_SYSTEM_PROMPT,
+    CONVERSATION_SYSTEM_PROMPT(mockUser),
     [
       createVehicleOfferFunction,
       updateVehicleOfferFunction,
@@ -172,7 +187,7 @@ test("AI should ask multiple questions in sequence", async () => {
         parts: [{ text: "Toyota" }],
       },
     ],
-    CONVERSATION_SYSTEM_PROMPT,
+    CONVERSATION_SYSTEM_PROMPT(mockUser),
     [
       createVehicleOfferFunction,
       updateVehicleOfferFunction,
@@ -281,7 +296,7 @@ test("AI should ask multiple questions in sequence", async () => {
         ],
       },
     ],
-    CONVERSATION_SYSTEM_PROMPT,
+    CONVERSATION_SYSTEM_PROMPT(mockUser),
     [
       createVehicleOfferFunction,
       updateVehicleOfferFunction,
