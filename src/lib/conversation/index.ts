@@ -1,9 +1,10 @@
 import { type Context } from "hono";
 import { Ok, Err, Result } from "@casperlabs/ts-results/esm/index";
 import { type Content } from "@google/genai";
+import { generateResponse } from "../../services/gemini/client";
 import {
-  generateResponse,
   updateUserNameFunction,
+  updateDriverInfoFunction,
   saveMessageFileToDocumentsFunction,
   getUserDocumentsFunction,
   createVehicleOfferFunction,
@@ -13,9 +14,10 @@ import {
   getRttLocationsFunction,
   checkInAtLocationFunction,
   updatePreferredLocationFunction,
-} from "../../services/gemini/client";
+} from "./functions";
 import {
   findUserByPhoneNumber,
+  findUserById,
   createUser,
   type User,
 } from "../../models/user";
@@ -64,6 +66,12 @@ export async function generateAssistantResponse(
   userId: number,
 ): Promise<Result<string, string>> {
   try {
+    // Get user data for system prompt
+    const user = await findUserById(c, userId);
+    if (!user) {
+      return Err("User not found");
+    }
+
     // Get recent conversation history with files
     const conversationHistory = await formatConversationHistory(c, userId, 10);
 
@@ -71,9 +79,10 @@ export async function generateAssistantResponse(
       `Sending ${conversationHistory.length} messages to Gemini (including ${conversationHistory.filter((m) => m.parts?.some((p) => p.inlineData)).length} with images)`,
     );
 
-    const systemPrompt = CONVERSATION_SYSTEM_PROMPT;
+    const systemPrompt = CONVERSATION_SYSTEM_PROMPT(user);
     const tools = [
       updateUserNameFunction,
+      updateDriverInfoFunction,
       saveMessageFileToDocumentsFunction,
       getUserDocumentsFunction,
       createVehicleOfferFunction,

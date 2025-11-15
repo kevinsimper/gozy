@@ -3,6 +3,7 @@ import { Bindings } from "../..";
 import {
   updateUser,
   updateUserPreferredLocation,
+  updateUserDriverInfo,
   findUserById,
 } from "../../models/user";
 import { saveConversationFileAsUserDocument } from "../userDocument";
@@ -33,6 +34,21 @@ export async function handleFunctionCall(
     const args = functionCall.args as { name: string };
     await updateUser(c, userId, { name: args.name });
     console.log(`Updated user ${userId} name to: ${args.name}`);
+    return {
+      name: functionCall.name,
+      response: { success: true },
+    };
+  } else if (functionCall.name === "update_driver_info") {
+    const args = functionCall.args as {
+      driverType?: "vehicle_owner" | "driver";
+      taxiId?: string;
+    };
+    await updateUserDriverInfo(c, userId, args);
+    console.log(
+      `Updated user ${userId} driver info:`,
+      args.driverType ? `type=${args.driverType}` : "",
+      args.taxiId ? `taxiId=${args.taxiId}` : "",
+    );
     return {
       name: functionCall.name,
       response: { success: true },
