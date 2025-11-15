@@ -1,18 +1,15 @@
-import type { Context } from "hono";
 import { sendWhatsAppMessage as sendWhatsAppMessageService } from "./whatsapp";
 import { createWhatsappMessage } from "../models/whatsapp-message";
 
-type WhatsappContext = {
-  Bindings: {
-    DB: D1Database;
-    WHATSAPP_BOT_URL: string;
-    WHATSAPP_BOT_TOKEN: string;
-    WHATSAPP_ENABLED?: string;
-  };
+type WhatsappEnv = {
+  DB: D1Database;
+  WHATSAPP_BOT_URL: string;
+  WHATSAPP_BOT_TOKEN: string;
+  WHATSAPP_ENABLED?: string;
 };
 
-export async function sendWhatsappMessage<Env extends WhatsappContext>(
-  c: Context<Env>,
+export async function sendWhatsappMessage(
+  c: { env: WhatsappEnv },
   phoneNumber: string,
   message: string,
   userId?: number,

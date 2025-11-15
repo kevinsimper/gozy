@@ -1,18 +1,11 @@
 import { drizzle } from "drizzle-orm/d1";
 import { desc } from "drizzle-orm";
 import { whatsappMessagesTable } from "../db/schema";
-import type { Context } from "hono";
-
-type DatabaseContext = {
-  Bindings: {
-    DB: D1Database;
-  };
-};
 
 export type WhatsappMessage = typeof whatsappMessagesTable.$inferSelect;
 
-export async function createWhatsappMessage<Env extends DatabaseContext>(
-  c: Context<Env>,
+export async function createWhatsappMessage(
+  c: { env: { DB: D1Database } },
   phoneNumber: string,
   message: string,
   status: "sent" | "failed",
@@ -33,8 +26,8 @@ export async function createWhatsappMessage<Env extends DatabaseContext>(
   return result;
 }
 
-export async function getAllWhatsappMessages<Env extends DatabaseContext>(
-  c: Context<Env>,
+export async function getAllWhatsappMessages(
+  c: { env: { DB: D1Database } },
   limit: number = 100,
 ): Promise<WhatsappMessage[]> {
   const db = drizzle(c.env.DB);
