@@ -5,6 +5,7 @@ import {
   findUserById,
   updateUser,
   updateUserPreferredLocation,
+  updateUserDriverInfo,
 } from "../../models/user";
 import { ProfilePage } from "../../views/dashboard/profile";
 import { AppLink, lk } from "../../lib/links";
@@ -24,6 +25,22 @@ const profileFields = [
     required: true,
     placeholder: "Indtast dit navn",
     zodSchema: z.string().min(2, "Navn skal være mindst 2 tegn"),
+  },
+  {
+    name: "driverType",
+    label: "Chauffør type",
+    htmlType: "select" as const,
+    required: false,
+    zodSchema: z.enum(["vehicle_owner", "driver"]).optional(),
+    asyncOptions: true,
+  },
+  {
+    name: "taxiId",
+    label: "Taxi ID",
+    htmlType: "text" as const,
+    required: false,
+    placeholder: "Indtast dit Taxi ID",
+    zodSchema: z.string().optional(),
   },
   {
     name: "preferredRttLocationId",
@@ -66,6 +83,11 @@ export const profileRoutes = new Hono<{ Bindings: Bindings }>()
     const locations = await findAllRttLocations(c);
 
     const dynamicSelectOptions = {
+      driverType: [
+        { value: "", text: "Vælg type" },
+        { value: "vehicle_owner", text: "Vognmand" },
+        { value: "driver", text: "Chauffør" },
+      ],
       preferredRttLocationId: [
         { value: "", text: "Ingen valgt" },
         ...locations.map((loc) => ({
@@ -78,6 +100,8 @@ export const profileRoutes = new Hono<{ Bindings: Bindings }>()
     const formHtml = profileForm.render(
       {
         name: user.name,
+        driverType: user.driverType || undefined,
+        taxiId: user.taxiId || "",
         preferredRttLocationId: user.preferredRttLocationId?.toString() || "",
       },
       {},
@@ -112,6 +136,11 @@ export const profileRoutes = new Hono<{ Bindings: Bindings }>()
 
     const locations = await findAllRttLocations(c);
     const dynamicSelectOptions = {
+      driverType: [
+        { value: "", text: "Vælg type" },
+        { value: "vehicle_owner", text: "Vognmand" },
+        { value: "driver", text: "Chauffør" },
+      ],
       preferredRttLocationId: [
         { value: "", text: "Ingen valgt" },
         ...locations.map((loc) => ({
@@ -129,6 +158,13 @@ export const profileRoutes = new Hono<{ Bindings: Bindings }>()
 
     await updateUser(c, userId, { name: parseResult.data.name });
 
+    const driverType = parseResult.data.driverType || undefined;
+    const taxiId = parseResult.data.taxiId || undefined;
+    await updateUserDriverInfo(c, userId, {
+      driverType: driverType as "vehicle_owner" | "driver" | undefined,
+      taxiId,
+    });
+
     const locationId = parseResult.data.preferredRttLocationId
       ? parseInt(parseResult.data.preferredRttLocationId)
       : null;
@@ -142,6 +178,8 @@ export const profileRoutes = new Hono<{ Bindings: Bindings }>()
     const formHtml = profileForm.render(
       {
         name: updatedUser.name,
+        driverType: updatedUser.driverType || undefined,
+        taxiId: updatedUser.taxiId || "",
         preferredRttLocationId:
           updatedUser.preferredRttLocationId?.toString() || "",
       },
