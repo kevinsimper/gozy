@@ -1,4 +1,4 @@
-import { AppLink, lk } from "../../lib/links";
+import { AppLink, lk, WHATSAPP_CONTACT_URL } from "../../lib/links";
 
 export function SignupPage() {
   return (
@@ -35,7 +35,7 @@ export function SignupPage() {
 
       <div class="text-center mb-6">
         <a
-          href="https://wa.me/4540360565"
+          href={WHATSAPP_CONTACT_URL}
           target="_blank"
           rel="noopener noreferrer"
           class="inline-flex items-center gap-2 bg-green-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-700 focus:ring-4 focus:ring-green-200 transition no-underline"

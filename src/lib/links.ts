@@ -43,6 +43,8 @@ export enum AppLink {
   RttUserSendMessage = "/rtt/users/:id/send-message",
 }
 
+export const WHATSAPP_CONTACT_URL = "https://wa.me/4520429116";
+
 type RouteParams = {
   publicId?: string;
   tableName?: string;
