@@ -1,15 +1,9 @@
 import { sendWhatsAppMessage as sendWhatsAppMessageService } from "./whatsapp";
 import { createWhatsappMessage } from "../models/whatsapp-message";
-
-type WhatsappEnv = {
-  DB: D1Database;
-  WHATSAPP_BOT_URL: string;
-  WHATSAPP_BOT_TOKEN: string;
-  WHATSAPP_ENABLED?: string;
-};
+import type { Bindings } from "../index";
 
 export async function sendWhatsappMessage(
-  c: { env: WhatsappEnv },
+  c: { env: Bindings },
   phoneNumber: string,
   message: string,
   userId?: number,

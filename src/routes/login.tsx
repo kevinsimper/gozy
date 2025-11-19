@@ -14,13 +14,7 @@ import { PinVerificationForm } from "../views/public/PinVerificationForm";
 import { AppLink, lk } from "../lib/links";
 import { redirectIfSignedIn } from "../lib/auth";
 import { sendLoginPin } from "../lib/login";
-
-type Bindings = {
-  DB: D1Database;
-  COOKIE_SECRET: string;
-  WHATSAPP_BOT_URL: string;
-  WHATSAPP_BOT_TOKEN: string;
-};
+import type { Bindings } from "../index";
 
 declare module "hono" {
   interface ContextRenderer {

@@ -1,17 +1,9 @@
 import { sendWhatsappMessage } from "./whatsapp-sender";
 import type { Context } from "hono";
+import type { Bindings } from "../index";
 
-type LoginContext = {
-  Bindings: {
-    DB: D1Database;
-    WHATSAPP_BOT_URL: string;
-    WHATSAPP_BOT_TOKEN: string;
-    WHATSAPP_DISABLED?: string;
-  };
-};
-
-export async function sendLoginPin<Env extends LoginContext>(
-  c: Context<Env>,
+export async function sendLoginPin(
+  c: Context<{ Bindings: Bindings }>,
   phoneNumber: string,
   pin: string,
   userId?: number,
