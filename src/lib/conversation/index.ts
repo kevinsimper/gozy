@@ -12,7 +12,7 @@ import {
   updateVehicleOfferFunction,
   getOpenOffersFunction,
   askVehicleOfferQuestionFunction,
-  getRttLocationsFunction,
+  lookupRttLocationInfoFunction,
   checkInAtLocationFunction,
   updatePreferredLocationFunction,
 } from "./functions";
@@ -91,7 +91,7 @@ export async function generateAssistantResponse(
       updateVehicleOfferFunction,
       getOpenOffersFunction,
       askVehicleOfferQuestionFunction,
-      getRttLocationsFunction,
+      lookupRttLocationInfoFunction,
       checkInAtLocationFunction,
       updatePreferredLocationFunction,
     ];

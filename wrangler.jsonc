@@ -72,7 +72,7 @@
       "name": "gozy",
       "vars": {
         "ENVIRONMENT": "production",
-        "WHATSAPP_BOT_URL": "https://turbo-would-louisville-penalty.trycloudflare.com",
+        "WHATSAPP_BOT_URL": "https://brown-limited-forth-circle.trycloudflare.com",
         "WHATSAPP_ENABLED": "true",
         "DEV": "false",
         "DOMAIN": "https://gozy.ks.workers.dev",

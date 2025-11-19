@@ -15,6 +15,7 @@ vi.mock("../../services/gemini/client", () => {
   return {
     generateClient: mockGenerateClient,
     googleModels: {
+      pro3: "gemini-3-pro-preview",
       flash: "gemini-2.5-flash-preview-09-2025",
       pro: "gemini-2.5-pro",
       flashLite: "gemini-2.5-flash-lite-preview-09-2025",

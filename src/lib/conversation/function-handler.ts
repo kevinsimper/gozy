@@ -184,7 +184,7 @@ export async function handleFunctionCall(
         updatedQuestionsAsked: getQuestionsAsked(offer),
       },
     };
-  } else if (functionCall.name === "get_rtt_locations") {
+  } else if (functionCall.name === "lookup_rtt_location_info") {
     const locations = await findAllRttLocations(c);
     console.log(`Retrieved ${locations.length} RTT locations`);
     return {
@@ -193,9 +193,19 @@ export async function handleFunctionCall(
         success: true,
         locations: locations.map((loc) => ({
           id: loc.id,
+          slug: loc.slug,
           name: loc.name,
           address: loc.address,
+          postalCode: loc.postalCode,
           city: loc.city,
+          phone: loc.phone,
+          email: loc.email,
+          openingHours: {
+            monThu: loc.openingHoursMonThu,
+            fri: loc.openingHoursFri,
+            sat: loc.openingHoursSat,
+          },
+          emergencyHours: loc.emergencyHours,
         })),
       },
     };

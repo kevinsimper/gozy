@@ -161,13 +161,13 @@ export const askVehicleOfferQuestionFunction = createGeminiFunctionDeclaration({
   schema: askVehicleOfferQuestionSchema,
 });
 
-const getRttLocationsSchema = z.object({});
+const lookupRttLocationInfoSchema = z.object({});
 
-export const getRttLocationsFunction = createGeminiFunctionDeclaration({
-  name: "get_rtt_locations",
+export const lookupRttLocationInfoFunction = createGeminiFunctionDeclaration({
+  name: "lookup_rtt_location_info",
   description:
-    "Retrieves the list of all RTT workshop locations with complete information (name, address, phone, email, opening hours). ALWAYS call this function when the user asks ANY question about RTT locations such as: address, phone number, opening hours, email, or location details. Also use when the user wants to check in but doesn't have a preferred location set. NEVER provide RTT information from memory - always fetch from database first.",
-  schema: getRttLocationsSchema,
+    "Looks up complete contact and location information for all RTT workshop locations (phone, address, email, opening hours). ALWAYS call this function IMMEDIATELY when the user asks about phone numbers, addresses, opening hours, email, or any RTT location details. NEVER provide RTT information from memory - you MUST fetch from database first. After calling this function, you will have accurate data to answer the user's question.",
+  schema: lookupRttLocationInfoSchema,
 });
 
 const checkInAtLocationSchema = z.object({

@@ -62,7 +62,7 @@ Eksempel:
 - Når bruger beder om at se eller få et dokument: kald get_user_documents først, find det rigtige dokument, og brug derefter send_document_link med documentets publicId
 ${isNewUser ? "" : "- Når bruger beder om bil-tilbud: SKAL følge proceduren nedenfor nøjagtigt"}
 - Når bruger siger "Check in": SKAL følge check-in proceduren nedenfor nøjagtigt
-- Når bruger spørger om RTT lokationer (adresse, telefon, åbningstider, osv): SKAL ALTID kalde get_rtt_locations først - brug ALDRIG hukommelse eller opfundet information
+- Når bruger spørger om RTT lokationer (adresse, telefon, åbningstider, osv): SKAL ALTID kalde lookup_rtt_location_info først - brug ALDRIG hukommelse eller opfundet information
 
 ${
   isNewUser
@@ -81,7 +81,7 @@ Eksempel: ask_vehicle_offer_question(offerId=1, field="brand", question="Hvilket
 
 ## RTT information procedure (SKAL følges nøjagtigt)
 1. Når bruger spørger om RTT lokation information (adresse, telefon, åbningstider, email):
-   - Kald get_rtt_locations FØRST for at hente alle lokationer
+   - Kald lookup_rtt_location_info FØRST for at hente alle lokationer
    - Find den relevante lokation (f.eks. RTT Søborg hvis de spørger om Søborg)
    - Giv brugeren den PRÆCISE information fra databasen
    - Inkluder: adresse, postnummer, by, telefon, email, og åbningstider hvis relevant
@@ -94,7 +94,7 @@ Eksempel: ask_vehicle_offer_question(offerId=1, field="brand", question="Hvilket
    - Bekræft lokationen og kald check_in_at_location med locationId
    - Svar bruger med bekræftelse (f.eks. "Du er nu tjekket ind ved [location name]")
 3. Hvis bruger IKKE har preferred location:
-   - Kald get_rtt_locations for at hente alle lokationer
+   - Kald lookup_rtt_location_info for at hente alle lokationer
    - Spørg brugeren hvilken RTT lokation de er ved (vis navn og by)
    - Når bruger svarer: kald check_in_at_location med locationId og updatePreferred=true
    - Fortæl brugeren de er tjekket ind og at denne lokation er gemt som standard`;

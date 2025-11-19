@@ -10,6 +10,7 @@ export type GeminiBindings = {
 };
 
 export const googleModels = {
+  pro3: "gemini-3-pro-preview",
   pro: "gemini-2.5-pro",
   flash: "gemini-2.5-flash-preview-09-2025",
   flashLite: "gemini-2.5-flash-lite-preview-09-2025",
@@ -45,7 +46,7 @@ export async function generateResponse(
           ]
         : undefined,
     },
-    model: googleModels.flash,
+    model: googleModels.pro,
     contents,
   });
 
