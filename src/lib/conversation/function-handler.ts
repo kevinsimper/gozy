@@ -20,6 +20,7 @@ import {
   findAllRttLocations,
   findRttLocationById,
 } from "../../models/rttlocation";
+import { createTaxiId, findTaxiIdsByUserId } from "../../models/taxiid";
 import { type FunctionCall } from "@google/genai";
 
 export async function handleFunctionCall(
@@ -41,13 +42,11 @@ export async function handleFunctionCall(
   } else if (functionCall.name === "update_driver_info") {
     const args = functionCall.args as {
       driverType?: "vehicle_owner" | "driver";
-      taxiId?: string;
     };
     await updateUserDriverInfo(c, userId, args);
     console.log(
       `Updated user ${userId} driver info:`,
       args.driverType ? `type=${args.driverType}` : "",
-      args.taxiId ? `taxiId=${args.taxiId}` : "",
     );
     return {
       name: functionCall.name,
@@ -284,6 +283,30 @@ export async function handleFunctionCall(
       response: {
         success: true,
         messageToUser,
+      },
+    };
+  } else if (functionCall.name === "add_taxi_id") {
+    const args = functionCall.args as {
+      taxiId: string;
+    };
+    await createTaxiId(c, userId, args.taxiId);
+    console.log(`Added Taxi ID ${args.taxiId} for user ${userId}`);
+    return {
+      name: functionCall.name,
+      response: { success: true },
+    };
+  } else if (functionCall.name === "get_taxi_ids") {
+    const taxiIds = await findTaxiIdsByUserId(c, userId);
+    console.log(`Retrieved ${taxiIds.length} Taxi IDs for user ${userId}`);
+    return {
+      name: functionCall.name,
+      response: {
+        success: true,
+        taxiIds: taxiIds.map((item) => ({
+          id: item.id,
+          taxiId: item.taxiId,
+          createdAt: item.createdAt,
+        })),
       },
     };
   }

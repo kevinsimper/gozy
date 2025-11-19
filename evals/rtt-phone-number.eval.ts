@@ -54,7 +54,10 @@ test("AI should provide correct Søborg phone number, not wrong one from memory"
   );
 
   console.log("AI:", firstResponse.text || "[function call]");
-  console.log("Function calls:", firstResponse.functionCalls?.map(fc => fc.name).join(", ") || "none");
+  console.log(
+    "Function calls:",
+    firstResponse.functionCalls?.map((fc) => fc.name).join(", ") || "none",
+  );
 
   // Step 2: User says "søborg"
   const secondResponse = await generateResponse(
@@ -66,7 +69,11 @@ test("AI should provide correct Søborg phone number, not wrong one from memory"
       },
       {
         role: "model",
-        parts: firstResponse.text ? [{ text: firstResponse.text }] : (firstResponse.functionCalls ? [{ functionCall: firstResponse.functionCalls[0] }] : [{ text: "" }]),
+        parts: firstResponse.text
+          ? [{ text: firstResponse.text }]
+          : firstResponse.functionCalls
+            ? [{ functionCall: firstResponse.functionCalls[0] }]
+            : [{ text: "" }],
       },
       {
         role: "user",
@@ -79,11 +86,18 @@ test("AI should provide correct Søborg phone number, not wrong one from memory"
 
   console.log("\nUser: søborg");
   console.log("AI:", secondResponse.text || "[function call]");
-  console.log("Function calls:", secondResponse.functionCalls?.map(fc => fc.name).join(", ") || "none");
+  console.log(
+    "Function calls:",
+    secondResponse.functionCalls?.map((fc) => fc.name).join(", ") || "none",
+  );
 
   // If AI called lookup_rtt_location_info, provide the data
   let finalText = secondResponse.text;
-  if (secondResponse.functionCalls?.some(fc => fc.name === "lookup_rtt_location_info")) {
+  if (
+    secondResponse.functionCalls?.some(
+      (fc) => fc.name === "lookup_rtt_location_info",
+    )
+  ) {
     const finalResponse = await generateResponse(
       mockContext,
       [
@@ -93,7 +107,11 @@ test("AI should provide correct Søborg phone number, not wrong one from memory"
         },
         {
           role: "model",
-          parts: firstResponse.text ? [{ text: firstResponse.text }] : (firstResponse.functionCalls ? [{ functionCall: firstResponse.functionCalls[0] }] : [{ text: "" }]),
+          parts: firstResponse.text
+            ? [{ text: firstResponse.text }]
+            : firstResponse.functionCalls
+              ? [{ functionCall: firstResponse.functionCalls[0] }]
+              : [{ text: "" }],
         },
         {
           role: "user",
@@ -101,23 +119,46 @@ test("AI should provide correct Søborg phone number, not wrong one from memory"
         },
         {
           role: "model",
-          parts: [{ functionCall: secondResponse.functionCalls.find(fc => fc.name === "lookup_rtt_location_info") }],
+          parts: [
+            {
+              functionCall: secondResponse.functionCalls.find(
+                (fc) => fc.name === "lookup_rtt_location_info",
+              ),
+            },
+          ],
         },
         {
           role: "user",
-          parts: [{
-            functionResponse: {
-              name: "lookup_rtt_location_info",
-              response: {
-                success: true,
-                locations: [
-                  { id: 1, slug: "soborg", name: "RTT Søborg", phone: "+45 44 53 55 15" },
-                  { id: 2, slug: "aarhus", name: "RTT Århus", phone: "+45 86 24 14 55" },
-                  { id: 3, slug: "aalborg", name: "RTT Aalborg", phone: "+45 28 93 91 99" },
-                ],
+          parts: [
+            {
+              functionResponse: {
+                name: "lookup_rtt_location_info",
+                response: {
+                  success: true,
+                  locations: [
+                    {
+                      id: 1,
+                      slug: "soborg",
+                      name: "RTT Søborg",
+                      phone: "+45 44 53 55 15",
+                    },
+                    {
+                      id: 2,
+                      slug: "aarhus",
+                      name: "RTT Århus",
+                      phone: "+45 86 24 14 55",
+                    },
+                    {
+                      id: 3,
+                      slug: "aalborg",
+                      name: "RTT Aalborg",
+                      phone: "+45 28 93 91 99",
+                    },
+                  ],
+                },
               },
             },
-          }],
+          ],
         },
       ],
       CONVERSATION_SYSTEM_PROMPT(mockUser),
@@ -162,7 +203,9 @@ test("AI should provide correct phone numbers for all RTT locations", async () =
       [
         {
           role: "user",
-          parts: [{ text: `hvad er telefonnummeret til RTT ${location.slug}?` }],
+          parts: [
+            { text: `hvad er telefonnummeret til RTT ${location.slug}?` },
+          ],
         },
       ],
       CONVERSATION_SYSTEM_PROMPT(mockUser),

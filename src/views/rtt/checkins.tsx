@@ -7,7 +7,7 @@ type CheckinData = {
   userName: string;
   phoneNumber: string;
   driverType: string | null;
-  taxiId: string | null;
+  taxiIds: string[];
   locationName: string;
   locationId: number;
 };
@@ -77,7 +77,9 @@ export function RttCheckinsView({
                 <th class="text-left p-3 text-gray-700 font-medium">
                   Driver Type
                 </th>
-                <th class="text-left p-3 text-gray-700 font-medium">Taxi ID</th>
+                <th class="text-left p-3 text-gray-700 font-medium">
+                  Taxi IDs
+                </th>
                 <th class="text-left p-3 text-gray-700 font-medium">
                   Location
                 </th>
@@ -117,7 +119,22 @@ export function RttCheckinsView({
                           ? "Driver"
                           : "-"}
                     </td>
-                    <td class="p-3 text-gray-600">{checkin.taxiId || "-"}</td>
+                    <td class="p-3 text-gray-600">
+                      {checkin.taxiIds.length > 0 ? (
+                        <div class="flex flex-wrap gap-1">
+                          {checkin.taxiIds.map((taxiId, idx) => (
+                            <span
+                              key={idx}
+                              class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                            >
+                              {taxiId}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        "-"
+                      )}
+                    </td>
                     <td class="p-3 text-gray-600">{checkin.locationName}</td>
                     <td class="p-3">
                       <div class="flex gap-2">

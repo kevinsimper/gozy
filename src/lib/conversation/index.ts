@@ -15,6 +15,8 @@ import {
   lookupRttLocationInfoFunction,
   checkInAtLocationFunction,
   updatePreferredLocationFunction,
+  addTaxiIdFunction,
+  getTaxiIdsFunction,
 } from "./functions";
 import {
   findUserByPhoneNumber,
@@ -94,6 +96,8 @@ export async function generateAssistantResponse(
       lookupRttLocationInfoFunction,
       checkInAtLocationFunction,
       updatePreferredLocationFunction,
+      addTaxiIdFunction,
+      getTaxiIdsFunction,
     ];
 
     let currentHistory: Content[] = conversationHistory;

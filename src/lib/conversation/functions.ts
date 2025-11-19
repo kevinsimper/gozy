@@ -19,13 +19,12 @@ const updateDriverInfoSchema = z.object({
     .describe(
       "The driver type: 'vehicle_owner' for vognmand (owns vehicle), 'driver' for chauffør (drives for someone else)",
     ),
-  taxiId: z.string().optional().describe("The driver's Taxi ID number"),
 });
 
 export const updateDriverInfoFunction = createGeminiFunctionDeclaration({
   name: "update_driver_info",
   description:
-    "Updates the driver's type (vognmand/chauffør) and Taxi ID when they provide this information during onboarding or profile update",
+    "Updates the driver's type (vognmand/chauffør) when they provide this information during onboarding or profile update",
   schema: updateDriverInfoSchema,
 });
 
@@ -217,4 +216,24 @@ export const sendDocumentLinkFunction = createGeminiFunctionDeclaration({
   description:
     "Sends a link to the user's document dashboard where they can view or download the document. Use this when the user asks to see a specific document. Call get_user_documents first to get the documentPublicId.",
   schema: sendDocumentLinkSchema,
+});
+
+const addTaxiIdSchema = z.object({
+  taxiId: z.string().describe("The Taxi ID number to add"),
+});
+
+export const addTaxiIdFunction = createGeminiFunctionDeclaration({
+  name: "add_taxi_id",
+  description:
+    "Adds a new Taxi ID to the user's profile. Users can have multiple Taxi IDs. Use this when the user provides their Taxi ID number during onboarding or when they want to add an additional Taxi ID.",
+  schema: addTaxiIdSchema,
+});
+
+const getTaxiIdsSchema = z.object({});
+
+export const getTaxiIdsFunction = createGeminiFunctionDeclaration({
+  name: "get_taxi_ids",
+  description:
+    "Retrieves all Taxi IDs associated with the user. Use this when the user asks about their Taxi IDs or to check what Taxi IDs they have registered.",
+  schema: getTaxiIdsSchema,
 });

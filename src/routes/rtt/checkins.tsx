@@ -1,7 +1,12 @@
 import { Hono } from "hono";
 import { drizzle } from "drizzle-orm/d1";
-import { desc, gte, eq, and } from "drizzle-orm";
-import { checkinsTable, usersTable, rttLocationsTable } from "../../db/schema";
+import { desc, gte, eq, and, inArray } from "drizzle-orm";
+import {
+  checkinsTable,
+  usersTable,
+  rttLocationsTable,
+  driverTaxiIdsTable,
+} from "../../db/schema";
 import { requireRttStaff } from "../../lib/rttAuth";
 import { RttCheckinsView } from "../../views/rtt/checkins";
 import { Bindings } from "../..";
@@ -43,7 +48,6 @@ export const rttCheckinsRoutes = new Hono<{ Bindings: Bindings }>().get(
         userName: usersTable.name,
         phoneNumber: usersTable.phoneNumber,
         driverType: usersTable.driverType,
-        taxiId: usersTable.taxiId,
         locationName: rttLocationsTable.name,
         locationId: rttLocationsTable.id,
       })
@@ -57,9 +61,38 @@ export const rttCheckinsRoutes = new Hono<{ Bindings: Bindings }>().get(
       .orderBy(desc(checkinsTable.checkedInAt))
       .all();
 
+    // Fetch taxi IDs for all users in the check-ins
+    const userIds = checkins.map((c) => c.userId);
+    const taxiIds =
+      userIds.length > 0
+        ? await db
+            .select({
+              userId: driverTaxiIdsTable.userId,
+              taxiId: driverTaxiIdsTable.taxiId,
+            })
+            .from(driverTaxiIdsTable)
+            .where(inArray(driverTaxiIdsTable.userId, userIds))
+            .all()
+        : [];
+
+    // Group taxi IDs by user ID
+    const taxiIdsByUser = new Map<number, string[]>();
+    for (const item of taxiIds) {
+      if (!taxiIdsByUser.has(item.userId)) {
+        taxiIdsByUser.set(item.userId, []);
+      }
+      taxiIdsByUser.get(item.userId)!.push(item.taxiId);
+    }
+
+    // Add taxi IDs to check-ins
+    const checkinsWithTaxiIds = checkins.map((checkin) => ({
+      ...checkin,
+      taxiIds: taxiIdsByUser.get(checkin.userId) || [],
+    }));
+
     return c.render(
       <RttCheckinsView
-        checkins={checkins}
+        checkins={checkinsWithTaxiIds}
         selectedLocationId={selectedLocationId}
         locations={locations}
       />,

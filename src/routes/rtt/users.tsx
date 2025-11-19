@@ -8,6 +8,7 @@ import { RttUserDetailView } from "../../views/rtt/user-detail";
 import { RttUploadDocumentView } from "../../views/rtt/upload-document";
 import { uploadUserDocument } from "../../lib/userDocument";
 import { findUserDocumentsByUserId } from "../../models/userDocument";
+import { findTaxiIdsByUserId } from "../../models/taxiid";
 import { AppLink, lk } from "../../lib/links";
 import { Bindings } from "../..";
 import { sendWhatsappMessage } from "../../lib/whatsapp-sender";
@@ -49,6 +50,7 @@ export const rttUsersRoutes = new Hono<{ Bindings: Bindings }>()
     }
 
     const documents = await findUserDocumentsByUserId(c, userId);
+    const taxiIds = await findTaxiIdsByUserId(c, userId);
 
     const messageSent = c.req.query("messageSent") === "true";
     const messageError = c.req.query("messageError");
@@ -59,6 +61,7 @@ export const rttUsersRoutes = new Hono<{ Bindings: Bindings }>()
         documents={documents}
         messageSent={messageSent}
         messageError={messageError}
+        taxiIds={taxiIds}
       />,
       {
         title: `${user.name} - RTT Portal`,

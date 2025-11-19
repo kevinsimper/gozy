@@ -1,5 +1,5 @@
 import { AppLink, lk } from "../../lib/links";
-import type { User } from "../../db/schema";
+import type { User, DriverTaxiId } from "../../db/schema";
 
 type UserDocument = {
   publicId: string;
@@ -17,6 +17,7 @@ type RttUserDetailViewProps = {
   documents: UserDocument[];
   messageSent?: boolean;
   messageError?: string;
+  taxiIds?: DriverTaxiId[];
 };
 
 export function RttUserDetailView({
@@ -24,6 +25,7 @@ export function RttUserDetailView({
   documents,
   messageSent,
   messageError,
+  taxiIds = [],
 }: RttUserDetailViewProps) {
   return (
     <div class="p-6">
@@ -85,8 +87,21 @@ export function RttUserDetailView({
               </p>
             </div>
             <div>
-              <label class="block text-sm text-gray-600 mb-1">Taxi ID</label>
-              <p class="text-gray-900 font-medium">{user.taxiId || "-"}</p>
+              <label class="block text-sm text-gray-600 mb-1">Taxi IDs</label>
+              {taxiIds.length > 0 ? (
+                <div class="flex flex-wrap gap-2">
+                  {taxiIds.map((item) => (
+                    <span
+                      key={item.id}
+                      class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
+                    >
+                      {item.taxiId}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p class="text-gray-900 font-medium">-</p>
+              )}
             </div>
             {user.email && (
               <div>

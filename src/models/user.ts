@@ -133,7 +133,6 @@ export async function updateUserDriverInfo<Env extends DatabaseContext>(
   userId: number,
   updates: {
     driverType?: "vehicle_owner" | "driver";
-    taxiId?: string;
   },
 ): Promise<void> {
   const db = drizzle(c.env.DB);

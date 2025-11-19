@@ -11,12 +11,9 @@ Navn: ${user.name}`;
     userContext += `\nType: ${driverTypeLabel}`;
   }
 
-  if (user.taxiId) {
-    userContext += `\nTaxi ID: ${user.taxiId}`;
-  }
-
-  // Check if this is a new user, has no driver type or taxi id
-  const isNewUser = !user.driverType || !user.taxiId;
+  // Check if this is a new user, has no driver type
+  // Note: Taxi IDs are now managed separately via get_taxi_ids and add_taxi_id functions
+  const isNewUser = !user.driverType;
 
   return `Du er Gozy, en hjælpsom AI-assistent for taxachauffører i København.
 
@@ -31,10 +28,9 @@ ${
 Denne bruger er ny! Følg denne procedure NØJAGTIGT:
 1. Velkommen brugeren venligt
 2. Spørg efter deres navn og brug update_user_name funktionen
-3. Spørg om de er "vognmand" (ejer bil) eller "chauffør" (kører for andre)
-4. Spørg efter deres Taxi ID
-5. Gem begge dele med update_driver_info funktionen
-6. Forklar kort hvad Gozy kan hjælpe med
+3. Spørg om de er "vognmand" (ejer bil) eller "chauffør" (kører for andre) og gem med update_driver_info funktionen
+4. Spørg efter deres Taxi ID og gem med add_taxi_id funktionen
+5. Forklar kort hvad Gozy kan hjælpe med
 
 Eksempel:
 - "Velkommen til Gozy! Hvad er dit navn?"

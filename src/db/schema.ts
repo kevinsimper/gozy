@@ -11,7 +11,6 @@ export const usersTable = sqliteTable("users", {
     .notNull()
     .default("driver"),
   driverType: text("driver_type", { enum: ["vehicle_owner", "driver"] }),
-  taxiId: text("taxi_id"),
   loginPin: text("login_pin"),
   loginPinExpiry: int("login_pin_expiry", { mode: "timestamp" }),
   lastLoginAt: int("last_login_at", { mode: "timestamp" }),
@@ -190,8 +189,36 @@ export const vehicleOffersRelations = relations(
   }),
 );
 
+export const driverTaxiIdsTable = sqliteTable(
+  "driver_taxi_ids",
+  {
+    id: int().primaryKey({ autoIncrement: true }),
+    userId: int("user_id").notNull(),
+    taxiId: text("taxi_id").notNull(),
+    createdAt: int("created_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => ({
+    userIdIdx: index("driver_taxi_ids_user_id_idx").on(table.userId),
+  }),
+);
+
+export type DriverTaxiId = typeof driverTaxiIdsTable.$inferSelect;
+
+export const driverTaxiIdsRelations = relations(
+  driverTaxiIdsTable,
+  ({ one }) => ({
+    user: one(usersTable, {
+      fields: [driverTaxiIdsTable.userId],
+      references: [usersTable.id],
+    }),
+  }),
+);
+
 export const usersRelations = relations(usersTable, ({ many }) => ({
   vehicleOffers: many(vehicleOffersTable),
+  taxiIds: many(driverTaxiIdsTable),
 }));
 
 export const pageviewsTable = sqliteTable(
