@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { bearerAuth } from "hono/bearer-auth";
+import { logger } from "hono/logger";
 import { z } from "zod";
 import type pkg from "whatsapp-web.js";
 import { sendMessage } from "./lib/messageSender.js";
@@ -9,7 +10,17 @@ import {
   sendMessageWithMediaUrl,
 } from "./lib/mediaMessageSender.js";
 
-const WHATSAPP_BOT_TOKEN = process.env.WHATSAPP_BOT_TOKEN || "";
+const WHATSAPP_BOT_TOKEN = process.env.WHATSAPP_BOT_TOKEN;
+
+// Fail early if WHATSAPP_BOT_TOKEN is not set
+if (!WHATSAPP_BOT_TOKEN) {
+  console.error(
+    "ERROR: WHATSAPP_BOT_TOKEN environment variable is not set. Server cannot start without authentication token.",
+  );
+  process.exit(1);
+}
+
+console.log("WHATSAPP_BOT_TOKEN is configured");
 
 type WhatsAppClient = InstanceType<typeof pkg.Client>;
 
@@ -27,6 +38,9 @@ const SendMediaSchema = z.object({
 
 export function createApp(client: WhatsAppClient) {
   const app = new Hono();
+
+  // Request logging middleware - log all incoming requests
+  app.use("/*", logger());
 
   // CORS middleware
   app.use("/*", cors());
@@ -50,7 +64,8 @@ export function createApp(client: WhatsAppClient) {
   });
 
   // Bearer token auth middleware for API routes
-  app.use("/api/*", bearerAuth({ token: WHATSAPP_BOT_TOKEN }));
+  // WHATSAPP_BOT_TOKEN is guaranteed to be defined due to the check at module initialization
+  app.use("/api/*", bearerAuth({ token: WHATSAPP_BOT_TOKEN as string }));
 
   // Text message endpoint
   app.post("/api/send-message", async (c) => {
