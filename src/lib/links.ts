@@ -38,6 +38,9 @@ export enum AppLink {
   AdminQRGenerator = "/admin/qr-generator",
   RttCheckins = "/rtt/check-ins",
   RttCheckinsSendMessage = "/rtt/check-ins/send-message",
+  RttUserDetail = "/rtt/users/:id",
+  RttUserDocumentUpload = "/rtt/users/:id/upload-document",
+  RttUserSendMessage = "/rtt/users/:id/send-message",
 }
 
 type RouteParams = {

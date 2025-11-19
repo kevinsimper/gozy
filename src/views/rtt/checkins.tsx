@@ -6,6 +6,8 @@ type CheckinData = {
   userId: number;
   userName: string;
   phoneNumber: string;
+  driverType: string | null;
+  taxiId: string | null;
   locationName: string;
   locationId: number;
 };
@@ -73,15 +75,19 @@ export function RttCheckinsView({
                   Phone Number
                 </th>
                 <th class="text-left p-3 text-gray-700 font-medium">
+                  Driver Type
+                </th>
+                <th class="text-left p-3 text-gray-700 font-medium">Taxi ID</th>
+                <th class="text-left p-3 text-gray-700 font-medium">
                   Location
                 </th>
-                <th class="text-left p-3 text-gray-700 font-medium">Action</th>
+                <th class="text-left p-3 text-gray-700 font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
               {checkins.length === 0 ? (
                 <tr>
-                  <td colSpan={5} class="text-center p-8 text-gray-500">
+                  <td colSpan={7} class="text-center p-8 text-gray-500">
                     No check-ins today
                   </td>
                 </tr>
@@ -104,15 +110,33 @@ export function RttCheckinsView({
                       {checkin.userName}
                     </td>
                     <td class="p-3 text-gray-600">{checkin.phoneNumber}</td>
+                    <td class="p-3 text-gray-600">
+                      {checkin.driverType === "vehicle_owner"
+                        ? "Vehicle Owner"
+                        : checkin.driverType === "driver"
+                          ? "Driver"
+                          : "-"}
+                    </td>
+                    <td class="p-3 text-gray-600">{checkin.taxiId || "-"}</td>
                     <td class="p-3 text-gray-600">{checkin.locationName}</td>
                     <td class="p-3">
-                      <button
-                        class="send-message-btn bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm transition"
-                        data-user-id={checkin.userId}
-                        data-user-name={checkin.userName}
-                      >
-                        Send Message
-                      </button>
+                      <div class="flex gap-2">
+                        <a
+                          href={lk(AppLink.RttUserDetail, {
+                            id: checkin.userId.toString(),
+                          })}
+                          class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded text-sm transition no-underline"
+                        >
+                          View Details
+                        </a>
+                        <button
+                          class="send-message-btn bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm transition"
+                          data-user-id={checkin.userId}
+                          data-user-name={checkin.userName}
+                        >
+                          Send Message
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))

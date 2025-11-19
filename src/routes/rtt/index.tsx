@@ -4,6 +4,7 @@ import { Bindings } from "../..";
 import { RttLayout } from "../../views/rtt/layout";
 import { rttCheckinsRoutes } from "./checkins";
 import { rttSendMessageRoutes } from "./send-message";
+import { rttUsersRoutes } from "./users";
 import { AppLink, lk } from "../../lib/links";
 
 declare module "hono" {
@@ -43,4 +44,5 @@ export const rttRoutes = new Hono<{ Bindings: Bindings }>()
     return c.redirect(lk(AppLink.RttCheckins));
   })
   .route("/check-ins", rttCheckinsRoutes)
-  .route("/check-ins/send-message", rttSendMessageRoutes);
+  .route("/check-ins/send-message", rttSendMessageRoutes)
+  .route("/users", rttUsersRoutes);
