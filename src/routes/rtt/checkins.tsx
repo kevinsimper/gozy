@@ -42,6 +42,8 @@ export const rttCheckinsRoutes = new Hono<{ Bindings: Bindings }>().get(
         userId: usersTable.id,
         userName: usersTable.name,
         phoneNumber: usersTable.phoneNumber,
+        driverType: usersTable.driverType,
+        taxiId: usersTable.taxiId,
         locationName: rttLocationsTable.name,
         locationId: rttLocationsTable.id,
       })

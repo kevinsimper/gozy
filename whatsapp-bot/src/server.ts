@@ -31,6 +31,24 @@ export function createApp(client: WhatsAppClient) {
   // CORS middleware
   app.use("/*", cors());
 
+  // Root endpoint
+  app.get("/", (c) => {
+    return c.json({
+      service: "WhatsApp Bot API",
+      status: "running",
+    });
+  });
+
+  // Health check endpoint
+  app.get("/health", (c) => {
+    const isConnected = client.info !== undefined;
+    return c.json({
+      status: "ok",
+      timestamp: new Date().toISOString(),
+      whatsappConnected: isConnected,
+    });
+  });
+
   // Bearer token auth middleware for API routes
   app.use("/api/*", bearerAuth({ token: WHATSAPP_BOT_TOKEN }));
 
