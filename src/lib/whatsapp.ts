@@ -36,7 +36,18 @@ export async function sendWhatsAppMessage(
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      let errorData;
+      const responseText = await response.text();
+
+      try {
+        errorData = JSON.parse(responseText);
+      } catch {
+        return {
+          success: false,
+          error: `HTTP ${response.status}: ${response.statusText}. Response: ${responseText.substring(0, 200)}`,
+        };
+      }
+
       const parsedError = ErrorResponseSchema.safeParse(errorData);
 
       if (parsedError.success) {
@@ -52,13 +63,24 @@ export async function sendWhatsAppMessage(
       };
     }
 
-    const data = await response.json();
+    const responseText = await response.text();
+    let data;
+
+    try {
+      data = JSON.parse(responseText);
+    } catch (error) {
+      return {
+        success: false,
+        error: `Invalid JSON response from WhatsApp bot. Response: ${responseText.substring(0, 200)}. Error: ${error instanceof Error ? error.message : "Unknown error"}`,
+      };
+    }
+
     const parsedResponse = SendMessageResponseSchema.safeParse(data);
 
     if (!parsedResponse.success) {
       return {
         success: false,
-        error: "Invalid response from WhatsApp bot",
+        error: `Invalid response format from WhatsApp bot. Expected {success: boolean}, got: ${responseText.substring(0, 200)}`,
       };
     }
 
