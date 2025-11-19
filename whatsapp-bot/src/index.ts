@@ -42,6 +42,11 @@ client.on("ready", () => {
 });
 
 client.on("message_create", async (msg) => {
+  // Skip messages sent by the bot itself to prevent infinite loops
+  if (msg.fromMe) {
+    return;
+  }
+
   console.log(
     `Message from ${msg.from} #${msg.id._serialized} ${msg.timestamp}: ${msg.body}`,
   );
