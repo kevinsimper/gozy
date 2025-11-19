@@ -5,7 +5,7 @@ import { whatsappWebhookRoutes } from "./whatsapp";
 
 export const apiRoutes = new Hono<{ Bindings: Bindings }>()
   .use("*", async (c, next) => {
-    const token = c.env.GOZY_API_TOKEN;
+    const token = c.env.GOZY_API_KEY;
     const bearer = bearerAuth({ token });
     return bearer(c, next);
   })

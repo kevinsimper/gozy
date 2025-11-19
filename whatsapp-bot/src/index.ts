@@ -6,6 +6,14 @@ import { handleAskCommand, handleMessage } from "./lib/messageHandler.js";
 import { createApp } from "./server.js";
 const { Client, LocalAuth, MessageMedia } = pkg;
 
+const DEV_MODE = process.env.DEV === "true";
+
+if (DEV_MODE) {
+  console.log("Running in DEV mode - !ask prefix required");
+} else {
+  console.log("Running in PROD mode - all messages forwarded to webhook");
+}
+
 const client = new Client({
   authStrategy: new LocalAuth({
     dataPath: ".wwebjs_auth",
@@ -79,6 +87,11 @@ client.on("message_create", async (msg) => {
       await msg.reply("Error: Could not download or send file from URL.");
     }
     return;
+  }
+
+  // In PROD mode, forward all non-command messages to webhook
+  if (!DEV_MODE) {
+    await handleMessage(msg);
   }
 });
 

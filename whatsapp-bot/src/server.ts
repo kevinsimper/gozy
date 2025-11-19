@@ -82,6 +82,38 @@ export function createApp(client: WhatsAppClient) {
 
       const { phoneNumber, message, mediaUrl, caption } = result.data;
 
+      // Validate phone number format - must start with +
+      if (!phoneNumber.startsWith("+")) {
+        return c.json(
+          {
+            error: "Phone number must start with + (e.g., +4520429116)",
+          },
+          400,
+        );
+      }
+
+      const cleanedPhone = phoneNumber.substring(1);
+
+      if (cleanedPhone.length < 10) {
+        return c.json(
+          {
+            error:
+              "Phone number must be at least 10 digits (country code + number)",
+          },
+          400,
+        );
+      }
+
+      // Validate country code (Denmark: 45, Sweden: 46)
+      if (!cleanedPhone.startsWith("45") && !cleanedPhone.startsWith("46")) {
+        return c.json(
+          {
+            error: "Phone number must start with +45 (Denmark) or +46 (Sweden)",
+          },
+          400,
+        );
+      }
+
       // If mediaUrl is provided, send as media message
       if (mediaUrl) {
         await sendMessageWithMediaUrl(
@@ -127,6 +159,39 @@ export function createApp(client: WhatsAppClient) {
       }
 
       const { phoneNumber, caption } = fieldsResult.data;
+
+      // Validate phone number format - must start with +
+      if (!phoneNumber.startsWith("+")) {
+        return c.json(
+          {
+            error: "Phone number must start with + (e.g., +4520429116)",
+          },
+          400,
+        );
+      }
+
+      const cleanedPhone = phoneNumber.substring(1);
+
+      if (cleanedPhone.length < 10) {
+        return c.json(
+          {
+            error:
+              "Phone number must be at least 10 digits (country code + number)",
+          },
+          400,
+        );
+      }
+
+      // Validate country code (Denmark: 45, Sweden: 46)
+      if (!cleanedPhone.startsWith("45") && !cleanedPhone.startsWith("46")) {
+        return c.json(
+          {
+            error: "Phone number must start with +45 (Denmark) or +46 (Sweden)",
+          },
+          400,
+        );
+      }
+
       const file = body.file;
 
       if (!file || typeof file === "string") {

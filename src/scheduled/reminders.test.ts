@@ -34,7 +34,7 @@ describe("handleDocumentReminders", () => {
       FILES: {} as R2Bucket,
       GEMINI_API_KEY: "test-key",
       COOKIE_SECRET: "test-secret",
-      GOZY_API_TOKEN: "test-token",
+      GOZY_API_KEY: "test-token",
       RESEND_API_KEY: "test-resend-key",
       WHATSAPP_BOT_TOKEN: "test-whatsapp-token",
       WHATSAPP_BOT_URL: "https://test.example.com",

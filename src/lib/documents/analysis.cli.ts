@@ -19,7 +19,7 @@ if (
     process.exit(1);
   }
 
-  const platform = await getPlatform(isRemote);
+  const platform = await getPlatform(isRemote ? "production" : "local");
 
   try {
     console.log(`Analyzing document: ${filePath}`);

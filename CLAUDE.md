@@ -157,7 +157,7 @@ Create a `.dev.vars` file in the root directory with the following variables:
 ```bash
 GEMINI_API_KEY=""              # Google Gemini API key for AI conversations
 COOKIE_SECRET=""               # Secret for cookie signing (use strong random string)
-GOZY_API_TOKEN=""              # Webhook token for API security
+GOZY_API_KEY=""                # Webhook token for API security
 RESEND_API_KEY=""              # Resend API key for sending emails
 WHATSAPP_BOT_TOKEN=""          # WhatsApp Bot authentication token (optional in dev)
 WHATSAPP_BOT_URL=""            # WhatsApp Bot webhook URL (optional in dev)
@@ -180,7 +180,7 @@ Staging environment secrets must be set via Cloudflare Workers CLI:
 ```bash
 npx wrangler secret put GEMINI_API_KEY --env staging
 npx wrangler secret put COOKIE_SECRET --env staging
-npx wrangler secret put GOZY_API_TOKEN --env staging
+npx wrangler secret put GOZY_API_KEY --env staging
 npx wrangler secret put RESEND_API_KEY --env staging
 npx wrangler secret put WHATSAPP_BOT_TOKEN --env staging
 ```

@@ -23,7 +23,7 @@ export type Bindings = {
   GEMINI_API_KEY: string;
   FILES: R2Bucket;
   COOKIE_SECRET: string;
-  GOZY_API_TOKEN: string;
+  GOZY_API_KEY: string;
   RESEND_API_KEY: string;
   WHATSAPP_BOT_TOKEN: string;
   WHATSAPP_BOT_URL: string;
@@ -42,8 +42,8 @@ app.use(
     },
     {
       docType: true,
-    },
-  ),
+    }
+  )
 );
 
 app.route("/login", loginRoutes);
@@ -68,7 +68,7 @@ app.get("/signup", async (c) => {
   return c.html(
     <PublicLayout title="Gozy - Opret konto">
       <SignupPage />
-    </PublicLayout>,
+    </PublicLayout>
   );
 });
 
@@ -80,10 +80,16 @@ app.post("/logout", (c) => {
 app.onError((error, c) => {
   if (error instanceof HTTPException) {
     console.error("HTTPException:", error);
+    console.error("HTTPException details:", JSON.stringify(error, null, 2));
     console.error("Cause:", error.cause);
+    console.error("Stack:", error.stack);
     return error.getResponse();
   }
   console.error("Unhandled error:", error);
+  console.error(
+    "Error stack:",
+    error instanceof Error ? error.stack : "No stack available"
+  );
 
   const acceptHeader = c.req.header("Accept") || "";
   const expectsHtml = acceptHeader.includes("text/html");
@@ -126,7 +132,7 @@ app.onError((error, c) => {
           </div>
         </div>
       </Layout>,
-      500,
+      500
     );
   }
 
