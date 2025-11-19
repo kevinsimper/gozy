@@ -4,10 +4,16 @@ import { command, flag } from "../services/simple-cli/cli";
 import { getPlatform } from "../services/simple-cli/platform";
 
 const isRemote = flag("remote", "Use remote production database");
+const isRemoteStaging = flag("remote-staging", "Use remote staging database");
 
 if (command("seed-rtt-locations", "Seed RTT locations into database")) {
   (async () => {
-    const platform = await getPlatform(isRemote);
+    const environment = isRemote
+      ? "production"
+      : isRemoteStaging
+        ? "staging"
+        : "local";
+    const platform = await getPlatform(environment);
     const db = drizzle(platform.env.DB as D1Database);
 
     const locations = [
@@ -53,11 +59,15 @@ if (command("seed-rtt-locations", "Seed RTT locations into database")) {
     ];
 
     for (const location of locations) {
-      await db.insert(rttLocationsTable).values(location).run();
+      await db
+        .insert(rttLocationsTable)
+        .values(location)
+        .onConflictDoNothing()
+        .run();
     }
 
     console.log(
-      `Seeded ${locations.length} RTT locations in ${isRemote ? "production (remote)" : "staging (local)"} database`,
+      `Seeded ${locations.length} RTT locations in ${environment} database`,
     );
 
     platform.dispose();
@@ -66,7 +76,12 @@ if (command("seed-rtt-locations", "Seed RTT locations into database")) {
 
 if (command("seed-test-users", "Seed test users into database")) {
   (async () => {
-    const platform = await getPlatform(isRemote);
+    const environment = isRemote
+      ? "production"
+      : isRemoteStaging
+        ? "staging"
+        : "local";
+    const platform = await getPlatform(environment);
     const db = drizzle(platform.env.DB as D1Database);
 
     const testUsers = [
@@ -85,11 +100,11 @@ if (command("seed-test-users", "Seed test users into database")) {
     ];
 
     for (const user of testUsers) {
-      await db.insert(usersTable).values(user).run();
+      await db.insert(usersTable).values(user).onConflictDoNothing().run();
     }
 
     console.log(
-      `Seeded ${testUsers.length} test users in ${isRemote ? "production (remote)" : "staging (local)"} database`,
+      `Seeded ${testUsers.length} test users in ${environment} database`,
     );
 
     platform.dispose();
