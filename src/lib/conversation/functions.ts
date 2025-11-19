@@ -199,3 +199,22 @@ export const updatePreferredLocationFunction = createGeminiFunctionDeclaration({
     "Updates the user's preferred RTT location without performing a check-in. Use this when the user wants to change their default location.",
   schema: updatePreferredLocationSchema,
 });
+
+const sendDocumentLinkSchema = z.object({
+  documentPublicId: z
+    .string()
+    .describe("The publicId of the document to send a link for"),
+  message: z
+    .string()
+    .optional()
+    .describe(
+      "Optional custom message to include with the link (in Danish). If not provided, a default message will be used.",
+    ),
+});
+
+export const sendDocumentLinkFunction = createGeminiFunctionDeclaration({
+  name: "send_document_link",
+  description:
+    "Sends a link to the user's document dashboard where they can view or download the document. Use this when the user asks to see a specific document. Call get_user_documents first to get the documentPublicId.",
+  schema: sendDocumentLinkSchema,
+});

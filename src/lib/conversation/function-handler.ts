@@ -82,6 +82,7 @@ export async function handleFunctionCall(
   } else if (functionCall.name === "get_user_documents") {
     const documents = await findUserDocumentsByUserId(c, userId);
     const documentList = documents.map((doc) => ({
+      publicId: doc.publicId,
       documentType: doc.documentType,
       filename: doc.file.originalFilename,
       uploadedAt: doc.createdAt,
@@ -248,6 +249,31 @@ export async function handleFunctionCall(
       response: {
         success: true,
         locationName: location.name,
+      },
+    };
+  } else if (functionCall.name === "send_document_link") {
+    const args = functionCall.args as {
+      documentPublicId: string;
+      message?: string;
+    };
+
+    const baseUrl = "https://gozy.ks.workers.dev";
+    const documentUrl = `${baseUrl}/dashboard/documents/${args.documentPublicId}/edit`;
+
+    const defaultMessage = `Her er linket til dit dokument: ${documentUrl}`;
+    const messageToUser = args.message
+      ? `${args.message}\n\n${documentUrl}`
+      : defaultMessage;
+
+    console.log(
+      `Sending document link for ${args.documentPublicId} to user ${userId}`,
+    );
+
+    return {
+      name: functionCall.name,
+      response: {
+        success: true,
+        messageToUser,
       },
     };
   }
