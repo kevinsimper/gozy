@@ -166,7 +166,7 @@ const getRttLocationsSchema = z.object({});
 export const getRttLocationsFunction = createGeminiFunctionDeclaration({
   name: "get_rtt_locations",
   description:
-    "Retrieves the list of all RTT workshop locations. Use this when the user wants to check in but doesn't have a preferred location set, or when they ask about available RTT locations.",
+    "Retrieves the list of all RTT workshop locations with complete information (name, address, phone, email, opening hours). ALWAYS call this function when the user asks ANY question about RTT locations such as: address, phone number, opening hours, email, or location details. Also use when the user wants to check in but doesn't have a preferred location set. NEVER provide RTT information from memory - always fetch from database first.",
   schema: getRttLocationsSchema,
 });
 
