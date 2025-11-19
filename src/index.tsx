@@ -42,8 +42,8 @@ app.use(
     },
     {
       docType: true,
-    }
-  )
+    },
+  ),
 );
 
 app.route("/login", loginRoutes);
@@ -68,7 +68,7 @@ app.get("/signup", async (c) => {
   return c.html(
     <PublicLayout title="Gozy - Opret konto">
       <SignupPage />
-    </PublicLayout>
+    </PublicLayout>,
   );
 });
 
@@ -88,7 +88,7 @@ app.onError((error, c) => {
   console.error("Unhandled error:", error);
   console.error(
     "Error stack:",
-    error instanceof Error ? error.stack : "No stack available"
+    error instanceof Error ? error.stack : "No stack available",
   );
 
   const acceptHeader = c.req.header("Accept") || "";
@@ -132,7 +132,7 @@ app.onError((error, c) => {
           </div>
         </div>
       </Layout>,
-      500
+      500,
     );
   }
 
