@@ -7,6 +7,7 @@ export async function sendWhatsappMessage(
   phoneNumber: string,
   message: string,
   userId?: number,
+  mediaUrl?: string,
 ): Promise<{ success: boolean; error?: string }> {
   const isDisabled = c.env.WHATSAPP_ENABLED === "false";
 
@@ -29,7 +30,14 @@ export async function sendWhatsappMessage(
   const status = result.success ? "sent" : "failed";
 
   try {
-    await createWhatsappMessage(c, phoneNumber, message, status, userId);
+    await createWhatsappMessage(
+      c,
+      phoneNumber,
+      message,
+      status,
+      userId,
+      mediaUrl,
+    );
   } catch (error) {
     console.error("Failed to log WhatsApp message to database:", error);
   }

@@ -407,6 +407,7 @@ export const whatsappMessagesTable = sqliteTable(
     userId: int("user_id"),
     phoneNumber: text("phone_number").notNull(),
     message: text().notNull(),
+    mediaUrl: text("media_url"),
     type: text().notNull(),
     status: text({ enum: ["sent", "failed"] }).notNull(),
     createdAt: int("created_at", { mode: "timestamp" })

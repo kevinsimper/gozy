@@ -1,0 +1,1 @@
+ALTER TABLE `whatsapp_messages` ADD `media_url` text;

@@ -89,3 +89,20 @@ export async function getMessageByPublicId<Env extends DatabaseContext>(
 
   return message;
 }
+
+export async function getLastAssistantMessage<Env extends DatabaseContext>(
+  c: Context<Env>,
+  userId: number,
+): Promise<MessageWithFile | undefined> {
+  const db = drizzle(c.env.DB, { schema });
+  const message = await db.query.messagesTable.findFirst({
+    where: (table, { and, eq }) =>
+      and(eq(table.userId, userId), eq(table.role, "assistant")),
+    orderBy: desc(messagesTable.createdAt),
+    with: {
+      file: true,
+    },
+  });
+
+  return message;
+}

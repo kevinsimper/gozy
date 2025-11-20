@@ -10,6 +10,7 @@ export async function createWhatsappMessage(
   message: string,
   status: "sent" | "failed",
   userId?: number,
+  mediaUrl?: string,
 ): Promise<WhatsappMessage> {
   const db = drizzle(c.env.DB);
   const result = await db
@@ -20,6 +21,7 @@ export async function createWhatsappMessage(
       type: "whatsapp",
       status,
       userId: userId ?? null,
+      mediaUrl: mediaUrl ?? null,
     })
     .returning()
     .get();

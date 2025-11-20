@@ -134,6 +134,13 @@
       "when": 1763627434764,
       "tag": "0018_dazzling_wolfpack",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1763638184315,
+      "tag": "0019_hard_hellfire_club",
+      "breakpoints": true
     }
   ]
 }

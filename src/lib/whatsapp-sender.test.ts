@@ -43,6 +43,7 @@ describe("sendWhatsappMessage", () => {
       type: "whatsapp",
       status: "sent",
       userId: 100,
+      mediaUrl: null,
       createdAt: new Date(),
     });
 
@@ -70,6 +71,7 @@ describe("sendWhatsappMessage", () => {
       "Test message",
       "sent",
       100,
+      undefined,
     );
   });
 
@@ -84,6 +86,7 @@ describe("sendWhatsappMessage", () => {
       type: "whatsapp",
       status: "sent",
       userId: null,
+      mediaUrl: null,
       createdAt: new Date(),
     });
 
@@ -105,6 +108,7 @@ describe("sendWhatsappMessage", () => {
       "Test message",
       "sent",
       undefined,
+      undefined,
     );
   });
 
@@ -122,6 +126,7 @@ describe("sendWhatsappMessage", () => {
       type: "whatsapp",
       status: "failed",
       userId: null,
+      mediaUrl: null,
       createdAt: new Date(),
     });
 
@@ -145,6 +150,7 @@ describe("sendWhatsappMessage", () => {
       "+45invalid",
       "Test message",
       "failed",
+      undefined,
       undefined,
     );
   });
@@ -185,6 +191,7 @@ describe("sendWhatsappMessage", () => {
       type: "whatsapp",
       status: "sent",
       userId: null,
+      mediaUrl: null,
       createdAt: new Date(),
     });
 
@@ -201,6 +208,7 @@ describe("sendWhatsappMessage", () => {
       "+4512345678",
       "Test message",
       "sent",
+      undefined,
       undefined,
     );
   });
@@ -220,6 +228,7 @@ describe("sendWhatsappMessage", () => {
       type: "whatsapp",
       status: "sent",
       userId: null,
+      mediaUrl: null,
       createdAt: new Date(),
     });
 
