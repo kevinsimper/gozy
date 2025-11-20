@@ -22,6 +22,7 @@ import {
 } from "../../models/rttlocation";
 import { createTaxiId, findTaxiIdsByUserId } from "../../models/taxiid";
 import { type FunctionCall } from "@google/genai";
+import { createFile } from "../../models/file";
 
 export async function handleFunctionCall(
   c: Context<{ Bindings: Bindings }>,
@@ -309,6 +310,87 @@ export async function handleFunctionCall(
         })),
       },
     };
+  } else if (functionCall.name === "send_random_dog_image") {
+    const args = functionCall.args as {
+      message?: string;
+    };
+
+    try {
+      // Fetch random dog image from Dog CEO API
+      const dogApiResponse = await fetch(
+        "https://dog.ceo/api/breeds/image/random",
+      );
+      const dogApiData = (await dogApiResponse.json()) as {
+        message: string;
+        status: string;
+      };
+
+      if (dogApiData.status !== "success") {
+        throw new Error("Failed to fetch dog image from API");
+      }
+
+      const imageUrl = dogApiData.message;
+
+      // Download the image
+      const imageResponse = await fetch(imageUrl);
+      if (!imageResponse.ok) {
+        throw new Error(`Failed to download image: ${imageResponse.status}`);
+      }
+
+      const imageBlob = await imageResponse.blob();
+      const imageArrayBuffer = await imageBlob.arrayBuffer();
+
+      // Extract filename from URL
+      const urlParts = imageUrl.split("/");
+      const filename = urlParts[urlParts.length - 1] || "dog.jpg";
+
+      // Determine mime type
+      const mimeType = imageBlob.type || "image/jpeg";
+
+      // Upload to R2
+      const timestamp = Date.now();
+      const storageKey = `assistant-images/${timestamp}-${filename}`;
+
+      await c.env.FILES.put(storageKey, imageArrayBuffer, {
+        httpMetadata: {
+          contentType: mimeType,
+        },
+      });
+
+      // Create file record
+      const fileRecord = await createFile(c, {
+        storageKey,
+        originalFilename: filename,
+        mimeType,
+        size: imageArrayBuffer.byteLength,
+      });
+
+      console.log(
+        `Sent random dog image (file ID: ${fileRecord.id}) to user ${userId}`,
+      );
+
+      const defaultMessage = "Her er et sødt hundebillede til dig!";
+      const messageToUser = args.message || defaultMessage;
+
+      return {
+        name: functionCall.name,
+        response: {
+          success: true,
+          messageToUser,
+          fileId: fileRecord.id,
+        },
+      };
+    } catch (error) {
+      console.error("Error sending random dog image:", error);
+      return {
+        name: functionCall.name,
+        response: {
+          success: false,
+          error: String(error),
+          messageToUser: "Beklager, jeg kunne ikke hente et hundebillede.",
+        },
+      };
+    }
   }
 
   throw new Error(`Unknown function call: ${functionCall.name}`);

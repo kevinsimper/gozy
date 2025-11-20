@@ -17,6 +17,7 @@ import {
   updatePreferredLocationFunction,
   addTaxiIdFunction,
   getTaxiIdsFunction,
+  sendRandomDogImageFunction,
 } from "./functions";
 import {
   findUserByPhoneNumber,
@@ -66,10 +67,15 @@ export async function saveIncomingMessage(
   }
 }
 
+export type AssistantResponse = {
+  text: string;
+  fileId?: number;
+};
+
 export async function generateAssistantResponse(
   c: Context<{ Bindings: Bindings }>,
   userId: number,
-): Promise<Result<string, string>> {
+): Promise<Result<AssistantResponse, string>> {
   try {
     // Get user data for system prompt
     const user = await findUserById(c, userId);
@@ -121,6 +127,7 @@ export async function generateAssistantResponse(
       updatePreferredLocationFunction,
       addTaxiIdFunction,
       getTaxiIdsFunction,
+      sendRandomDogImageFunction,
     ];
 
     let currentHistory: Content[] = conversationHistory;
@@ -149,7 +156,7 @@ export async function generateAssistantResponse(
       if (!result.functionCalls || result.functionCalls.length === 0) {
         if (result.text) {
           await createMessage(c, userId, "assistant", result.text);
-          return Ok(result.text);
+          return Ok({ text: result.text });
         }
         return Err("No response from assistant.");
       }
@@ -176,9 +183,28 @@ export async function generateAssistantResponse(
           typeof functionResponse.response.messageToUser === "string"
         ) {
           const message = functionResponse.response.messageToUser;
-          await createMessage(c, userId, "assistant", message);
-          console.log(`Saved and returning message from function: ${message}`);
-          return Ok(message);
+
+          // Check if there's also a fileId to attach
+          let fileToAttach;
+          if (
+            functionResponse.response.fileId &&
+            typeof functionResponse.response.fileId === "number"
+          ) {
+            const { findFileById } = await import("../../models/file");
+            fileToAttach = await findFileById(
+              c,
+              functionResponse.response.fileId,
+            );
+          }
+
+          await createMessage(c, userId, "assistant", message, fileToAttach);
+          console.log(
+            `Saved and returning message from function: ${message}${fileToAttach ? ` with file ${fileToAttach.id}` : ""}`,
+          );
+          return Ok({
+            text: message,
+            fileId: fileToAttach?.id,
+          });
         }
       }
 
@@ -212,7 +238,7 @@ export async function handleTextMessage(
   phoneNumber: string,
   messageText: string,
   file?: DatabaseFile,
-): Promise<Result<string, string>> {
+): Promise<Result<AssistantResponse, string>> {
   const userResult = await saveIncomingMessage(
     c,
     phoneNumber,

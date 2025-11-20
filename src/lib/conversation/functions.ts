@@ -237,3 +237,17 @@ export const getTaxiIdsFunction = createGeminiFunctionDeclaration({
     "Retrieves all Taxi IDs associated with the user. Use this when the user asks about their Taxi IDs or to check what Taxi IDs they have registered.",
   schema: getTaxiIdsSchema,
 });
+
+const sendRandomDogImageSchema = z.object({
+  message: z
+    .string()
+    .optional()
+    .describe("Optional message to accompany the dog image (in Danish)"),
+});
+
+export const sendRandomDogImageFunction = createGeminiFunctionDeclaration({
+  name: "send_random_dog_image",
+  description:
+    "Sends a random cute dog image to the user. Use this when the user asks to see a dog picture or wants to see something cute.",
+  schema: sendRandomDogImageSchema,
+});
