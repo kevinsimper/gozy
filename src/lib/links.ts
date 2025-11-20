@@ -18,6 +18,7 @@ export enum AppLink {
   DashboardServiceBooking = "/dashboard/service-booking",
   DashboardServiceBookingBook = "/dashboard/service-booking/book",
   ApiWhatsapp = "/api/whatsapp",
+  ApiFiles = "/api/files/:publicId",
   Files = "/files/:publicId",
   AdminDashboard = "/admin",
   AdminDocuments = "/admin/documents",

@@ -5,6 +5,8 @@ import { DatabaseFile } from "../models/file";
 import { handleTextMessage } from "./conversation";
 import { findUserByPhoneNumber } from "../models/user";
 import { getLastAssistantMessage } from "../models/message";
+import { createWhatsappMessage } from "../models/whatsapp-message";
+import { AppLink, lk } from "./links";
 
 export type WhatsappWebhookResponse = {
   text: string;
@@ -29,14 +31,28 @@ export async function handleWhatsappWebhook(
   };
 
   // If the response includes a fileId, construct the public media URL
-  if (result.val.fileId) {
-    const user = await findUserByPhoneNumber(c, phoneNumber);
-    if (user) {
-      const lastMessage = await getLastAssistantMessage(c, user.id);
-      if (lastMessage && lastMessage.publicId) {
-        const baseUrl = new URL(c.req.url).origin;
-        response.mediaUrl = `${baseUrl}/api/files/${lastMessage.publicId}`;
-      }
+  let user = await findUserByPhoneNumber(c, phoneNumber);
+  if (result.val.fileId && user) {
+    const lastMessage = await getLastAssistantMessage(c, user.id);
+    if (lastMessage && lastMessage.publicId) {
+      const baseUrl = new URL(c.req.url).origin;
+      response.mediaUrl = `${baseUrl}${lk(AppLink.ApiFiles, { publicId: lastMessage.publicId })}`;
+    }
+  }
+
+  // Log the outgoing WhatsApp message
+  if (user) {
+    try {
+      await createWhatsappMessage(
+        c,
+        phoneNumber,
+        response.text,
+        "sent",
+        user.id,
+        response.mediaUrl,
+      );
+    } catch (error) {
+      console.error("Failed to log outgoing WhatsApp message:", error);
     }
   }
 

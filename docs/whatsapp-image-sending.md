@@ -18,6 +18,7 @@ The image sending feature allows the AI assistant to send images to users throug
 **Location**: `/src`
 
 The main application handles:
+
 - AI conversation processing
 - Image storage in R2
 - Public file URL generation
@@ -28,6 +29,7 @@ The main application handles:
 **Location**: `/whatsapp-bot`
 
 The bot handles:
+
 - Receiving messages from WhatsApp users
 - Calling the webhook API
 - Downloading images from URLs
@@ -68,16 +70,19 @@ User → WhatsApp → Bot → Webhook API → AI Processing → Bot → WhatsApp
 #### Why Webhook Returns Data Instead of Sending
 
 The webhook API (`/api/whatsapp`) is **incoming only** - it:
+
 - ✅ Processes messages and generates responses
 - ✅ Returns response data to the caller
 - ❌ Does NOT send messages to users
 
 The bot is responsible for:
+
 - ✅ Calling the webhook
 - ✅ Handling the response
 - ✅ Actually sending messages to users
 
 **Rationale**: This separation of concerns allows:
+
 - The webhook to be stateless and testable
 - The bot to handle WhatsApp-specific delivery logic
 - Better error handling and retry logic in the bot
@@ -104,7 +109,9 @@ export const sendRandomDogImageFunction = createGeminiFunctionDeclaration({
   name: "send_random_dog_image",
   description: "Sends a random cute dog image to the user.",
   schema: z.object({
-    message: z.string().optional()
+    message: z
+      .string()
+      .optional()
       .describe("Optional message to accompany the dog image (in Danish)"),
   }),
 });
@@ -115,6 +122,7 @@ export const sendRandomDogImageFunction = createGeminiFunctionDeclaration({
 **File**: `src/lib/conversation/function-handler.ts`
 
 The handler:
+
 1. Fetches image from external API (e.g., Dog CEO API)
 2. Downloads the image data
 3. Uploads to R2 at `assistant-images/{timestamp}-{filename}`
@@ -128,13 +136,13 @@ The handler:
 ```typescript
 export type AssistantResponse = {
   text: string;
-  fileId?: number;  // Optional file attachment
+  fileId?: number; // Optional file attachment
 };
 
 export async function generateAssistantResponse(
   c: Context<{ Bindings: Bindings }>,
   userId: number,
-): Promise<Result<AssistantResponse, string>>
+): Promise<Result<AssistantResponse, string>>;
 ```
 
 When a function returns `fileId`, it's included in the response.
@@ -154,10 +162,11 @@ export async function handleWhatsappWebhook(
   phoneNumber: string,
   messageText: string,
   file?: DatabaseFile,
-): Promise<Result<WhatsappWebhookResponse, string>>
+): Promise<Result<WhatsappWebhookResponse, string>>;
 ```
 
 **Key logic**:
+
 ```typescript
 // If response has fileId, construct public media URL
 if (result.val.fileId) {
@@ -171,7 +180,7 @@ if (result.val.fileId) {
   }
 }
 
-return Ok(response);  // Does NOT send message, just returns data
+return Ok(response); // Does NOT send message, just returns data
 ```
 
 #### 5. Public File Serving
@@ -179,8 +188,9 @@ return Ok(response);  // Does NOT send message, just returns data
 **File**: `src/routes/api/files.ts`
 
 ```typescript
-export const filesRoutes = new Hono<{ Bindings: Bindings }>()
-  .get("/:publicId", async (c) => {
+export const filesRoutes = new Hono<{ Bindings: Bindings }>().get(
+  "/:publicId",
+  async (c) => {
     const publicId = c.req.param("publicId");
     const message = await getMessageByPublicId(c, publicId);
 
@@ -198,7 +208,8 @@ export const filesRoutes = new Hono<{ Bindings: Bindings }>()
     return new Response(file.body, {
       headers: { "Content-Type": message.file.mimeType },
     });
-  });
+  },
+);
 ```
 
 ### WhatsApp Bot
@@ -211,12 +222,12 @@ export const filesRoutes = new Hono<{ Bindings: Bindings }>()
 const WebhookResponseSchema = z.object({
   success: z.boolean(),
   response: z.string().optional(),
-  mediaUrl: z.string().url().optional(),  // New field
+  mediaUrl: z.string().url().optional(), // New field
 });
 
 export async function sendToWebhook(
   payload: WebhookPayload,
-): Promise<{ text: string; mediaUrl?: string } | null>
+): Promise<{ text: string; mediaUrl?: string } | null>;
 ```
 
 Returns the full response object including `mediaUrl`.
@@ -226,6 +237,7 @@ Returns the full response object including `mediaUrl`.
 **File**: `whatsapp-bot/src/lib/messageHandler.ts`
 
 **Text-only reply**:
+
 ```typescript
 export async function sendDelayedReply(
   message: Message,
@@ -233,11 +245,12 @@ export async function sendDelayedReply(
 ): Promise<void> {
   const delay = calculateReplyDelay(text.length);
   await sleep(delay);
-  await message.reply(text);  // Simple text reply
+  await message.reply(text); // Simple text reply
 }
 ```
 
 **Media reply** (new):
+
 ```typescript
 export async function sendDelayedMediaReply(
   client: WhatsAppClient,
@@ -255,6 +268,7 @@ export async function sendDelayedMediaReply(
 ```
 
 **Main handler logic**:
+
 ```typescript
 export async function handleMessage(
   client: WhatsAppClient,
@@ -403,13 +417,14 @@ const tools = [
   updateUserNameFunction,
   // ... other functions ...
   sendRandomDogImageFunction,
-  sendWeatherMapFunction,  // Add here
+  sendWeatherMapFunction, // Add here
 ];
 ```
 
 ### 4. Test Flow
 
 The rest happens automatically:
+
 - ✅ Gemini recognizes when to call the function
 - ✅ Function handler stores image and returns fileId
 - ✅ Conversation handler includes fileId in response
@@ -421,13 +436,14 @@ The rest happens automatically:
 ### Unit Tests
 
 **Main app tests**: `src/routes/api/whatsapp.test.ts`
+
 ```typescript
 it("should handle file responses with mediaUrl", async () => {
   vi.mocked(handleWhatsappWebhook).mockResolvedValue(
     Ok({
       text: "Here's an image!",
       mediaUrl: "https://example.com/image.jpg",
-    })
+    }),
   );
 
   // ... test that response includes mediaUrl
@@ -435,6 +451,7 @@ it("should handle file responses with mediaUrl", async () => {
 ```
 
 **Bot tests**: `whatsapp-bot/src/lib/messageHandler.test.ts`
+
 ```typescript
 it("should handle media URL in response", async () => {
   vi.mocked(webhook.sendToWebhook).mockResolvedValue({
@@ -447,7 +464,7 @@ it("should handle media URL in response", async () => {
   expect(mockClient.sendMessage).toHaveBeenCalledWith(
     "4540360565@c.us",
     { data: "mock-media" },
-    { caption: "Here's a cute dog!" }
+    { caption: "Here's a cute dog!" },
   );
   expect(mockMessage.reply).not.toHaveBeenCalled();
 });
@@ -470,6 +487,7 @@ Use the development mock interface:
 **Symptoms**: User gets text response but no image
 
 **Debug steps**:
+
 1. Check bot logs for "Media URL: https://..." - confirms webhook returned mediaUrl
 2. Check for "Waiting Xms before replying with media..." - confirms bot recognized mediaUrl
 3. Check for errors downloading from URL
@@ -477,6 +495,7 @@ Use the development mock interface:
 5. Verify URL is not expired (< 1 hour old)
 
 **Common causes**:
+
 - URL expired (> 1 hour old)
 - Network issue downloading from URL
 - Invalid image format
@@ -495,6 +514,7 @@ Use the development mock interface:
 **Symptoms**: File URL returns 403 even though just created
 
 **Debug steps**:
+
 1. Check `message.createdAt` timestamp in database
 2. Verify server time is correct
 3. Check timezone handling

@@ -9,7 +9,7 @@ import {
 import { requireAdmin } from "../../lib/adminAuth";
 import { AdminReminders } from "../../views/admin/reminders";
 import { AppLink, lk } from "../../lib/links";
-import { sendWhatsAppMessage } from "../../lib/whatsapp";
+import { sendWhatsappMessage } from "../../lib/whatsapp-sender";
 import { updateUserDocument } from "../../models/userDocument";
 import { createReminder } from "../../models/reminder";
 import { Bindings } from "../..";
@@ -180,11 +180,11 @@ ${document.description ? `Note: ${document.description}\n\n` : ""}Husk at forny 
 Du kan se og opdatere dine dokumenter på https://gozy.dk/dashboard/documents`;
 
     try {
-      await sendWhatsAppMessage(
-        c.env.WHATSAPP_BOT_URL,
-        c.env.WHATSAPP_BOT_TOKEN,
+      await sendWhatsappMessage(
+        c,
         document.user.phoneNumber,
         message,
+        document.userId,
       );
 
       // Record reminder

@@ -7,7 +7,8 @@ import { UserDetail } from "../../views/admin/userdetail";
 import { UserSystemPrompt } from "../../views/admin/usersystemprompt";
 import { AppLink, lk } from "../../lib/links";
 import { html } from "hono/html";
-import { sendWhatsAppMessage } from "../../lib/whatsapp";
+import { sendWhatsappMessage } from "../../lib/whatsapp-sender";
+import { createMessage } from "../../models/message";
 import { Bindings } from "../..";
 import { CONVERSATION_SYSTEM_PROMPT } from "../../lib/prompts";
 import { findTaxiIdsByUserId } from "../../models/taxiid";
@@ -111,12 +112,17 @@ export const usersRoutes = new Hono<{ Bindings: Bindings }>()
       );
     }
 
-    const result = await sendWhatsAppMessage(
-      c.env.WHATSAPP_BOT_URL,
-      c.env.WHATSAPP_BOT_TOKEN,
+    const result = await sendWhatsappMessage(
+      c,
       targetUser.phoneNumber,
       message.trim(),
+      targetUser.id,
     );
+
+    // Also save to messages table for conversation history
+    if (result.success) {
+      await createMessage(c, targetUser.id, "assistant", message.trim());
+    }
 
     return c.render(
       <UserDetail
