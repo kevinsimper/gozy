@@ -422,3 +422,64 @@ export const whatsappMessagesTable = sqliteTable(
 );
 
 export type WhatsappMessage = typeof whatsappMessagesTable.$inferSelect;
+
+export const rateLimitsTable = sqliteTable(
+  "rate_limits",
+  {
+    id: int().primaryKey({ autoIncrement: true }),
+    identifier: text().notNull(),
+    endpoint: text().notNull(),
+    requests: int().notNull().default(0),
+    resetsAt: int("resets_at", { mode: "timestamp" }).notNull(),
+    isOverThreshold: int("is_over_threshold", { mode: "boolean" })
+      .notNull()
+      .default(false),
+    lastAlarmSentAt: int("last_alarm_sent_at", { mode: "timestamp" }),
+    alarmCount: int("alarm_count").notNull().default(0),
+    createdAt: int("created_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+    updatedAt: int("updated_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => ({
+    identifierEndpointIdx: index("rate_limits_identifier_endpoint_idx").on(
+      table.identifier,
+      table.endpoint,
+    ),
+    resetsAtIdx: index("rate_limits_resets_at_idx").on(table.resetsAt),
+  }),
+);
+
+export type RateLimit = typeof rateLimitsTable.$inferSelect;
+
+export const rateLimitLogsTable = sqliteTable(
+  "rate_limit_logs",
+  {
+    id: int().primaryKey({ autoIncrement: true }),
+    identifier: text().notNull(),
+    endpoint: text().notNull(),
+    action: text({
+      enum: ["allowed", "blocked_ip", "blocked_global"],
+    }).notNull(),
+    globalCount: int("global_count"),
+    ipCount: int("ip_count"),
+    userAgent: text("user_agent"),
+    country: text(),
+    createdAt: int("created_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => ({
+    identifierCreatedAtIdx: index(
+      "rate_limit_logs_identifier_created_at_idx",
+    ).on(table.identifier, table.createdAt),
+    endpointCreatedAtIdx: index("rate_limit_logs_endpoint_created_at_idx").on(
+      table.endpoint,
+      table.createdAt,
+    ),
+  }),
+);
+
+export type RateLimitLog = typeof rateLimitLogsTable.$inferSelect;
