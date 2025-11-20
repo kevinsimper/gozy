@@ -1,9 +1,9 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { handleTextMessage } from "../../lib/conversation";
 import { Bindings } from "../../index";
 import { uploadAndCreateFile } from "../../lib/fileUpload";
 import { DatabaseFile } from "../../models/file";
+import { handleWhatsappWebhook } from "../../lib/whatsapp-webhook-handler";
 
 const whatsappWebhookSchema = z.object({
   from: z.string(),
@@ -48,12 +48,21 @@ export const whatsappWebhookRoutes = new Hono<{ Bindings: Bindings }>().post(
     }
 
     const messageText = message.text || "";
-    const result = await handleTextMessage(c, phoneNumber, messageText, file);
+    const result = await handleWhatsappWebhook(
+      c,
+      phoneNumber,
+      messageText,
+      file,
+    );
 
     if (result.ok) {
-      return c.json({ success: true, response: result.val });
+      return c.json({
+        success: true,
+        response: result.val.text,
+        mediaUrl: result.val.mediaUrl,
+      });
     } else {
-      return c.json({ error: result.err }, 500);
+      return c.json({ error: result.val }, 500);
     }
   },
 );

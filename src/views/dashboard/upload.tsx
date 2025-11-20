@@ -59,6 +59,8 @@ export function UploadPage() {
           <div style="display: flex; gap: 1rem;">
             <button
               type="submit"
+              id="upload-button"
+              onclick="this.disabled=true;this.style.opacity='0.5';this.style.cursor='not-allowed';this.textContent='Uploading...';this.form.submit();"
               style="background: #2563eb; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 0.375rem; font-weight: 500; cursor: pointer; font-size: 0.875rem;"
             >
               Upload Document

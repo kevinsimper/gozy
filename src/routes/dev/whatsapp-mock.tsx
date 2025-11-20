@@ -1,11 +1,10 @@
 import { Hono } from "hono";
 import { jsxRenderer } from "hono/jsx-renderer";
 import { Layout } from "../../views/layout";
-import { handleTextMessage } from "../../lib/conversation";
 import { Bindings } from "../../index";
 import { uploadAndCreateFile } from "../../lib/fileUpload";
 import { DatabaseFile } from "../../models/file";
-import { sendEmail } from "../../lib/email";
+import { handleWhatsappWebhook } from "../../lib/whatsapp-webhook-handler";
 
 export const whatsappMockRoute = new Hono<{ Bindings: Bindings }>()
   .use(
@@ -22,6 +21,15 @@ export const whatsappMockRoute = new Hono<{ Bindings: Bindings }>()
   .get("/whatsapp-mock", async (c) => {
     const phoneNumber = c.req.query("phone") || "";
     const lastResponse = c.req.query("response") || "";
+    const mediaUrl = c.req.query("mediaUrl") || "";
+
+    // Parse response to check if it includes an image
+    const fileIdMatch = lastResponse.match(/\[Image included, fileId: (\d+)\]/);
+    const hasImage = !!fileIdMatch;
+    const responseText = hasImage
+      ? lastResponse.replace(/\s*\[Image included, fileId: \d+\]/, "")
+      : lastResponse;
+    const fileId = fileIdMatch ? fileIdMatch[1] : null;
 
     return c.render(
       <div className="min-h-screen bg-gray-900 p-4 md:p-8">
@@ -59,31 +67,85 @@ export const whatsappMockRoute = new Hono<{ Bindings: Bindings }>()
 
             <div className="p-6">
               {lastResponse && (
-                <div className="mb-6 bg-gray-900 border border-green-600 rounded-lg p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <svg
-                        className="w-4 h-4 text-white"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-xs font-semibold text-green-400 mb-1">
-                        RESPONSE RECEIVED
-                      </p>
-                      <p className="text-sm text-gray-200 bg-gray-800 p-3 rounded border border-gray-700 font-mono">
-                        {lastResponse}
+                <div className="mb-6 bg-gray-900 border border-green-600 rounded-lg overflow-hidden">
+                  <div className="bg-green-900/30 px-4 py-2 border-b border-green-600/50">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0">
+                        <svg
+                          className="w-3 h-3 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      </div>
+                      <p className="text-xs font-semibold text-green-400 uppercase tracking-wide">
+                        Assistant Response
                       </p>
                     </div>
+                  </div>
+                  <div className="p-4">
+                    <p
+                      className="text-sm text-gray-200 whitespace-pre-wrap"
+                      style="line-height: 1.6;"
+                    >
+                      {responseText}
+                    </p>
+                    {hasImage && fileId && (
+                      <div className="mt-3 pt-3 border-t border-gray-700">
+                        <div className="flex items-start gap-2 text-xs">
+                          <svg
+                            className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                            />
+                          </svg>
+                          <div className="flex-1">
+                            {mediaUrl ? (
+                              <div>
+                                <a
+                                  href={mediaUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="font-semibold text-green-400 hover:text-green-300 underline inline-block"
+                                >
+                                  View Image
+                                </a>
+                                <p className="text-gray-500 mt-1">
+                                  File ID: {fileId} • Valid for 1 hour after
+                                  creation
+                                </p>
+                                <p className="text-gray-600 mt-1 font-mono text-[10px] break-all">
+                                  {mediaUrl}
+                                </p>
+                              </div>
+                            ) : (
+                              <div>
+                                <span className="font-semibold text-green-400">
+                                  Image included
+                                </span>
+                                <p className="text-gray-400 mt-1">
+                                  File ID: {fileId}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -249,16 +311,37 @@ export const whatsappMockRoute = new Hono<{ Bindings: Bindings }>()
       }
     }
 
-    const result = await handleTextMessage(c, normalizedPhone, message, file);
+    // Call the webhook handler (simulates what the WhatsApp bot does)
+    const result = await handleWhatsappWebhook(
+      c,
+      normalizedPhone,
+      message,
+      file,
+    );
 
     let responseText = "";
+    let mediaUrl = "";
+
     if (result.ok) {
-      responseText = result.val;
+      responseText = result.val.text;
+      mediaUrl = result.val.mediaUrl || "";
+
+      // Add visual indicator for UI
+      if (mediaUrl) {
+        // Extract fileId from the last assistant message for display purposes
+        const fileIdMatch = mediaUrl.match(/\/files\/([^/]+)$/);
+        if (fileIdMatch) {
+          responseText += ` [Image included, fileId: unknown]`;
+        }
+      }
     } else {
-      responseText = `Error: ${result.err}`;
+      responseText = `Error: ${result.val}`;
     }
 
-    return c.redirect(
-      `/dev/whatsapp-mock?phone=${encodeURIComponent(phoneNumber)}&response=${encodeURIComponent(responseText)}`,
-    );
+    const redirectUrl = `/dev/whatsapp-mock?phone=${encodeURIComponent(phoneNumber)}&response=${encodeURIComponent(responseText)}`;
+    const finalUrl = mediaUrl
+      ? `${redirectUrl}&mediaUrl=${encodeURIComponent(mediaUrl)}`
+      : redirectUrl;
+
+    return c.redirect(finalUrl);
   });

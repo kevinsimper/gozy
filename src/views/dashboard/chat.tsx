@@ -134,6 +134,7 @@ export function ChatPage(props: ChatPageProps) {
             action={lk(AppLink.DashboardChat)}
             enctype="multipart/form-data"
             className="max-w-7xl mx-auto w-full bg-white border-l border-r border-t border-gray-200 px-6 py-4"
+            onsubmit="setTimeout(() => { const btn = this.querySelector('button[type=submit]'); btn.disabled = true; btn.textContent = 'Sender...'; this.querySelector('textarea').disabled = true; this.querySelector('input[type=file]').disabled = true; }, 0); return true;"
           >
             <div className="flex flex-col gap-3">
               <div className="flex-1">
@@ -143,6 +144,7 @@ export function ChatPage(props: ChatPageProps) {
                   rows={3}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                   placeholder="Hvordan kan jeg hjælpe dig i dag?"
+                  onkeydown="if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); this.form.submit(); }"
                 />
               </div>
               <div className="flex items-center gap-3">
@@ -157,7 +159,7 @@ export function ChatPage(props: ChatPageProps) {
                 </div>
                 <button
                   type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors"
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
                   Send
                 </button>
