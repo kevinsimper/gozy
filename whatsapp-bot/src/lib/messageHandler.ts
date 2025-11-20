@@ -1,11 +1,15 @@
 import { calculateReplyDelay, sleep } from "./delay.js";
 import { sendToWebhook } from "./webhook.js";
+import pkg from "whatsapp-web.js";
+const { MessageMedia } = pkg;
 
 type Media = {
   mimetype: string;
   filename?: string | null;
   data: string;
 };
+
+type WhatsAppClient = InstanceType<typeof pkg.Client>;
 
 type Message = {
   from: string;
@@ -27,7 +31,21 @@ export async function sendDelayedReply(
   await message.reply(text);
 }
 
+export async function sendDelayedMediaReply(
+  client: WhatsAppClient,
+  from: string,
+  mediaUrl: string,
+  caption: string,
+): Promise<void> {
+  const delay = calculateReplyDelay(caption.length);
+  console.log(`Waiting ${Math.round(delay)}ms before replying with media...`);
+  await sleep(delay);
+  const media = await MessageMedia.fromUrl(mediaUrl);
+  await client.sendMessage(from, media, { caption });
+}
+
 export async function handleMessage(
+  client: WhatsAppClient,
   msg: Message,
   text?: string,
 ): Promise<void> {
@@ -65,11 +83,23 @@ export async function handleMessage(
   });
 
   if (aiResponse) {
-    await sendDelayedReply(msg, aiResponse);
+    if (aiResponse.mediaUrl) {
+      await sendDelayedMediaReply(
+        client,
+        msg.from,
+        aiResponse.mediaUrl,
+        aiResponse.text,
+      );
+    } else {
+      await sendDelayedReply(msg, aiResponse.text);
+    }
   }
 }
 
-export async function handleAskCommand(msg: Message): Promise<void> {
+export async function handleAskCommand(
+  client: WhatsAppClient,
+  msg: Message,
+): Promise<void> {
   const question = msg.body.slice(5).trim();
 
   if (!question) {
@@ -77,5 +107,5 @@ export async function handleAskCommand(msg: Message): Promise<void> {
     return;
   }
 
-  await handleMessage(msg, question);
+  await handleMessage(client, msg, question);
 }

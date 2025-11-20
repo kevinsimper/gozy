@@ -15,7 +15,7 @@ export async function sendWhatsappMessage(
 
   if (isDisabled) {
     console.log(
-      `[WhatsApp disabled] Would send to ${phoneNumber}: ${message.substring(0, 50)}...`,
+      `[WhatsApp disabled] Would send to ${phoneNumber}: ${message.substring(0, 50)}...${mediaUrl ? ` with media: ${mediaUrl}` : ""}`,
     );
     result = { success: true };
   } else {
@@ -24,6 +24,7 @@ export async function sendWhatsappMessage(
       c.env.WHATSAPP_BOT_TOKEN,
       phoneNumber,
       message,
+      mediaUrl,
     );
   }
 

@@ -62,6 +62,7 @@ describe("sendWhatsappMessage", () => {
       "test-token-123",
       "+4512345678",
       "Test message",
+      undefined,
     );
 
     // Verify message was logged to database
@@ -245,6 +246,7 @@ describe("sendWhatsappMessage", () => {
       "test-token-123",
       "+4512345678",
       longMessage,
+      undefined,
     );
   });
 });

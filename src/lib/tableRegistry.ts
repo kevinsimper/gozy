@@ -12,6 +12,7 @@ import {
   checkinsTable,
   rateLimitsTable,
   rateLimitLogsTable,
+  whatsappMessagesTable,
 } from "../db/schema";
 
 export const tableRegistry = {
@@ -28,6 +29,7 @@ export const tableRegistry = {
   checkins: checkinsTable,
   rate_limits: rateLimitsTable,
   rate_limit_logs: rateLimitLogsTable,
+  whatsapp_messages: whatsappMessagesTable,
 } as const;
 
 export type TableName = keyof typeof tableRegistry;

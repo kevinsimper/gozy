@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   sendDelayedReply,
+  sendDelayedMediaReply,
   handleAskCommand,
   handleMessage,
 } from "./messageHandler";
@@ -9,8 +10,19 @@ import * as delay from "./delay";
 
 vi.mock("./webhook");
 vi.mock("./delay");
+vi.mock("whatsapp-web.js", () => ({
+  default: {
+    MessageMedia: {
+      fromUrl: vi.fn().mockResolvedValue({ data: "mock-media" }),
+    },
+  },
+}));
 
 describe("messageHandler", () => {
+  const mockClient = {
+    sendMessage: vi.fn().mockResolvedValue({}),
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(delay.calculateReplyDelay).mockReturnValue(1000);
@@ -49,9 +61,11 @@ describe("messageHandler", () => {
         downloadMedia: vi.fn(),
       };
 
-      vi.mocked(webhook.sendToWebhook).mockResolvedValue("It's sunny!");
+      vi.mocked(webhook.sendToWebhook).mockResolvedValue({
+        text: "It's sunny!",
+      });
 
-      await handleAskCommand(mockMessage);
+      await handleAskCommand(mockClient as any, mockMessage);
 
       expect(webhook.sendToWebhook).toHaveBeenCalledWith({
         from: "4540360565@c.us",
@@ -73,7 +87,7 @@ describe("messageHandler", () => {
         downloadMedia: vi.fn(),
       };
 
-      await handleAskCommand(mockMessage);
+      await handleAskCommand(mockClient as any, mockMessage);
 
       expect(mockMessage.reply).toHaveBeenCalledWith(
         "Please provide a question after !ask",
@@ -94,7 +108,7 @@ describe("messageHandler", () => {
 
       vi.mocked(webhook.sendToWebhook).mockResolvedValue(null);
 
-      await handleAskCommand(mockMessage);
+      await handleAskCommand(mockClient as any, mockMessage);
 
       expect(webhook.sendToWebhook).toHaveBeenCalled();
       expect(delay.sleep).not.toHaveBeenCalled();
@@ -117,9 +131,11 @@ describe("messageHandler", () => {
         }),
       };
 
-      vi.mocked(webhook.sendToWebhook).mockResolvedValue("Nice photo!");
+      vi.mocked(webhook.sendToWebhook).mockResolvedValue({
+        text: "Nice photo!",
+      });
 
-      await handleMessage(mockMessage);
+      await handleMessage(mockClient as any, mockMessage);
 
       expect(mockMessage.downloadMedia).toHaveBeenCalled();
       expect(webhook.sendToWebhook).toHaveBeenCalledWith({
@@ -146,7 +162,7 @@ describe("messageHandler", () => {
         downloadMedia: vi.fn().mockResolvedValue(undefined),
       };
 
-      await handleMessage(mockMessage);
+      await handleMessage(mockClient as any, mockMessage);
 
       expect(mockMessage.downloadMedia).toHaveBeenCalled();
       expect(mockMessage.reply).toHaveBeenCalledWith(
@@ -172,7 +188,7 @@ describe("messageHandler", () => {
 
       vi.mocked(webhook.sendToWebhook).mockResolvedValue(null);
 
-      await handleMessage(mockMessage);
+      await handleMessage(mockClient as any, mockMessage);
 
       expect(webhook.sendToWebhook).toHaveBeenCalledWith({
         from: "4540360565@c.us",
@@ -198,9 +214,11 @@ describe("messageHandler", () => {
         downloadMedia: vi.fn(),
       };
 
-      vi.mocked(webhook.sendToWebhook).mockResolvedValue("Got it!");
+      vi.mocked(webhook.sendToWebhook).mockResolvedValue({
+        text: "Got it!",
+      });
 
-      await handleMessage(mockMessage);
+      await handleMessage(mockClient as any, mockMessage);
 
       expect(mockMessage.downloadMedia).not.toHaveBeenCalled();
       expect(webhook.sendToWebhook).toHaveBeenCalledWith({
@@ -211,6 +229,33 @@ describe("messageHandler", () => {
         timestamp: 123456,
       });
       expect(mockMessage.reply).toHaveBeenCalledWith("Got it!");
+    });
+
+    it("should handle media URL in response", async () => {
+      const mockMessage = {
+        from: "4540360565@c.us",
+        body: "Send me a dog picture",
+        id: { _serialized: "msg1" },
+        timestamp: 123456,
+        hasMedia: false,
+        reply: vi.fn().mockResolvedValue({}),
+        downloadMedia: vi.fn(),
+      };
+
+      vi.mocked(webhook.sendToWebhook).mockResolvedValue({
+        text: "Here's a cute dog!",
+        mediaUrl: "https://example.com/dog.jpg",
+      });
+
+      await handleMessage(mockClient as any, mockMessage);
+
+      expect(webhook.sendToWebhook).toHaveBeenCalled();
+      expect(mockClient.sendMessage).toHaveBeenCalledWith(
+        "4540360565@c.us",
+        { data: "mock-media" },
+        { caption: "Here's a cute dog!" },
+      );
+      expect(mockMessage.reply).not.toHaveBeenCalled();
     });
   });
 });

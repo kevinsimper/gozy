@@ -23,13 +23,14 @@ type WebhookPayload = {
 const WebhookResponseSchema = z.object({
   success: z.boolean(),
   response: z.string().optional(),
+  mediaUrl: z.string().url().optional(),
 });
 
 type WebhookResponse = z.infer<typeof WebhookResponseSchema>;
 
 export async function sendToWebhook(
   payload: WebhookPayload,
-): Promise<string | null> {
+): Promise<{ text: string; mediaUrl?: string } | null> {
   try {
     console.log(`[API] Sending to webhook: ${API_URL}/api/whatsapp`);
     console.log(`[API] From: ${payload.from}, MessageId: ${payload.messageId}`);
@@ -92,7 +93,18 @@ export async function sendToWebhook(
         `[API] Response text: ${result.response.substring(0, 100)}${result.response.length > 100 ? "..." : ""}`,
       );
     }
-    return result.response || null;
+    if (result.mediaUrl) {
+      console.log(`[API] Media URL: ${result.mediaUrl}`);
+    }
+
+    if (!result.response) {
+      return null;
+    }
+
+    return {
+      text: result.response,
+      mediaUrl: result.mediaUrl,
+    };
   } catch (error) {
     console.error("[API] Failed to send to webhook:", error);
     return null;

@@ -53,7 +53,7 @@ client.on("message_create", async (msg) => {
 
   // Handle !ask commands
   if (msg.body.startsWith("!ask ")) {
-    await handleAskCommand(msg);
+    await handleAskCommand(client, msg);
     return;
   }
 
@@ -96,7 +96,7 @@ client.on("message_create", async (msg) => {
 
   // In PROD mode, forward all non-command messages to webhook
   if (!DEV_MODE) {
-    await handleMessage(msg);
+    await handleMessage(client, msg);
   }
 });
 

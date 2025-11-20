@@ -21,7 +21,10 @@ describe("webhook", () => {
         timestamp: 1234567890,
       });
 
-      expect(result).toBe("Message received");
+      expect(result).toEqual({
+        text: "Message received",
+        mediaUrl: undefined,
+      });
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining("/api/whatsapp"),
         expect.objectContaining({
@@ -63,7 +66,10 @@ describe("webhook", () => {
         timestamp: 1234567890,
       });
 
-      expect(result).toBe("Photo received");
+      expect(result).toEqual({
+        text: "Photo received",
+        mediaUrl: undefined,
+      });
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining("/api/whatsapp"),
         expect.objectContaining({

@@ -3,6 +3,8 @@ import { z } from "zod";
 const SendMessageRequestSchema = z.object({
   phoneNumber: z.string().min(1),
   message: z.string().min(1),
+  mediaUrl: z.string().url().optional(),
+  caption: z.string().optional(),
 });
 
 const SendMessageResponseSchema = z.object({
@@ -19,11 +21,14 @@ export async function sendWhatsAppMessage(
   botToken: string,
   phoneNumber: string,
   message: string,
+  mediaUrl?: string,
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const requestBody = SendMessageRequestSchema.parse({
       phoneNumber,
       message,
+      mediaUrl,
+      caption: mediaUrl ? message : undefined,
     });
 
     const response = await fetch(`${botUrl}/api/send-message`, {
