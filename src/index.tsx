@@ -17,6 +17,7 @@ import { SignupPage } from "./views/public/SignupPage";
 import { PublicLayout } from "./views/public/layout";
 import { AppLink, lk } from "./lib/links";
 import { redirectIfSignedIn } from "./lib/auth";
+import { rateLimitMiddleware } from "./lib/ratelimit/middleware";
 
 export type Bindings = {
   DB: D1Database;
@@ -33,6 +34,8 @@ export type Bindings = {
 };
 
 const app = new Hono<{ Bindings: Bindings }>();
+
+app.use("*", rateLimitMiddleware);
 
 app.use(
   "/",
