@@ -104,6 +104,7 @@ export async function generateAssistantResponse(
       ...user,
       taxiIds: taxiIdStrings,
       preferredLocationName,
+      preferredRttLocationId: user.preferredRttLocationId,
     });
     const tools = [
       updateUserNameFunction,

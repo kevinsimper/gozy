@@ -3,6 +3,7 @@ import { type User } from "../models/user";
 type UserWithExtras = User & {
   taxiIds?: string[];
   preferredLocationName?: string;
+  preferredRttLocationId?: number | null;
 };
 
 export const CONVERSATION_SYSTEM_PROMPT = (user: UserWithExtras): string => {
@@ -15,7 +16,10 @@ export const CONVERSATION_SYSTEM_PROMPT = (user: UserWithExtras): string => {
         : "Ikke angivet";
   const taxiIdsText =
     user.taxiIds && user.taxiIds.length > 0 ? user.taxiIds.join(", ") : "";
-  const preferredLocationText = user.preferredLocationName || "Ikke valgt";
+  const preferredLocationText =
+    user.preferredRttLocationId && user.preferredLocationName
+      ? `ID: ${user.preferredRttLocationId}, Navn: ${user.preferredLocationName}`
+      : "Ikke valgt";
 
   const userContext = `## Bruger information
 Navn: ${user.name}
@@ -97,11 +101,11 @@ Eksempel: ask_vehicle_offer_question(offerId=1, field="brand", question="Hvilket
 3. Hvis du ikke kan finde lokationen, sig det i stedet for at opfinde information
 
 ## Check-in procedure (SKAL følges nøjagtigt)
-1. Når bruger siger "Check in": hent brugerens preferredRttLocationId
-2. Hvis bruger har preferred location:
-   - Bekræft lokationen og kald check_in_at_location med locationId
+1. Når bruger siger "Check in": tjek brugerens Foretrukken RTT lokation fra Bruger information ovenfor
+2. Hvis bruger har preferred location (viser ID og Navn):
+   - Brug locationId fra Bruger information og kald check_in_at_location med dette ID
    - Svar bruger med bekræftelse (f.eks. "Du er nu tjekket ind ved [location name]")
-3. Hvis bruger IKKE har preferred location:
+3. Hvis bruger IKKE har preferred location (viser "Ikke valgt"):
    - Kald lookup_rtt_location_info for at hente alle lokationer
    - Spørg brugeren hvilken RTT lokation de er ved (vis navn og by)
    - Når bruger svarer: kald check_in_at_location med locationId og updatePreferred=true
