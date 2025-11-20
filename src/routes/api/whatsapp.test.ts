@@ -1,11 +1,11 @@
 import { expect, test, vi, beforeEach } from "vitest";
 import { testClient } from "hono/testing";
 import { whatsappWebhookRoutes } from "./whatsapp";
-import { handleTextMessage } from "../../lib/conversation";
 import { uploadAndCreateFile } from "../../lib/fileUpload";
+import { handleWhatsappWebhook } from "../../lib/whatsapp-webhook-handler";
 import { Ok, Err } from "@casperlabs/ts-results/esm/index";
 
-vi.mock("../../lib/conversation");
+vi.mock("../../lib/whatsapp-webhook-handler");
 vi.mock("../../lib/fileUpload");
 
 beforeEach(() => {
@@ -59,8 +59,8 @@ test("webhook returns 400 for missing required fields", async () => {
 });
 
 test("webhook processes text message successfully", async () => {
-  vi.mocked(handleTextMessage).mockResolvedValue(
-    Ok("Hej! Hvordan kan jeg hjælpe dig?"),
+  vi.mocked(handleWhatsappWebhook).mockResolvedValue(
+    Ok({ text: "Hej! Hvordan kan jeg hjælpe dig?" }),
   );
 
   const res = await client.index.$post({
@@ -73,7 +73,7 @@ test("webhook processes text message successfully", async () => {
   });
 
   expect(res.status).toBe(200);
-  expect(handleTextMessage).toHaveBeenCalledWith(
+  expect(handleWhatsappWebhook).toHaveBeenCalledWith(
     expect.anything(),
     "+4540360565",
     "Hej",
@@ -88,7 +88,9 @@ test("webhook processes text message successfully", async () => {
 });
 
 test("webhook handles media messages with file uploads", async () => {
-  vi.mocked(handleTextMessage).mockResolvedValue(Ok("Jeg kan se dit billede!"));
+  vi.mocked(handleWhatsappWebhook).mockResolvedValue(
+    Ok({ text: "Jeg kan se dit billede!" }),
+  );
 
   const fakeImageBase64 =
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
@@ -108,7 +110,7 @@ test("webhook handles media messages with file uploads", async () => {
   });
 
   expect(res.status).toBe(200);
-  expect(handleTextMessage).toHaveBeenCalledWith(
+  expect(handleWhatsappWebhook).toHaveBeenCalledWith(
     expect.anything(),
     "+4540360565",
     "Se dette billede",
@@ -128,7 +130,9 @@ test("webhook handles media messages with file uploads", async () => {
 });
 
 test("webhook handles image-only messages without text", async () => {
-  vi.mocked(handleTextMessage).mockResolvedValue(Ok("Det er et flot billede!"));
+  vi.mocked(handleWhatsappWebhook).mockResolvedValue(
+    Ok({ text: "Det er et flot billede!" }),
+  );
 
   const fakeImageBase64 =
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
@@ -147,7 +151,7 @@ test("webhook handles image-only messages without text", async () => {
   });
 
   expect(res.status).toBe(200);
-  expect(handleTextMessage).toHaveBeenCalledWith(
+  expect(handleWhatsappWebhook).toHaveBeenCalledWith(
     expect.anything(),
     "+4540360565",
     "",
@@ -167,7 +171,7 @@ test("webhook handles image-only messages without text", async () => {
 });
 
 test("webhook extracts phone number correctly from WhatsApp ID", async () => {
-  vi.mocked(handleTextMessage).mockResolvedValue(Ok("Svar"));
+  vi.mocked(handleWhatsappWebhook).mockResolvedValue(Ok({ text: "Svar" }));
 
   await client.index.$post({
     form: {
@@ -178,7 +182,7 @@ test("webhook extracts phone number correctly from WhatsApp ID", async () => {
     },
   });
 
-  expect(handleTextMessage).toHaveBeenCalledWith(
+  expect(handleWhatsappWebhook).toHaveBeenCalledWith(
     expect.anything(),
     "+4512345678",
     "Test",
@@ -187,7 +191,9 @@ test("webhook extracts phone number correctly from WhatsApp ID", async () => {
 });
 
 test("webhook handles errors gracefully", async () => {
-  vi.mocked(handleTextMessage).mockResolvedValue(Err("Internal server error"));
+  vi.mocked(handleWhatsappWebhook).mockResolvedValue(
+    Err("Internal server error"),
+  );
 
   const res = await client.index.$post({
     form: {
@@ -204,7 +210,9 @@ test("webhook handles errors gracefully", async () => {
 });
 
 test("webhook passes text message to conversation handler", async () => {
-  vi.mocked(handleTextMessage).mockResolvedValue(Ok("AI response"));
+  vi.mocked(handleWhatsappWebhook).mockResolvedValue(
+    Ok({ text: "AI response" }),
+  );
 
   await client.index.$post({
     form: {
@@ -215,7 +223,7 @@ test("webhook passes text message to conversation handler", async () => {
     },
   });
 
-  expect(handleTextMessage).toHaveBeenCalledWith(
+  expect(handleWhatsappWebhook).toHaveBeenCalledWith(
     expect.anything(),
     "+4540360565",
     "Hvad er din opgave?",
