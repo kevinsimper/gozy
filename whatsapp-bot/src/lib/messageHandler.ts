@@ -40,7 +40,7 @@ export async function sendDelayedMediaReply(
   const delay = calculateReplyDelay(caption.length);
   console.log(`Waiting ${Math.round(delay)}ms before replying with media...`);
   await sleep(delay);
-  const media = await MessageMedia.fromUrl(mediaUrl);
+  const media = await MessageMedia.fromUrl(mediaUrl, { unsafeMime: true });
   await client.sendMessage(from, media, { caption });
 }
 

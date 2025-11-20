@@ -36,7 +36,7 @@ export async function sendMessageWithMediaUrl(
   const whatsappId = toWhatsAppId(phoneNumber);
 
   // Download media from URL
-  const media = await MessageMedia.fromUrl(mediaUrl);
+  const media = await MessageMedia.fromUrl(mediaUrl, { unsafeMime: true });
 
   // Send with optional caption
   const options = caption ? { caption } : undefined;
