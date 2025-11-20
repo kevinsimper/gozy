@@ -30,6 +30,8 @@ import { DatabaseFile } from "../../models/file";
 import { CONVERSATION_SYSTEM_PROMPT } from "../prompts";
 import { formatConversationHistory } from "./history-formatter";
 import { handleFunctionCall } from "./function-handler";
+import { findTaxiIdsByUserId } from "../../models/taxiid";
+import { findRttLocationById } from "../../models/rttlocation";
 
 export async function saveIncomingMessage(
   c: Context<{ Bindings: Bindings }>,
@@ -75,6 +77,22 @@ export async function generateAssistantResponse(
       return Err("User not found");
     }
 
+    // Fetch taxi IDs
+    const taxiIds = await findTaxiIdsByUserId(c, userId);
+    const taxiIdStrings = taxiIds.map((t) => t.taxiId);
+
+    // Fetch preferred location name
+    let preferredLocationName: string | undefined;
+    if (user.preferredRttLocationId) {
+      const location = await findRttLocationById(
+        c,
+        user.preferredRttLocationId,
+      );
+      if (location) {
+        preferredLocationName = location.name;
+      }
+    }
+
     // Get recent conversation history with files
     const conversationHistory = await formatConversationHistory(c, userId, 10);
 
@@ -82,7 +100,11 @@ export async function generateAssistantResponse(
       `Sending ${conversationHistory.length} messages to Gemini (including ${conversationHistory.filter((m) => m.parts?.some((p) => p.inlineData)).length} with images)`,
     );
 
-    const systemPrompt = CONVERSATION_SYSTEM_PROMPT(user);
+    const systemPrompt = CONVERSATION_SYSTEM_PROMPT({
+      ...user,
+      taxiIds: taxiIdStrings,
+      preferredLocationName,
+    });
     const tools = [
       updateUserNameFunction,
       updateDriverInfoFunction,

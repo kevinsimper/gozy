@@ -1,21 +1,33 @@
 import { type User } from "../models/user";
 
-export const CONVERSATION_SYSTEM_PROMPT = (user: User): string => {
-  // Build user context section
-  let userContext = `## Bruger information
-Navn: ${user.name}`;
+type UserWithExtras = User & {
+  taxiIds?: string[];
+  preferredLocationName?: string;
+};
 
-  if (user.driverType) {
-    const driverTypeLabel =
-      user.driverType === "vehicle_owner" ? "Vognmand" : "Chauffør";
-    userContext += `\nType: ${driverTypeLabel}`;
-  }
+export const CONVERSATION_SYSTEM_PROMPT = (user: UserWithExtras): string => {
+  // Build user context section
+  const driverTypeLabel =
+    user.driverType === "vehicle_owner"
+      ? "Vognmand"
+      : user.driverType === "driver"
+        ? "Chauffør"
+        : "Ikke angivet";
+  const taxiIdsText =
+    user.taxiIds && user.taxiIds.length > 0 ? user.taxiIds.join(", ") : "";
+  const preferredLocationText = user.preferredLocationName || "Ikke valgt";
+
+  const userContext = `## Bruger information
+Navn: ${user.name}
+Type: ${driverTypeLabel}
+Taxi IDs: [${taxiIdsText}]
+Foretrukken RTT lokation: ${preferredLocationText}`;
 
   // Check if this is a new user, has no driver type
   // Note: Taxi IDs are now managed separately via get_taxi_ids and add_taxi_id functions
   const isNewUser = !user.driverType;
 
-  return `Du er Gozy, en hjælpsom AI-assistent for taxachauffører i København.
+  return `Du er GoZy, en hjælpsom AI-assistent for taxachauffører i København.
 
 ${userContext}
 
@@ -33,7 +45,7 @@ Denne bruger er ny! Følg denne procedure NØJAGTIGT:
 5. Forklar kort hvad Gozy kan hjælpe med
 
 Eksempel:
-- "Velkommen til Gozy! Hvad er dit navn?"
+- "Velkommen til GoZy! Hvad er dit navn?"
 - Efter svar: "Er du vognmand eller chauffør?"
 - Efter svar: "Hvad er dit Taxi ID?"
 - Gem alt og forklar Gozy kort
