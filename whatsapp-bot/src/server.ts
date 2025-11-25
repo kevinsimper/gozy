@@ -236,7 +236,18 @@ export function createApp(client: WhatsAppClient) {
 
       const { groupId, message } = result.data;
 
-      await client.sendMessage(groupId, message);
+      const chat = await client.getChatById(groupId);
+
+      if (!chat) {
+        const chats = await client.getChats();
+        console.log(
+          "Available chats:",
+          chats.map((c) => ({ id: c.id._serialized, name: c.name })),
+        );
+        return c.json({ error: "Group not found" }, 404);
+      }
+
+      await chat.sendMessage(message);
 
       return c.json({ success: true });
     } catch (error) {
