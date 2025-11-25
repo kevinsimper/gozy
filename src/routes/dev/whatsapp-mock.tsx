@@ -24,12 +24,22 @@ export const whatsappMockRoute = new Hono<{ Bindings: Bindings }>()
     const mediaUrl = c.req.query("mediaUrl") || "";
 
     // Parse response to check if it includes an image
-    const fileIdMatch = lastResponse.match(/\[Image included, fileId: (\d+)\]/);
-    const hasImage = !!fileIdMatch;
-    const responseText = hasImage
-      ? lastResponse.replace(/\s*\[Image included, fileId: \d+\]/, "")
-      : lastResponse;
-    const fileId = fileIdMatch ? fileIdMatch[1] : null;
+    const imageIncludedIndex = lastResponse.indexOf("[Image included");
+    const hasImage = imageIncludedIndex !== -1;
+    let responseText = lastResponse;
+    let fileId: string | null = null;
+
+    if (hasImage) {
+      responseText = lastResponse.substring(0, imageIncludedIndex).trim();
+      // Extract fileId from the format: [Image included, fileId: xxx]
+      const startIdx = lastResponse.indexOf("fileId: ", imageIncludedIndex);
+      if (startIdx !== -1) {
+        const endIdx = lastResponse.indexOf("]", startIdx);
+        if (endIdx !== -1) {
+          fileId = lastResponse.substring(startIdx + 8, endIdx).trim();
+        }
+      }
+    }
 
     return c.render(
       <div className="min-h-screen bg-gray-900 p-4 md:p-8">
@@ -328,10 +338,17 @@ export const whatsappMockRoute = new Hono<{ Bindings: Bindings }>()
 
       // Add visual indicator for UI
       if (mediaUrl) {
-        // Extract fileId from the last assistant message for display purposes
-        const fileIdMatch = mediaUrl.match(/\/files\/([^/]+)$/);
-        if (fileIdMatch) {
-          responseText += ` [Image included, fileId: unknown]`;
+        // Extract publicId from the URL for display purposes
+        try {
+          const url = new URL(mediaUrl);
+          const pathParts = url.pathname.split("/");
+          const publicId = pathParts[pathParts.length - 1];
+          if (publicId) {
+            responseText += ` [Image included, fileId: ${publicId}]`;
+          }
+        } catch (e) {
+          // If URL parsing fails, just indicate image is included
+          responseText += ` [Image included]`;
         }
       }
     } else {

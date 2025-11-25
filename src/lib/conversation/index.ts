@@ -18,6 +18,7 @@ import {
   addTaxiIdFunction,
   getTaxiIdsFunction,
   sendRandomDogImageFunction,
+  sendDriverLicenseImageFunction,
 } from "./functions";
 import {
   findUserByPhoneNumber,
@@ -128,6 +129,7 @@ export async function generateAssistantResponse(
       addTaxiIdFunction,
       getTaxiIdsFunction,
       sendRandomDogImageFunction,
+      sendDriverLicenseImageFunction,
     ];
 
     let currentHistory: Content[] = conversationHistory;

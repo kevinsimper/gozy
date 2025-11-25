@@ -23,6 +23,8 @@ import {
 import { createTaxiId, findTaxiIdsByUserId } from "../../models/taxiid";
 import { type FunctionCall } from "@google/genai";
 import { createFile } from "../../models/file";
+import { copyFileToContext } from "../file-storage";
+import { createWhatsAppBotClient } from "../../services/whatsapp-bot/client";
 
 export async function handleFunctionCall(
   c: Context<{ Bindings: Bindings }>,
@@ -230,6 +232,83 @@ export async function handleFunctionCall(
     } else {
       console.log(`User ${userId} checked in at ${location.name}`);
     }
+
+    // Send notification to WhatsApp group
+    try {
+      console.log(
+        `[CHECK-IN NOTIFICATION] Starting WhatsApp group notification for user ${userId} at ${location.name}`,
+      );
+
+      // Get user details for the notification
+      const user = await findUserById(c, userId);
+      const taxiIds = await findTaxiIdsByUserId(c, userId);
+
+      // Only proceed if user exists
+      if (!user) {
+        console.error(
+          `[CHECK-IN NOTIFICATION] User not found for ID ${userId}`,
+        );
+        return {
+          name: functionCall.name,
+          response: {
+            success: true,
+            locationName: location.name,
+            checkedInAt: checkin.checkedInAt,
+            preferredUpdated: args.updatePreferred || false,
+          },
+        };
+      }
+
+      console.log(
+        `[CHECK-IN NOTIFICATION] User found: ${user.name}, Taxi IDs: ${taxiIds.map((t) => t.taxiId).join(", ")}`,
+      );
+
+      // Format the check-in time (Danish timezone)
+      const checkinTime = new Date(checkin.checkedInAt);
+      const timeStr = checkinTime.toLocaleString("da-DK", {
+        timeZone: "Europe/Copenhagen",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      const dateStr = checkinTime.toLocaleString("da-DK", {
+        timeZone: "Europe/Copenhagen",
+        day: "numeric",
+        month: "long",
+      });
+
+      // Build the notification message
+      let message = `✅ Check-in registreret\n\n`;
+      message += `👤 ${user.name}\n`;
+
+      // Add taxi IDs if available
+      if (taxiIds.length > 0) {
+        const taxiIdList = taxiIds.map((t) => t.taxiId).join(", ");
+        message += `🚕 Taxi ID: ${taxiIdList}\n`;
+      }
+
+      message += `📍 ${location.name}\n`;
+      message += `🕐 ${timeStr} - ${dateStr}`;
+
+      // Send to WhatsApp group
+      const whatsappClient = createWhatsAppBotClient(c);
+      const result = await whatsappClient.post("/api/send-group-message", {
+        groupId: "120363404914114317@g.us",
+        message: message,
+      });
+
+      if (!result.success) {
+        console.error(
+          `Failed to send WhatsApp notification for check-in: ${result.error}`,
+        );
+      } else {
+        console.log(
+          `WhatsApp notification sent for check-in at ${location.name}`,
+        );
+      }
+    } catch (error) {
+      // Don't fail the check-in if notification fails
+      console.error("Error sending WhatsApp notification:", error);
+    }
     return {
       name: functionCall.name,
       response: {
@@ -388,6 +467,61 @@ export async function handleFunctionCall(
           success: false,
           error: String(error),
           messageToUser: "Beklager, jeg kunne ikke hente et hundebillede.",
+        },
+      };
+    }
+  } else if (functionCall.name === "send_driver_license_image") {
+    const args = functionCall.args as { message?: string };
+
+    // Find user's driver license document
+    const documents = await findUserDocumentsByUserId(c, userId);
+    const driverLicense = documents.find(
+      (doc) => doc.documentType === "drivers_license",
+    );
+
+    if (!driverLicense) {
+      return {
+        name: functionCall.name,
+        response: {
+          success: false,
+          messageToUser: "Du har ikke uploadet et kørekort endnu.",
+        },
+      };
+    }
+
+    try {
+      // Use the new abstraction to copy file to assistant-images context
+      const copiedFile = await copyFileToContext(
+        c,
+        driverLicense.fileId,
+        "assistant-images",
+        {
+          filename: `drivers-license-${userId}.jpg`,
+        },
+      );
+
+      const defaultMessage = "Her er dit kørekort:";
+      const messageToUser = args.message || defaultMessage;
+
+      console.log(
+        `Sent driver's license (file ID: ${copiedFile.id}) to user ${userId}`,
+      );
+
+      return {
+        name: functionCall.name,
+        response: {
+          success: true,
+          messageToUser,
+          fileId: copiedFile.id,
+        },
+      };
+    } catch (error) {
+      console.error("Error copying driver license:", error);
+      return {
+        name: functionCall.name,
+        response: {
+          success: false,
+          messageToUser: "Kunne ikke hente dit kørekort.",
         },
       };
     }

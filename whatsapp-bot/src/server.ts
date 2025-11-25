@@ -247,6 +247,12 @@ export function createApp(client: WhatsAppClient) {
         return c.json({ error: "Group not found" }, 404);
       }
 
+      console.log("Chat found:", {
+        id: chat.id,
+        name: chat.name,
+        isGroup: chat.isGroup,
+      });
+
       await chat.sendMessage(message);
 
       return c.json({ success: true });
