@@ -5,6 +5,15 @@ import { Bindings } from "../../index";
 import { uploadAndCreateFile } from "../../lib/fileUpload";
 import { DatabaseFile } from "../../models/file";
 import { handleWhatsappWebhook } from "../../lib/whatsapp-webhook-handler";
+import { findUserByPhoneNumber } from "../../models/user";
+
+function generateRandomPhoneNumber(): string {
+  const firstDigit = Math.floor(Math.random() * 9) + 1; // 1-9
+  const remaining = Math.floor(Math.random() * 10000000)
+    .toString()
+    .padStart(7, "0");
+  return `${firstDigit}${remaining}`;
+}
 
 export const whatsappMockRoute = new Hono<{ Bindings: Bindings }>()
   .use(
@@ -18,10 +27,29 @@ export const whatsappMockRoute = new Hono<{ Bindings: Bindings }>()
       },
     ),
   )
+  .get("/whatsapp-mock/random-new-user", async (c) => {
+    const maxAttempts = 10;
+    for (let i = 0; i < maxAttempts; i++) {
+      const phoneNumber = generateRandomPhoneNumber();
+      const existingUser = await findUserByPhoneNumber(c, `+45${phoneNumber}`);
+      if (!existingUser) {
+        return c.redirect(`/dev/whatsapp-mock?phone=${phoneNumber}`);
+      }
+    }
+    return c.redirect("/dev/whatsapp-mock?error=could_not_generate_unique");
+  })
   .get("/whatsapp-mock", async (c) => {
     const phoneNumber = c.req.query("phone") || "";
     const lastResponse = c.req.query("response") || "";
     const mediaUrl = c.req.query("mediaUrl") || "";
+    const error = c.req.query("error") || "";
+
+    const errorMessages: Record<string, string> = {
+      missing_phone: "Phone number is required",
+      missing_content: "Please enter a message or attach an image",
+      file_upload_failed: "Failed to upload file",
+      could_not_generate_unique: "Could not generate unique phone number",
+    };
 
     // Parse response to check if it includes an image
     const imageIncludedIndex = lastResponse.indexOf("[Image included");
@@ -160,6 +188,14 @@ export const whatsappMockRoute = new Hono<{ Bindings: Bindings }>()
                 </div>
               )}
 
+              {error && (
+                <div className="mb-6 bg-red-900/30 border border-red-600 rounded-lg p-4">
+                  <p className="text-sm text-red-400">
+                    {errorMessages[error] || error}
+                  </p>
+                </div>
+              )}
+
               <form
                 method="post"
                 action="/dev/whatsapp-mock"
@@ -192,6 +228,12 @@ export const whatsappMockRoute = new Hono<{ Bindings: Bindings }>()
                   <p className="text-xs text-gray-500 mt-1.5 font-mono">
                     8 digits → converted to +45XXXXXXXX@c.us
                   </p>
+                  <a
+                    href="/dev/whatsapp-mock/random-new-user"
+                    className="inline-block mt-2 text-xs text-green-400 hover:text-green-300 underline"
+                  >
+                    Random new user
+                  </a>
                 </div>
 
                 <div>
@@ -304,7 +346,7 @@ export const whatsappMockRoute = new Hono<{ Bindings: Bindings }>()
     const hasFile = imageFile instanceof File && imageFile.size > 0;
 
     if (!message && !hasFile) {
-      return c.redirect("/dev/whatsapp-mock?error=missing_content");
+      return c.redirect(`/dev/whatsapp-mock?error=missing_content&phone=${encodeURIComponent(phoneNumber)}`);
     }
 
     const normalizedPhone = `+45${phoneNumber}`;
@@ -317,7 +359,7 @@ export const whatsappMockRoute = new Hono<{ Bindings: Bindings }>()
         console.log(`File uploaded successfully, fileId: ${file.id}`);
       } catch (error) {
         console.error("Error uploading file:", error);
-        return c.redirect("/dev/whatsapp-mock?error=file_upload_failed");
+        return c.redirect(`/dev/whatsapp-mock?error=file_upload_failed&phone=${encodeURIComponent(phoneNumber)}`);
       }
     }
 
