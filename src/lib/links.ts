@@ -38,7 +38,15 @@ export enum AppLink {
   AdminDocumentTestPreview = "/admin/document-test/:id/preview",
   AdminDocumentTestUpdate = "/admin/document-test/:id/update",
   AdminQRGenerator = "/admin/qr-generator",
+  AdminQRCodes = "/admin/qr-codes",
+  AdminQRCodeDetail = "/admin/qr-codes/:id",
+  AdminQRCodeDelete = "/admin/qr-codes/:id/delete",
   AdminDeveloper = "/admin/developer",
+  AdminHelpdesk = "/admin/helpdesk",
+  AdminHelpdeskDetail = "/admin/helpdesk/:articleId",
+  AdminHelpdeskDelete = "/admin/helpdesk/:articleId/delete",
+  AdminHelpdeskAddQuestion = "/admin/helpdesk/:articleId/questions",
+  AdminHelpdeskDeleteQuestion = "/admin/helpdesk/:articleId/questions/:questionId/delete",
   RttCheckins = "/rtt/check-ins",
   RttCheckinsSendMessage = "/rtt/check-ins/send-message",
   RttUserDetail = "/rtt/users/:id",
@@ -52,6 +60,8 @@ type RouteParams = {
   publicId?: string;
   tableName?: string;
   id?: string;
+  articleId?: string;
+  questionId?: string;
   query?: Record<string, string>;
 };
 
@@ -95,6 +105,14 @@ export function lk(
 
     if (params.id) {
       path = path.replace(":id", params.id);
+    }
+
+    if (params.articleId) {
+      path = path.replace(":articleId", params.articleId);
+    }
+
+    if (params.questionId) {
+      path = path.replace(":questionId", params.questionId);
     }
 
     if (params.query) {

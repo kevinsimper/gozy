@@ -484,3 +484,112 @@ export const rateLimitLogsTable = sqliteTable(
 );
 
 export type RateLimitLog = typeof rateLimitLogsTable.$inferSelect;
+
+export const qrCodesTable = sqliteTable("qr_codes", {
+  id: int().primaryKey({ autoIncrement: true }),
+  shortCode: text("short_code").notNull().unique(),
+  name: text().notNull(),
+  redirectUrl: text("redirect_url").notNull(),
+  createdBy: int("created_by").notNull(),
+  createdAt: int("created_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+  updatedAt: int("updated_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
+
+export type QrCode = typeof qrCodesTable.$inferSelect;
+
+export const qrCodeScansTable = sqliteTable(
+  "qr_code_scans",
+  {
+    id: int().primaryKey({ autoIncrement: true }),
+    qrCodeId: int("qr_code_id").notNull(),
+    userAgent: text("user_agent"),
+    country: text(),
+    createdAt: int("created_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => ({
+    qrCodeIdIdx: index("qr_code_scans_qr_code_id_idx").on(table.qrCodeId),
+    createdAtIdx: index("qr_code_scans_created_at_idx").on(table.createdAt),
+  }),
+);
+
+export type QrCodeScan = typeof qrCodeScansTable.$inferSelect;
+
+export const qrCodesRelations = relations(qrCodesTable, ({ one, many }) => ({
+  creator: one(usersTable, {
+    fields: [qrCodesTable.createdBy],
+    references: [usersTable.id],
+  }),
+  scans: many(qrCodeScansTable),
+}));
+
+export const qrCodeScansRelations = relations(qrCodeScansTable, ({ one }) => ({
+  qrCode: one(qrCodesTable, {
+    fields: [qrCodeScansTable.qrCodeId],
+    references: [qrCodesTable.id],
+  }),
+}));
+
+// Helpdesk Articles
+export const helpdeskArticlesTable = sqliteTable("helpdesk_articles", {
+  id: int().primaryKey({ autoIncrement: true }),
+  publicId: text("public_id")
+    .notNull()
+    .unique()
+    .$defaultFn(() => nanoid()),
+  title: text().notNull(),
+  description: text().notNull(),
+  embedding: text(),
+  createdAt: int("created_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+  updatedAt: int("updated_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
+
+export type HelpdeskArticle = typeof helpdeskArticlesTable.$inferSelect;
+
+export const helpdeskQuestionsTable = sqliteTable(
+  "helpdesk_questions",
+  {
+    id: int().primaryKey({ autoIncrement: true }),
+    articleId: int("article_id").notNull(),
+    question: text().notNull(),
+    createdAt: int("created_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+    updatedAt: int("updated_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => ({
+    articleIdIdx: index("helpdesk_questions_article_id_idx").on(
+      table.articleId,
+    ),
+  }),
+);
+
+export type HelpdeskQuestion = typeof helpdeskQuestionsTable.$inferSelect;
+
+export const helpdeskArticlesRelations = relations(
+  helpdeskArticlesTable,
+  ({ many }) => ({
+    questions: many(helpdeskQuestionsTable),
+  }),
+);
+
+export const helpdeskQuestionsRelations = relations(
+  helpdeskQuestionsTable,
+  ({ one }) => ({
+    article: one(helpdeskArticlesTable, {
+      fields: [helpdeskQuestionsTable.articleId],
+      references: [helpdeskArticlesTable.id],
+    }),
+  }),
+);

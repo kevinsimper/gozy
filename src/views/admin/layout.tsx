@@ -141,6 +141,55 @@ export function AdminLayout({ children }: PropsWithChildren) {
                 </svg>
                 QR Generator
               </a>
+              <a
+                href={lk(AppLink.AdminQRCodes)}
+                class="flex items-center w-full justify-start h-8 text-xs rounded px-2 py-1.5 hover:bg-gray-800 text-gray-300 hover:text-white transition-colors"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="mr-1.5 h-3.5 w-3.5"
+                >
+                  <rect width="5" height="5" x="3" y="3" rx="1" />
+                  <rect width="5" height="5" x="16" y="3" rx="1" />
+                  <rect width="5" height="5" x="3" y="16" rx="1" />
+                  <path d="M21 16h-3a2 2 0 0 0-2 2v3" />
+                  <path d="M21 21v.01" />
+                  <path d="M12 7v3a2 2 0 0 1-2 2H7" />
+                  <path d="M3 12h.01" />
+                  <path d="M12 3h.01" />
+                  <path d="M12 16v.01" />
+                  <path d="M16 12h1" />
+                  <path d="M21 12v.01" />
+                  <path d="M12 21v-1" />
+                </svg>
+                QR Codes
+              </a>
+              <a
+                href={lk(AppLink.AdminHelpdesk)}
+                class="flex items-center w-full justify-start h-8 text-xs rounded px-2 py-1.5 hover:bg-gray-800 text-gray-300 hover:text-white transition-colors"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="mr-1.5 h-3.5 w-3.5"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                  <path d="M12 17h.01" />
+                </svg>
+                Helpdesk
+              </a>
             </div>
 
             <div class="mt-4">

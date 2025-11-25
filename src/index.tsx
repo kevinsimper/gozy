@@ -18,9 +18,12 @@ import { PublicLayout } from "./views/public/layout";
 import { AppLink, lk } from "./lib/links";
 import { redirectIfSignedIn } from "./lib/auth";
 import { rateLimitMiddleware } from "./lib/ratelimit/middleware";
+import { handleDocumentReminders } from "./scheduled/reminders";
+import { getQrCodeByShortCode, recordScan } from "./models/qrcodes";
 
 export type Bindings = {
   DB: D1Database;
+  AI: Ai;
   GEMINI_API_KEY: string;
   FILES: R2Bucket;
   COOKIE_SECRET: string;
@@ -78,6 +81,27 @@ app.get("/signup", async (c) => {
 app.post("/logout", (c) => {
   logout(c);
   return c.redirect(lk(AppLink.Login));
+});
+
+app.get("/qr/:shortCode", async (c) => {
+  const shortCode = c.req.param("shortCode");
+  const db = drizzle(c.env.DB);
+
+  const qrCode = await getQrCodeByShortCode(db, shortCode);
+
+  if (!qrCode) {
+    return c.notFound();
+  }
+
+  const userAgent = c.req.header("user-agent");
+  const country = c.req.header("cf-ipcountry");
+
+  await recordScan(db, qrCode.id, {
+    userAgent,
+    country,
+  });
+
+  return c.redirect(qrCode.redirectUrl);
 });
 
 app.onError((error, c) => {
@@ -150,6 +174,7 @@ app.post("/create", (c) => {
   return c.json({ message: "DEV mode is disabled" }, 200);
 });
 
-export default app;
-
-export { handleDocumentReminders as scheduled } from "./scheduled/reminders";
+export default {
+  fetch: app.fetch,
+  scheduled: handleDocumentReminders,
+};
