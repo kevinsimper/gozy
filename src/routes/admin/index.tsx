@@ -9,7 +9,9 @@ import { tablesRoutes } from "./tables";
 import { usersRoutes } from "./users";
 import { documentTestRoutes } from "./documenttest";
 import { qrGeneratorRoutes } from "./qrgenerator";
+import { qrCodesRoutes } from "./qrcodes";
 import { developerRoutes } from "./developer";
+import { helpdeskRoutes } from "./helpdesk";
 
 declare module "hono" {
   interface ContextRenderer {
@@ -51,4 +53,6 @@ export const adminRoutes = new Hono<{ Bindings: Bindings }>()
   .route("/users", usersRoutes)
   .route("/document-test", documentTestRoutes)
   .route("/qr-generator", qrGeneratorRoutes)
-  .route("/developer", developerRoutes);
+  .route("/qr-codes", qrCodesRoutes)
+  .route("/developer", developerRoutes)
+  .route("/helpdesk", helpdeskRoutes);

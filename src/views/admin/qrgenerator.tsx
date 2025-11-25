@@ -136,6 +136,24 @@ export function QRGeneratorView({
         </div>
       </div>
 
+      {/* Dynamic QR Codes Notice */}
+      <div class="mt-6 bg-blue-900/20 border border-blue-800 rounded-lg p-6">
+        <h2 class="text-lg font-semibold mb-3 text-blue-400">
+          Need a QR code you can update later?
+        </h2>
+        <p class="text-sm text-gray-300 mb-3">
+          This generator creates static QR codes that cannot be changed after
+          printing. If you need to update the destination URL later, use our
+          dynamic QR code system instead.
+        </p>
+        <a
+          href="/admin/qr-codes"
+          class="inline-block px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm"
+        >
+          Manage Dynamic QR Codes →
+        </a>
+      </div>
+
       {/* Usage Instructions */}
       <div class="mt-6 bg-gray-900 border border-gray-800 rounded-lg p-6">
         <h2 class="text-lg font-semibold mb-3">Usage Instructions</h2>

@@ -31,6 +31,7 @@ describe("handleDocumentReminders", () => {
     // Setup mock environment
     mockEnv = {
       DB: {} as D1Database,
+      AI: {} as Ai,
       FILES: {} as R2Bucket,
       GEMINI_API_KEY: "test-key",
       COOKIE_SECRET: "test-secret",
