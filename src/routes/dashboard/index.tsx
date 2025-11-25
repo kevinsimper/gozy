@@ -3,6 +3,7 @@ import { jsxRenderer } from "hono/jsx-renderer";
 import { getUserFromCookie } from "../../services/auth";
 import { findUserById } from "../../models/user";
 import { findUserDocumentsByUserId } from "../../models/userDocument";
+import { getPublishedNews } from "../../models/news";
 import { Layout } from "../../views/layout";
 import { DashboardPage } from "../../views/dashboard";
 import { DashboardHeader } from "../../views/dashboard/header";
@@ -75,12 +76,14 @@ export const dashboardRoutes = new Hono<{ Bindings: Bindings }>()
     const documents = await findUserDocumentsByUserId(c, userId);
     const documentCount = documents.length;
     const compliance = calculateCompliance(documents);
+    const news = await getPublishedNews(c);
 
     return c.render(
       <DashboardPage
         user={user}
         documentCount={documentCount}
         compliance={compliance}
+        news={news}
       />,
       {
         title: "Gozy Dashboard",

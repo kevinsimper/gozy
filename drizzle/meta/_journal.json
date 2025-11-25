@@ -155,6 +155,13 @@
       "when": 1764065090425,
       "tag": "0021_spicy_sentry",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "6",
+      "when": 1764079320957,
+      "tag": "0022_sudden_doomsday",
+      "breakpoints": true
     }
   ]
 }

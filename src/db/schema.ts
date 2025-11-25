@@ -593,3 +593,37 @@ export const helpdeskQuestionsRelations = relations(
     }),
   }),
 );
+
+// News
+export const newsTable = sqliteTable(
+  "news",
+  {
+    id: int().primaryKey({ autoIncrement: true }),
+    publicId: text("public_id")
+      .notNull()
+      .unique()
+      .$defaultFn(() => nanoid()),
+    title: text().notNull(),
+    summary: text().notNull(),
+    category: text(),
+    author: text(),
+    isPublished: int("is_published", { mode: "boolean" })
+      .notNull()
+      .default(true),
+    publishedAt: int("published_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+    createdAt: int("created_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+    updatedAt: int("updated_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => ({
+    isPublishedIdx: index("news_is_published_idx").on(table.isPublished),
+    publishedAtIdx: index("news_published_at_idx").on(table.publishedAt),
+  }),
+);
+
+export type News = typeof newsTable.$inferSelect;

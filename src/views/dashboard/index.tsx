@@ -1,4 +1,4 @@
-import type { User } from "../../db/schema";
+import type { User, News } from "../../db/schema";
 import { AppLink, lk } from "../../lib/links";
 import type { ComplianceData } from "../../lib/compliance";
 import { getProgressColor } from "../../lib/compliance";
@@ -7,6 +7,7 @@ type DashboardPageProps = {
   user: User;
   documentCount: number;
   compliance: ComplianceData;
+  news: News[];
 };
 
 type Feature = {
@@ -15,13 +16,6 @@ type Feature = {
   icon: string;
   link: string;
   gradient: string;
-};
-
-type NewsItem = {
-  id: number;
-  title: string;
-  summary: string;
-  date: string;
 };
 
 const features: Feature[] = [
@@ -67,46 +61,8 @@ const features: Feature[] = [
   },
 ];
 
-const mockNews: NewsItem[] = [
-  {
-    id: 1,
-    title: "Dokumentstyring nu tilgængelig",
-    summary:
-      "Upload og administrer alle dine taxidokumenter digitalt. Hold styr på udløbsdatoer automatisk.",
-    date: "2024-11-05",
-  },
-  {
-    id: 2,
-    title: "AI Chat Assistent lanceret",
-    summary:
-      "Vores nye Gemini-drevne chatbot kan hjælpe dig på dansk med spørgsmål og vejledning.",
-    date: "2024-10-22",
-  },
-  {
-    id: 3,
-    title: "Profilhåndtering tilføjet",
-    summary:
-      "Du kan nu opdatere dine profiloplysninger og indstillinger direkte fra dashboard.",
-    date: "2024-09-15",
-  },
-  {
-    id: 4,
-    title: "WhatsApp integration aktiv",
-    summary:
-      "Modtag notifikationer og påmindelser direkte via WhatsApp for bedre tilgængelighed.",
-    date: "2024-08-30",
-  },
-  {
-    id: 5,
-    title: "Compliance tracking kommer snart",
-    summary:
-      "Automatisk sporing af din compliance status baseret på dokumenter kommer i næste version.",
-    date: "2024-07-18",
-  },
-];
-
 export function DashboardPage(props: DashboardPageProps) {
-  const { user, documentCount, compliance } = props;
+  const { user, documentCount, compliance, news } = props;
   const progressColor = getProgressColor(compliance.level);
 
   return (
@@ -295,29 +251,36 @@ export function DashboardPage(props: DashboardPageProps) {
               </svg>
             </div>
             <div className="space-y-4">
-              {mockNews.map((news, index) => (
-                <div
-                  key={news.id}
-                  className={`flex gap-4 pb-4 ${index !== mockNews.length - 1 ? "border-b border-gray-200" : ""}`}
-                >
-                  <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex flex-col items-center justify-center">
-                    <span className="text-white font-bold text-lg">
-                      {new Date(news.date).getDate()}
-                    </span>
-                    <span className="text-white text-xs uppercase">
-                      {new Date(news.date).toLocaleDateString("da-DK", {
-                        month: "short",
-                      })}
-                    </span>
+              {news.length === 0 ? (
+                <p className="text-gray-500 text-sm">Ingen nyheder endnu.</p>
+              ) : (
+                news.map((item, index) => (
+                  <div
+                    key={item.id}
+                    className={`flex gap-4 pb-4 ${index !== news.length - 1 ? "border-b border-gray-200" : ""}`}
+                  >
+                    <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex flex-col items-center justify-center">
+                      <span className="text-white font-bold text-lg">
+                        {new Date(item.publishedAt).getDate()}
+                      </span>
+                      <span className="text-white text-xs uppercase">
+                        {new Date(item.publishedAt).toLocaleDateString(
+                          "da-DK",
+                          {
+                            month: "short",
+                          },
+                        )}
+                      </span>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900 mb-1">
+                        {item.title}
+                      </h3>
+                      <p className="text-sm text-gray-600">{item.summary}</p>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 mb-1">
-                      {news.title}
-                    </h3>
-                    <p className="text-sm text-gray-600">{news.summary}</p>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </div>
