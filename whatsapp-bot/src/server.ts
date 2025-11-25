@@ -36,6 +36,11 @@ const SendMediaSchema = z.object({
   caption: z.string().optional(),
 });
 
+const SendGroupMessageSchema = z.object({
+  groupId: z.string().min(1),
+  message: z.string().min(1),
+});
+
 export function createApp(client: WhatsAppClient) {
   const app = new Hono();
 
@@ -209,6 +214,36 @@ export function createApp(client: WhatsAppClient) {
       return c.json(
         {
           error: "Failed to send media",
+          details: error instanceof Error ? error.message : "Unknown error",
+        },
+        500,
+      );
+    }
+  });
+
+  // Group message endpoint
+  app.post("/api/send-group-message", async (c) => {
+    try {
+      const body = await c.req.json();
+      const result = SendGroupMessageSchema.safeParse(body);
+
+      if (!result.success) {
+        return c.json(
+          { error: "Invalid request", details: result.error.issues },
+          400,
+        );
+      }
+
+      const { groupId, message } = result.data;
+
+      await client.sendMessage(groupId, message);
+
+      return c.json({ success: true });
+    } catch (error) {
+      console.error("Error sending group message:", error);
+      return c.json(
+        {
+          error: "Failed to send group message",
           details: error instanceof Error ? error.message : "Unknown error",
         },
         500,

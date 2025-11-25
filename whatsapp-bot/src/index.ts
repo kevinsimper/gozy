@@ -47,6 +47,12 @@ client.on("message_create", async (msg) => {
     return;
   }
 
+  // Skip group chat messages
+  if (msg.from.endsWith("@g.us")) {
+    console.log("Ignoring group chat message from", msg.from);
+    return;
+  }
+
   console.log(
     `Message from ${msg.from} #${msg.id._serialized} ${msg.timestamp}: ${msg.body}`,
   );
