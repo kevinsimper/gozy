@@ -162,6 +162,20 @@
       "when": 1764079320957,
       "tag": "0022_sudden_doomsday",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "6",
+      "when": 1764147910561,
+      "tag": "0023_warm_salo",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "6",
+      "when": 1764152005169,
+      "tag": "0024_cool_blue_shield",
+      "breakpoints": true
     }
   ]
 }
