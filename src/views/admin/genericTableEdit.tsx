@@ -4,11 +4,12 @@ import type { FieldDefinition } from "../../lib/genericFormBuilder";
 
 type GenericTableEditProps = {
   tableName: string;
-  recordId: string;
+  recordId?: string;
   fields: FieldDefinition[];
   values?: Record<string, unknown>;
   errors?: Record<string, string>;
   success?: boolean;
+  isCreate?: boolean;
 };
 
 function formatValue(value: unknown): string {
@@ -137,12 +138,21 @@ export function GenericTableEdit({
   values = {},
   errors = {},
   success = false,
+  isCreate = false,
 }: GenericTableEditProps) {
+  const backLink = isCreate
+    ? lk(AppLink.AdminTable, { tableName })
+    : lk(AppLink.AdminTableDetail, { tableName, id: recordId! });
+
+  const formAction = isCreate
+    ? lk(AppLink.AdminTableCreate, { tableName })
+    : lk(AppLink.AdminTableUpdate, { tableName, id: recordId! });
+
   return (
     <div class="p-6">
       <div class="mb-6">
         <a
-          href={lk(AppLink.AdminTableDetail, { tableName, id: recordId })}
+          href={backLink}
           class="inline-flex items-center text-blue-500 hover:text-blue-400 text-sm mb-3"
         >
           <svg
@@ -158,15 +168,21 @@ export function GenericTableEdit({
             <path d="m12 19-7-7 7-7" />
             <path d="M19 12H5" />
           </svg>
-          Back to Detail
+          {isCreate ? "Back to List" : "Back to Detail"}
         </a>
-        <h1 class="text-2xl font-bold">Edit {formatTableName(tableName)}</h1>
-        <p class="text-gray-400 text-sm mt-1">Record ID: {recordId}</p>
+        <h1 class="text-2xl font-bold">
+          {isCreate ? "Create" : "Edit"} {formatTableName(tableName)}
+        </h1>
+        {!isCreate && (
+          <p class="text-gray-400 text-sm mt-1">Record ID: {recordId}</p>
+        )}
       </div>
 
       {success && (
         <div class="mb-6 p-4 bg-green-900/30 border border-green-700 rounded text-sm text-green-400">
-          Record updated successfully!
+          {isCreate
+            ? "Record created successfully!"
+            : "Record updated successfully!"}
         </div>
       )}
 
@@ -178,13 +194,12 @@ export function GenericTableEdit({
 
       <div class="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden">
         <div class="p-4 border-b border-gray-800">
-          <h2 class="text-sm font-semibold text-gray-300">Edit Information</h2>
+          <h2 class="text-sm font-semibold text-gray-300">
+            {isCreate ? "New Record" : "Edit Information"}
+          </h2>
         </div>
         <div class="p-4">
-          <form
-            method="post"
-            action={lk(AppLink.AdminTableUpdate, { tableName, id: recordId })}
-          >
+          <form method="post" action={formAction}>
             {fields.map((field) =>
               renderField(field, values[field.name], errors[field.name]),
             )}
@@ -194,13 +209,10 @@ export function GenericTableEdit({
                 type="submit"
                 class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded text-sm transition-colors"
               >
-                Save Changes
+                {isCreate ? "Create Record" : "Save Changes"}
               </button>
               <a
-                href={lk(AppLink.AdminTableDetail, {
-                  tableName,
-                  id: recordId,
-                })}
+                href={backLink}
                 class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded text-sm transition-colors text-center"
               >
                 Cancel

@@ -60,6 +60,7 @@ export function buildGenericFormFields(table: SQLiteTable): FieldDefinition[] {
       dataType: string;
       enumValues?: string[];
       columnType: string;
+      mode?: string;
     };
 
     const isRequired = config.notNull;
@@ -86,8 +87,14 @@ export function buildGenericFormFields(table: SQLiteTable): FieldDefinition[] {
           return val;
         }, z.coerce.date().optional());
       }
+    } else if (config.dataType === "boolean") {
+      htmlType = "checkbox";
+      zodSchema = z.preprocess(
+        (val) => val === "on" || val === true,
+        z.boolean(),
+      );
     } else if (config.dataType === "number") {
-      if (config.columnType.includes("boolean")) {
+      if (config.columnType.includes("boolean") || config.mode === "boolean") {
         htmlType = "checkbox";
         zodSchema = z.preprocess(
           (val) => val === "on" || val === true,

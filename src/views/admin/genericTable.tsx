@@ -42,9 +42,17 @@ export function GenericTableView({
 }: GenericTableProps) {
   return (
     <div class="p-6">
-      <div class="mb-6">
-        <h1 class="text-2xl font-bold">{formatTableName(tableName)}</h1>
-        <p class="text-gray-400 text-sm mt-1">Total records: {totalCount}</p>
+      <div class="mb-6 flex items-start justify-between">
+        <div>
+          <h1 class="text-2xl font-bold">{formatTableName(tableName)}</h1>
+          <p class="text-gray-400 text-sm mt-1">Total records: {totalCount}</p>
+        </div>
+        <a
+          href={lk(AppLink.AdminTableCreate, { tableName })}
+          class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded text-sm transition-colors"
+        >
+          Create
+        </a>
       </div>
 
       <div class="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden">

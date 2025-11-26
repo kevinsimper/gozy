@@ -84,6 +84,132 @@ export const tablesRoutes = new Hono<{ Bindings: Bindings }>()
       },
     );
   })
+  .get("/:tableName/create", async (c) => {
+    const user = await requireAdmin(c);
+    if (!user || typeof user !== "object" || !("id" in user)) {
+      return user;
+    }
+
+    const tableName = c.req.param("tableName");
+    const table = getTableByName(tableName);
+
+    if (!table) {
+      return c.html(
+        html`
+          <!DOCTYPE html>
+          <html lang="da">
+            <head>
+              <meta charset="UTF-8" />
+              <title>Table Not Found</title>
+              <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+            </head>
+            <body
+              class="bg-black text-white min-h-screen flex items-center justify-center"
+            >
+              <div class="text-center">
+                <h1 class="text-2xl font-bold mb-4">Table Not Found</h1>
+                <p class="text-gray-400 mb-6">
+                  The table "${tableName}" does not exist.
+                </p>
+                <a
+                  href=${lk(AppLink.AdminDashboard)}
+                  class="text-blue-500 hover:underline"
+                  >Go to Admin Dashboard</a
+                >
+              </div>
+            </body>
+          </html>
+        `,
+        404,
+      );
+    }
+
+    const fields = buildGenericFormFields(table);
+
+    return c.render(
+      <GenericTableEdit
+        tableName={tableName}
+        fields={fields}
+        isCreate={true}
+      />,
+      {
+        title: `Create ${tableName} - Admin - Gozy`,
+      },
+    );
+  })
+  .post("/:tableName/create", async (c) => {
+    const user = await requireAdmin(c);
+    if (!user || typeof user !== "object" || !("id" in user)) {
+      return user;
+    }
+
+    const tableName = c.req.param("tableName");
+    const table = getTableByName(tableName);
+
+    if (!table) {
+      return c.redirect(lk(AppLink.AdminDashboard));
+    }
+
+    const fields = buildGenericFormFields(table);
+    const schema = buildGenericZodSchema(fields);
+
+    const formData = await c.req.parseBody();
+    const parseResult = schema.safeParse(formData);
+
+    if (!parseResult.success) {
+      const errors: Record<string, string> = {};
+      parseResult.error.issues.forEach((err) => {
+        if (err.path.length > 0) {
+          errors[err.path[0].toString()] = err.message;
+        } else {
+          errors.general = err.message;
+        }
+      });
+
+      return c.render(
+        <GenericTableEdit
+          tableName={tableName}
+          fields={fields}
+          values={formData}
+          errors={errors}
+          isCreate={true}
+        />,
+        {
+          title: `Create ${tableName} - Admin - Gozy`,
+        },
+      );
+    }
+
+    const db = drizzle(c.env.DB);
+
+    try {
+      const result = await db
+        .insert(table)
+        .values(parseResult.data)
+        .returning();
+      const newRecord = result[0];
+      const newId = String((newRecord as { id: number }).id);
+
+      return c.redirect(lk(AppLink.AdminTableDetail, { tableName, id: newId }));
+    } catch (error) {
+      const errors = {
+        general: `Failed to create record: ${error instanceof Error ? error.message : "Unknown error"}`,
+      };
+
+      return c.render(
+        <GenericTableEdit
+          tableName={tableName}
+          fields={fields}
+          values={formData}
+          errors={errors}
+          isCreate={true}
+        />,
+        {
+          title: `Create ${tableName} - Admin - Gozy`,
+        },
+      );
+    }
+  })
   .get("/:tableName/:id", async (c) => {
     const user = await requireAdmin(c);
     if (!user || typeof user !== "object" || !("id" in user)) {
