@@ -15,6 +15,8 @@ export const usersTable = sqliteTable("users", {
   loginPinExpiry: int("login_pin_expiry", { mode: "timestamp" }),
   lastLoginAt: int("last_login_at", { mode: "timestamp" }),
   preferredRttLocationId: int("preferred_rtt_location_id"),
+  manualMode: int("manual_mode", { mode: "boolean" }).notNull().default(false),
+  manualModeEnabledAt: int("manual_mode_enabled_at", { mode: "timestamp" }),
   createdAt: int("created_at", { mode: "timestamp" })
     .notNull()
     .$defaultFn(() => new Date()),
@@ -106,6 +108,10 @@ export const messagesTable = sqliteTable(
     role: text({ enum: ["user", "assistant"] }).notNull(),
     content: text().notNull(),
     fileId: int("file_id"),
+    sentByAdminId: int("sent_by_admin_id"),
+    sentDuringManualMode: int("sent_during_manual_mode", { mode: "boolean" })
+      .notNull()
+      .default(false),
     createdAt: int("created_at", { mode: "timestamp" })
       .notNull()
       .$defaultFn(() => new Date()),

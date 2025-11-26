@@ -10,8 +10,15 @@ export async function formatConversationHistory(
 ): Promise<Content[]> {
   const recentMessages = await getMessagesWithFiles(c, userId, limit);
 
+  // Filter out messages that would confuse the AI:
+  // - sentDuringManualMode: messages exchanged during manual mode
+  // - sentByAdminId: admin-sent messages (AI would think it wrote them)
+  const filteredMessages = recentMessages.filter(
+    (msg) => !msg.sentDuringManualMode && !msg.sentByAdminId,
+  );
+
   return await Promise.all(
-    recentMessages.map(async (msg) => {
+    filteredMessages.map(async (msg) => {
       const parts: Array<Record<string, unknown>> = [];
 
       if (msg.content) {

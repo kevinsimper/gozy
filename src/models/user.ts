@@ -1,5 +1,5 @@
 import { drizzle } from "drizzle-orm/d1";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { usersTable } from "../db/schema";
 import type { Context } from "hono";
 
@@ -141,4 +141,33 @@ export async function updateUserDriverInfo<Env extends DatabaseContext>(
     .set(updates)
     .where(eq(usersTable.id, userId))
     .run();
+}
+
+export async function setUserManualMode<Env extends DatabaseContext>(
+  c: Context<Env>,
+  userId: number,
+  enabled: boolean,
+): Promise<void> {
+  const db = drizzle(c.env.DB);
+  await db
+    .update(usersTable)
+    .set({
+      manualMode: enabled,
+      manualModeEnabledAt: enabled ? new Date() : null,
+    })
+    .where(eq(usersTable.id, userId))
+    .run();
+}
+
+export async function getUsersInManualMode<Env extends DatabaseContext>(
+  c: Context<Env>,
+): Promise<User[]> {
+  const db = drizzle(c.env.DB);
+  const users = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.manualMode, true))
+    .orderBy(desc(usersTable.manualModeEnabledAt))
+    .all();
+  return users;
 }

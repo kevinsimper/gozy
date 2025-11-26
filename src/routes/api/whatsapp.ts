@@ -56,6 +56,14 @@ export const whatsappWebhookRoutes = new Hono<{ Bindings: Bindings }>().post(
     );
 
     if (result.ok) {
+      // If manual mode is active, indicate no auto-reply should be sent
+      if (result.val.skipAutoReply) {
+        return c.json({
+          success: true,
+          manualMode: true,
+          response: null,
+        });
+      }
       return c.json({
         success: true,
         response: result.val.text,

@@ -19,6 +19,8 @@ export async function createMessage<Env extends DatabaseContext>(
   role: "user" | "assistant",
   content: string,
   file?: DatabaseFile,
+  sentByAdminId?: number,
+  sentDuringManualMode?: boolean,
 ): Promise<Message> {
   const db = drizzle(c.env.DB);
   const result = await db
@@ -28,6 +30,8 @@ export async function createMessage<Env extends DatabaseContext>(
       role,
       content,
       fileId: file?.id ?? null,
+      sentByAdminId: sentByAdminId ?? null,
+      sentDuringManualMode: sentDuringManualMode ?? false,
     })
     .returning()
     .get();

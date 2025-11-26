@@ -58,7 +58,16 @@ export async function saveIncomingMessage(
     }
 
     // Save user message with optional file
-    await createMessage(c, user.id, "user", messageText || "Image", file);
+    // Mark messages sent during manual mode so they're excluded from AI context
+    await createMessage(
+      c,
+      user.id,
+      "user",
+      messageText || "Image",
+      file,
+      undefined, // sentByAdminId
+      user.manualMode, // sentDuringManualMode
+    );
     console.log(`Saved user message with ${file ? "file" : "no file"}`);
 
     return Ok(user);
