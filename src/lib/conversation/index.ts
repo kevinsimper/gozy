@@ -77,10 +77,9 @@ export async function saveIncomingMessage(
   }
 }
 
-export type AssistantResponse = {
-  text: string;
-  fileId?: number;
-};
+export type AssistantResponse =
+  | { type: "success"; text: string; fileId?: number }
+  | { type: "skipped"; reason: "manualMode" };
 
 export async function generateAssistantResponse(
   c: Context<{ Bindings: Bindings }>,
@@ -91,6 +90,12 @@ export async function generateAssistantResponse(
     const user = await findUserById(c, userId);
     if (!user) {
       return Err("User not found");
+    }
+
+    // Check if user is in manual mode - skip AI response
+    if (user.manualMode) {
+      console.log(`User ${userId} is in manual mode, skipping AI response`);
+      return Ok({ type: "skipped", reason: "manualMode" });
     }
 
     // Fetch taxi IDs
@@ -167,7 +172,7 @@ export async function generateAssistantResponse(
       if (!result.functionCalls || result.functionCalls.length === 0) {
         if (result.text) {
           await createMessage(c, userId, "assistant", result.text);
-          return Ok({ text: result.text });
+          return Ok({ type: "success", text: result.text });
         }
         return Err("No response from assistant.");
       }
@@ -213,6 +218,7 @@ export async function generateAssistantResponse(
             `Saved and returning message from function: ${message}${fileToAttach ? ` with file ${fileToAttach.id}` : ""}`,
           );
           return Ok({
+            type: "success",
             text: message,
             fileId: fileToAttach?.id,
           });

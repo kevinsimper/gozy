@@ -9,6 +9,7 @@ import {
 } from "../../models/message";
 import { generateAssistantResponse } from "../../lib/conversation";
 import { uploadAndCreateFile } from "../../lib/fileUpload";
+import { findUserById } from "../../models/user";
 import type { Bindings } from "../../index";
 
 export const chatRoutes = new Hono<{ Bindings: Bindings }>()
@@ -88,8 +89,20 @@ export const chatRoutes = new Hono<{ Bindings: Bindings }>()
         uploadedFile = await uploadAndCreateFile(c, fileInput);
       }
 
+      // Fetch user to check manual mode status
+      const user = await findUserById(c, userId);
+
       // Save user message with optional file
-      await createMessage(c, userId, "user", message || "Image", uploadedFile);
+      // Mark messages sent during manual mode so they're excluded from AI context
+      await createMessage(
+        c,
+        userId,
+        "user",
+        message || "Image",
+        uploadedFile,
+        undefined, // sentByAdminId
+        user?.manualMode ?? false, // sentDuringManualMode
+      );
 
       // Generate assistant response (handles conversation history, files, and function calls)
       const responseResult = await generateAssistantResponse(c, userId);

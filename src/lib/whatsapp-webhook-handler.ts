@@ -34,22 +34,22 @@ export async function handleWhatsappWebhook(
 
   const user = userResult.val;
 
-  // If user is in manual mode, skip AI response
-  if (user.manualMode) {
-    console.log(`User ${user.id} is in manual mode, skipping AI response`);
-    return Ok({
-      text: "",
-      skipAutoReply: true,
-    });
-  }
-
-  // Generate assistant response
+  // Generate assistant response (handles manual mode check internally)
   const result = await generateAssistantResponse(c, user.id);
 
   if (!result.ok) {
     return Err(result.val);
   }
 
+  // Handle skipped response (manual mode)
+  if (result.val.type === "skipped") {
+    return Ok({
+      text: "",
+      skipAutoReply: true,
+    });
+  }
+
+  // result.val.type === "success" - TypeScript narrows the type
   const response: WhatsappWebhookResponse = {
     text: result.val.text,
   };
