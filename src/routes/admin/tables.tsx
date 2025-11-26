@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { drizzle } from "drizzle-orm/d1";
-import { count, desc, eq, getTableColumns } from "drizzle-orm";
+import { count, desc, eq, getTableColumns, or, sql } from "drizzle-orm";
 import { requireAdmin } from "../../lib/adminAuth";
 import { GenericTableView } from "../../views/admin/genericTable";
 import { GenericTableDetail } from "../../views/admin/genericTableDetail";
@@ -56,15 +56,36 @@ export const tablesRoutes = new Hono<{ Bindings: Bindings }>()
     }
 
     const db = drizzle(c.env.DB);
+    const search = c.req.query("search")?.trim();
 
-    const columns = Object.keys(getTableColumns(table));
+    const tableColumns = getTableColumns(table);
+    const columns = Object.keys(tableColumns);
 
-    const rows = await db
-      .select()
-      .from(table)
-      .orderBy(desc(table.id))
-      .limit(100)
-      .all();
+    const baseQuery = db.select().from(table);
+
+    let rows;
+    if (search) {
+      const conditions = Object.values(tableColumns)
+        .filter((col) => {
+          const dataType = col.dataType;
+          return dataType === "string" || dataType === "number";
+        })
+        .map((col) => {
+          return sql`CAST(${col} AS TEXT) LIKE ${"%" + search + "%"}`;
+        });
+
+      if (conditions.length > 0) {
+        rows = await baseQuery
+          .where(or(...conditions))
+          .orderBy(desc(table.id))
+          .limit(100)
+          .all();
+      } else {
+        rows = await baseQuery.orderBy(desc(table.id)).limit(100).all();
+      }
+    } else {
+      rows = await baseQuery.orderBy(desc(table.id)).limit(100).all();
+    }
 
     const totalCountResult = await db
       .select({ count: count() })
@@ -78,6 +99,7 @@ export const tablesRoutes = new Hono<{ Bindings: Bindings }>()
         columns={columns}
         rows={rows}
         totalCount={totalCount}
+        search={search}
       />,
       {
         title: `${tableName} - Admin - Gozy`,

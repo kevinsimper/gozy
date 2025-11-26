@@ -6,6 +6,7 @@ type GenericTableProps = {
   columns: string[];
   rows: Record<string, unknown>[];
   totalCount: number;
+  search?: string;
 };
 
 function formatValue(value: unknown): string {
@@ -39,6 +40,7 @@ export function GenericTableView({
   columns,
   rows,
   totalCount,
+  search,
 }: GenericTableProps) {
   return (
     <div class="p-6">
@@ -54,6 +56,30 @@ export function GenericTableView({
           Create
         </a>
       </div>
+
+      <form method="get" class="mb-4 flex gap-2">
+        <input
+          type="text"
+          name="search"
+          placeholder="Search all columns..."
+          value={search || ""}
+          class="bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm flex-1 max-w-md"
+        />
+        <button
+          type="submit"
+          class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-sm"
+        >
+          Search
+        </button>
+        {search && (
+          <a
+            href={lk(AppLink.AdminTable, { tableName })}
+            class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-sm"
+          >
+            Clear
+          </a>
+        )}
+      </form>
 
       <div class="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden">
         <div class="overflow-x-auto">
