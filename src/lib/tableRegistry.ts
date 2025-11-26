@@ -20,6 +20,7 @@ import {
   helpdeskArticlesTable,
   helpdeskQuestionsTable,
   newsTable,
+  notificationsTable,
 } from "../db/schema";
 
 export const tableRegistry = {
@@ -44,6 +45,7 @@ export const tableRegistry = {
   helpdesk_articles: helpdeskArticlesTable,
   helpdesk_questions: helpdeskQuestionsTable,
   news: newsTable,
+  notifications: notificationsTable,
 } as const;
 
 export type TableName = keyof typeof tableRegistry;

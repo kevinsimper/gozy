@@ -13,6 +13,7 @@ import { qrCodesRoutes } from "./qrcodes";
 import { developerRoutes } from "./developer";
 import { helpdeskRoutes } from "./helpdesk";
 import { conversationsRoutes } from "./conversations";
+import { notificationsRoutes } from "./notifications";
 
 declare module "hono" {
   interface ContextRenderer {
@@ -58,4 +59,5 @@ export const adminRoutes = new Hono<{ Bindings: Bindings }>()
   .route("/qr-codes", qrCodesRoutes)
   .route("/developer", developerRoutes)
   .route("/helpdesk", helpdeskRoutes)
-  .route("/conversations", conversationsRoutes);
+  .route("/conversations", conversationsRoutes)
+  .route("/notifications", notificationsRoutes);

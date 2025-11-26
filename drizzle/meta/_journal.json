@@ -176,6 +176,13 @@
       "when": 1764152005169,
       "tag": "0024_cool_blue_shield",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "6",
+      "when": 1764161560348,
+      "tag": "0025_dear_nomad",
+      "breakpoints": true
     }
   ]
 }

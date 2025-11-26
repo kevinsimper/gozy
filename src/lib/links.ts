@@ -52,6 +52,8 @@ export enum AppLink {
   AdminHelpdeskDelete = "/admin/helpdesk/:articleId/delete",
   AdminHelpdeskAddQuestion = "/admin/helpdesk/:articleId/questions",
   AdminHelpdeskDeleteQuestion = "/admin/helpdesk/:articleId/questions/:questionId/delete",
+  AdminNotifications = "/admin/notifications",
+  AdminNotificationsCreate = "/admin/notifications/create",
   RttCheckins = "/rtt/check-ins",
   RttCheckinsSendMessage = "/rtt/check-ins/send-message",
   RttUserDetail = "/rtt/users/:id",

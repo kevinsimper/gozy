@@ -633,3 +633,26 @@ export const newsTable = sqliteTable(
 );
 
 export type News = typeof newsTable.$inferSelect;
+
+// Notifications
+export const notificationsTable = sqliteTable(
+  "notifications",
+  {
+    id: int().primaryKey({ autoIncrement: true }),
+    channel: text({ enum: ["email", "whatsapp", "sms"] }).notNull(),
+    recipient: text().notNull(),
+    subject: text(),
+    content: text().notNull(),
+    userId: int("user_id"),
+    createdAt: int("created_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => ({
+    channelIdx: index("notifications_channel_idx").on(table.channel),
+    createdAtIdx: index("notifications_created_at_idx").on(table.createdAt),
+    userIdIdx: index("notifications_user_id_idx").on(table.userId),
+  }),
+);
+
+export type Notification = typeof notificationsTable.$inferSelect;
