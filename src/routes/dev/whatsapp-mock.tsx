@@ -346,7 +346,9 @@ export const whatsappMockRoute = new Hono<{ Bindings: Bindings }>()
     const hasFile = imageFile instanceof File && imageFile.size > 0;
 
     if (!message && !hasFile) {
-      return c.redirect(`/dev/whatsapp-mock?error=missing_content&phone=${encodeURIComponent(phoneNumber)}`);
+      return c.redirect(
+        `/dev/whatsapp-mock?error=missing_content&phone=${encodeURIComponent(phoneNumber)}`,
+      );
     }
 
     const normalizedPhone = `+45${phoneNumber}`;
@@ -359,7 +361,9 @@ export const whatsappMockRoute = new Hono<{ Bindings: Bindings }>()
         console.log(`File uploaded successfully, fileId: ${file.id}`);
       } catch (error) {
         console.error("Error uploading file:", error);
-        return c.redirect(`/dev/whatsapp-mock?error=file_upload_failed&phone=${encodeURIComponent(phoneNumber)}`);
+        return c.redirect(
+          `/dev/whatsapp-mock?error=file_upload_failed&phone=${encodeURIComponent(phoneNumber)}`,
+        );
       }
     }
 
