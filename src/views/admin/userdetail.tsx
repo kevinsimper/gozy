@@ -51,7 +51,62 @@ export function UserDetail({
             <h1 class="text-2xl font-bold">User Detail</h1>
             <p class="text-gray-400 text-sm mt-1">User ID: {user.id}</p>
           </div>
-          <div class="flex gap-2">
+          <div class="flex gap-2 items-center">
+            {user.manualMode && (
+              <span class="bg-blue-600 text-white text-xs px-2 py-1 rounded">
+                Manual Mode
+              </span>
+            )}
+            <form
+              method="post"
+              action={lk(AppLink.AdminUserToggleManualMode, {
+                id: String(user.id),
+              })}
+              class="inline"
+            >
+              <button
+                type="submit"
+                class={`inline-flex items-center font-medium py-2 px-4 rounded text-sm transition-colors ${
+                  user.manualMode
+                    ? "bg-gray-600 hover:bg-gray-500 text-white"
+                    : "bg-blue-600 hover:bg-blue-700 text-white"
+                }`}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="h-4 w-4 mr-2"
+                >
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
+                {user.manualMode ? "Disable Manual Mode" : "Enable Manual Mode"}
+              </button>
+            </form>
+            <a
+              href={lk(AppLink.AdminConversationDetail, {
+                id: String(user.id),
+              })}
+              class="inline-flex items-center bg-gray-700 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded text-sm transition-colors"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-4 w-4 mr-2"
+              >
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+              View Conversation
+            </a>
             <a
               href={lk(AppLink.AdminUserSystemPrompt, {
                 id: String(user.id),

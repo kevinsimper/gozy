@@ -54,6 +54,24 @@ export function AdminLayout({ children }: PropsWithChildren) {
                 Dashboard
               </a>
               <a
+                href={lk(AppLink.AdminConversations)}
+                class="flex items-center w-full justify-start h-8 text-xs rounded px-2 py-1.5 hover:bg-gray-800 text-gray-300 hover:text-white transition-colors"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="mr-1.5 h-3.5 w-3.5"
+                >
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
+                Conversations
+              </a>
+              <a
                 href={lk(AppLink.AdminDocuments)}
                 class="flex items-center w-full justify-start h-8 text-xs rounded px-2 py-1.5 hover:bg-gray-800 text-gray-300 hover:text-white transition-colors"
               >

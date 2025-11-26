@@ -9,6 +9,7 @@ import { AppLink, lk } from "../../lib/links";
 import { html } from "hono/html";
 import { sendWhatsappMessage } from "../../lib/whatsapp-sender";
 import { createMessage } from "../../models/message";
+import { setUserManualMode } from "../../models/user";
 import { Bindings } from "../..";
 import { CONVERSATION_SYSTEM_PROMPT } from "../../lib/prompts";
 import { findTaxiIdsByUserId } from "../../models/taxiid";
@@ -229,4 +230,29 @@ export const usersRoutes = new Hono<{ Bindings: Bindings }>()
         title: `System Prompt - ${targetUser.name} - Admin - Gozy`,
       },
     );
+  })
+  .post("/:id/toggle-manual-mode", async (c) => {
+    const user = await requireAdmin(c);
+    if (!user || typeof user !== "object" || !("id" in user)) {
+      return user;
+    }
+
+    const userId = parseInt(c.req.param("id"), 10);
+    const db = drizzle(c.env.DB);
+
+    const targetUser = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.id, userId))
+      .get();
+
+    if (!targetUser) {
+      return c.redirect(lk(AppLink.AdminTable, { tableName: "users" }));
+    }
+
+    // Toggle manual mode
+    await setUserManualMode(c, userId, !targetUser.manualMode);
+
+    // Redirect back to user detail page
+    return c.redirect(lk(AppLink.AdminUserDetail, { id: String(userId) }));
   });
