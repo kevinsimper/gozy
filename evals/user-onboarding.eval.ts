@@ -28,6 +28,8 @@ const newUser = {
   loginPinExpiry: null,
   lastLoginAt: null,
   preferredRttLocationId: null,
+  manualMode: false,
+  manualModeEnabledAt: null,
   createdAt: new Date(),
 };
 
