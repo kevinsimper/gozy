@@ -16,7 +16,7 @@ export function ChatPage(props: ChatPageProps) {
   const { messages } = props;
 
   return (
-    <div className="h-[calc(100vh-64px)] flex flex-col bg-gray-100">
+    <div className="h-[calc(100vh-65px)] flex flex-col bg-gray-100">
       <div className="flex-1 overflow-hidden flex flex-col">
         {messages.length > 0 && (
           <div
