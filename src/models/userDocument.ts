@@ -146,7 +146,7 @@ export async function findDocumentsDueForReminder(c: {
       and(
         isNotNull(userDocumentsTable.expiryDate),
         isNotNull(userDocumentsTable.reminderDaysBefore),
-        sql`date(${userDocumentsTable.expiryDate} / 1000, 'unixepoch', '-' || ${userDocumentsTable.reminderDaysBefore} || ' days') <= date('now')`,
+        sql`date(${userDocumentsTable.expiryDate}, 'unixepoch', '-' || ${userDocumentsTable.reminderDaysBefore} || ' days') <= date('now')`,
         notInArray(userDocumentsTable.id, remindedDocumentIds),
       ),
     )
