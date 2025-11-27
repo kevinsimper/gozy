@@ -61,7 +61,7 @@ app.route("/dev", devRoutes);
 
 app.get("/", (c) => {
   return c.render(<LandingPage />, {
-    title: "Gozy - Din digitale hub som taxichauffør",
+    title: "Gozy - Platformen for Taxichauffører",
   });
 });
 
