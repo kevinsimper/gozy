@@ -59,6 +59,16 @@ export function Layout(props: PropsWithChildren<LayoutProps>) {
           .markdown-content strong {
             @apply font-semibold text-gray-900;
           }
+          .markdown-content table {
+            @apply w-full border-collapse mb-4;
+          }
+          .markdown-content th,
+          .markdown-content td {
+            @apply border border-gray-300 p-3 text-left;
+          }
+          .markdown-content th {
+            @apply bg-gray-100 font-semibold;
+          }
         `}
         </style>
       </head>
