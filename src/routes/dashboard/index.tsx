@@ -14,6 +14,7 @@ import { chatRoutes } from "./chat";
 import { profileRoutes } from "./profile";
 import { carLeadRoutes } from "./carlead";
 import { serviceBookingRoutes } from "./servicebooking";
+import { helpdeskRoutes } from "./helpdesk";
 import type { Bindings } from "../../index";
 import { calculateCompliance } from "../../lib/compliance";
 
@@ -91,4 +92,5 @@ export const dashboardRoutes = new Hono<{ Bindings: Bindings }>()
   .route("/chat", chatRoutes)
   .route("/profile", profileRoutes)
   .route("/car-lead", carLeadRoutes)
-  .route("/service-booking", serviceBookingRoutes);
+  .route("/service-booking", serviceBookingRoutes)
+  .route("/helpdesk", helpdeskRoutes);

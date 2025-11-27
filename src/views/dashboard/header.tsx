@@ -61,6 +61,16 @@ export function DashboardHeader(props: DashboardHeaderProps) {
               >
                 Profil
               </a>
+              <a
+                href={lk(AppLink.DashboardHelpdesk)}
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  currentPath === lk(AppLink.DashboardHelpdesk)
+                    ? "bg-blue-100 text-blue-700"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                Helpdesk
+              </a>
             </nav>
 
             {/* Desktop Logout */}
@@ -158,17 +168,26 @@ export function DashboardHeader(props: DashboardHeaderProps) {
           </a>
           <a
             href={lk(AppLink.DashboardProfile)}
-            className={`block py-3 px-3 rounded-md text-base font-medium transition-colors ${
-              currentPath === lk(AppLink.DashboardProfile)
-                ? "bg-blue-100 text-blue-700"
-                : "text-gray-700 hover:bg-gray-100"
-            }`}
-          >
-            Profil
-          </a>
-
-          <div className="border-t border-gray-200 mt-4 pt-4">
-            <form method="post" action={lk(AppLink.Logout)}>
+                            className={`block py-3 px-3 rounded-md text-base font-medium transition-colors ${
+                          currentPath === lk(AppLink.DashboardProfile)
+                            ? "bg-blue-100 text-blue-700"
+                            : "text-gray-700 hover:bg-gray-100"
+                        }`}
+                      >
+                        Profil
+                      </a>
+                      <a
+                        href={lk(AppLink.DashboardHelpdesk)}
+                        className={`block py-3 px-3 rounded-md text-base font-medium transition-colors ${
+                          currentPath === lk(AppLink.DashboardHelpdesk)
+                            ? "bg-blue-100 text-blue-700"
+                            : "text-gray-700 hover:bg-gray-100"
+                        }`}
+                      >
+                        Helpdesk
+                      </a>
+            
+                      <div className="border-t border-gray-200 mt-4 pt-4">            <form method="post" action={lk(AppLink.Logout)}>
               <button
                 type="submit"
                 className="block w-full text-center py-3 text-base font-medium bg-gray-100 rounded-md hover:bg-gray-200"
