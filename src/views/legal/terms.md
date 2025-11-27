@@ -69,10 +69,10 @@ tilbud, ordrebekræftelsen eller en skriftlig aftale med kunden.
     medmindre andet fremgår af særskilt aftale eller producentens egne
     garantibetingelser:
 
-| Område              | Taxi-kunder | Andre erhverv + private                                        |
-| :------------------ | :---------- | :------------------------------------------------------------- |
-| Foliearbejde        | 6 måneder   | 12 måneder garanti                                             |
-| Opbygning og udstyr | 6 måneder   | 12 måneder garanti (eller længere, hvis producentgaranti er gældende) |
+| Område              | Taxi-kunder              | Andre erhverv + private                                        |
+| :------------------ | :----------------------- | :------------------------------------------------------------- |
+| Foliearbejde        | 6 måneder<br>garanti     | 12 måneder garanti                                             |
+| Opbygning og udstyr | 6 måneder<br>garanti     | 12 måneder garanti (eller længere, hvis producentgaranti er gældende) |
 
 3.  Begrænsninger
     Garantien dækker alene fejl i materialer og udførelse. Garantien
@@ -117,16 +117,12 @@ påbegyndes.
 
 For at sikre rettidig betaling følger GOZY A/S nedenstående rykkerforløb:
 
-| Fase          | Beskrivelse                 | Gebyr       | Frist             |
-| :------------ | :-------------------------- | :---------- | :---------------- |
-| 0 – Påmindelse | Venlig påmindelse før       | 0 kr.       | Ca. 3 dage før    |
-|               | forfaldsdato                |             | forfald           |
-| 1 – Første    | Venlig skriftlig påmindelse | 0 kr.       | 5 hverdage efter  |
-| rykker        |                             |             | forfald           |
-| 2 – Anden     | Formelt rykkerbrev          | 100 kr.     | 10 hverdage efter |
-| rykker        |                             |             | forfald           |
-| 3 –           | Endeligt påkrav med varsel  | 100 kr. +   | 10 hverdage efter |
-| Inkassovarsel | om inkasso                  | renter      | fase 2            |
+| Fase           | Beskrivelse                              | Gebyr       | Frist                     |
+| :------------- | :--------------------------------------- | :---------- | :------------------------ |
+| 0 – Påmindelse | Venlig påmindelse før<br>forfaldsdato    | 0 kr.       | Ca. 3 dage før<br>forfald |
+| 1 – Første rykker | Venlig skriftlig påmindelse             | 0 kr.       | 5 hverdage efter<br>forfald |
+| 2 – Anden rykker | Formelt rykkerbrev                       | 100 kr.     | 10 hverdage efter<br>forfald |
+| 3 – Inkassovarsel | Endeligt påkrav med varsel<br>om inkasso | 100 kr. +<br>renter | 10 hverdage efter<br>fase 2 |
 
 - Morarente beregnes iht. renteloven (Nationalbankens referencesats + 8 % p.a.).
 - Betales gælden ikke i fase 3, overdrages sagen til inkasso uden yderligere varsel.
