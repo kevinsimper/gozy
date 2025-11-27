@@ -1,20 +1,18 @@
 import { Hono } from "hono";
-import { jsxRenderer } from "hono/jsx-renderer";
 import { z } from "zod";
-import { setUserCookie } from "../services/auth";
+import type { Bindings } from "../index";
+import { redirectIfSignedIn } from "../lib/auth";
+import { AppLink, lk } from "../lib/links";
+import { sendLoginPin } from "../lib/login";
 import {
-  findUserByPhoneNumber,
-  updateLoginPin,
   clearLoginPin,
+  findUserByPhoneNumber,
   updateLastLogin,
+  updateLoginPin,
 } from "../models/user";
-import { PublicLayout } from "../views/public/layout";
+import { setUserCookie } from "../services/auth";
 import { LoginForm } from "../views/public/LoginForm";
 import { PinVerificationForm } from "../views/public/PinVerificationForm";
-import { AppLink, lk } from "../lib/links";
-import { redirectIfSignedIn } from "../lib/auth";
-import { sendLoginPin } from "../lib/login";
-import type { Bindings } from "../index";
 
 declare module "hono" {
   interface ContextRenderer {
@@ -42,17 +40,6 @@ function generatePin(): string {
 }
 
 export const loginRoutes = new Hono<{ Bindings: Bindings }>()
-  .use(
-    "*",
-    jsxRenderer(
-      ({ children, title }) => {
-        return <PublicLayout title={title}>{children}</PublicLayout>;
-      },
-      {
-        docType: true,
-      },
-    ),
-  )
   .get("/", async (c) => {
     const redirect = await redirectIfSignedIn(c);
     if (redirect) {
@@ -77,7 +64,7 @@ export const loginRoutes = new Hono<{ Bindings: Bindings }>()
         />,
         {
           title: "Gozy - Log ind",
-        },
+        }
       );
     }
 
@@ -93,7 +80,7 @@ export const loginRoutes = new Hono<{ Bindings: Bindings }>()
     await updateLoginPin(c, user.id, pin, expiresAt);
 
     console.log(
-      `Generated PIN ${pin} for user ${user.id} (${user.phoneNumber})`,
+      `Generated PIN ${pin} for user ${user.id} (${user.phoneNumber})`
     );
 
     try {
@@ -107,7 +94,7 @@ export const loginRoutes = new Hono<{ Bindings: Bindings }>()
         />,
         {
           title: "Gozy - Log ind",
-        },
+        }
       );
     }
 
@@ -115,7 +102,7 @@ export const loginRoutes = new Hono<{ Bindings: Bindings }>()
       <PinVerificationForm phoneNumber={parsed.data.phoneNumber} />,
       {
         title: "Gozy - Indtast PIN",
-      },
+      }
     );
   })
   .post("/verify", async (c) => {
@@ -132,7 +119,7 @@ export const loginRoutes = new Hono<{ Bindings: Bindings }>()
         />,
         {
           title: "Gozy - Indtast PIN",
-        },
+        }
       );
     }
 
@@ -146,7 +133,7 @@ export const loginRoutes = new Hono<{ Bindings: Bindings }>()
         />,
         {
           title: "Gozy - Indtast PIN",
-        },
+        }
       );
     }
 
@@ -158,7 +145,7 @@ export const loginRoutes = new Hono<{ Bindings: Bindings }>()
         />,
         {
           title: "Gozy - Indtast PIN",
-        },
+        }
       );
     }
 
@@ -171,7 +158,7 @@ export const loginRoutes = new Hono<{ Bindings: Bindings }>()
         />,
         {
           title: "Gozy - Indtast PIN",
-        },
+        }
       );
     }
 
@@ -183,7 +170,7 @@ export const loginRoutes = new Hono<{ Bindings: Bindings }>()
         />,
         {
           title: "Gozy - Indtast PIN",
-        },
+        }
       );
     }
 

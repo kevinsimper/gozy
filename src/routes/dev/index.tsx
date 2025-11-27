@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { jsxRenderer } from "hono/jsx-renderer";
 import { Bindings } from "../../index";
-import { Layout } from "../../views/layout";
+import { Layout } from "../../views/dashboard/layout";
 import { whatsappMockRoute } from "./whatsapp-mock";
 import { whatsappMessagesRoute } from "./whatsapp-messages";
 
@@ -20,8 +20,8 @@ export const devRoutes = new Hono<{ Bindings: Bindings }>()
       },
       {
         docType: true,
-      },
-    ),
+      }
+    )
   )
   .get("/", async (c) => {
     return c.render(
@@ -167,7 +167,7 @@ export const devRoutes = new Hono<{ Bindings: Bindings }>()
       </div>,
       {
         title: "Dev Tools - Gozy",
-      },
+      }
     );
   })
   .route("/", whatsappMockRoute)

@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { jsxRenderer } from "hono/jsx-renderer";
-import { Layout } from "../../views/layout";
+import { Layout } from "../../views/dashboard/layout";
 import { Bindings } from "../../index";
 import { uploadAndCreateFile } from "../../lib/fileUpload";
 import { DatabaseFile } from "../../models/file";
@@ -24,8 +24,8 @@ export const whatsappMockRoute = new Hono<{ Bindings: Bindings }>()
       },
       {
         docType: true,
-      },
-    ),
+      }
+    )
   )
   .get("/whatsapp-mock/random-new-user", async (c) => {
     const maxAttempts = 10;
@@ -322,7 +322,7 @@ export const whatsappMockRoute = new Hono<{ Bindings: Bindings }>()
       </div>,
       {
         title: "WhatsApp Mock - Gozy Dev",
-      },
+      }
     );
   })
   .post("/whatsapp-mock", async (c) => {
@@ -347,7 +347,7 @@ export const whatsappMockRoute = new Hono<{ Bindings: Bindings }>()
 
     if (!message && !hasFile) {
       return c.redirect(
-        `/dev/whatsapp-mock?error=missing_content&phone=${encodeURIComponent(phoneNumber)}`,
+        `/dev/whatsapp-mock?error=missing_content&phone=${encodeURIComponent(phoneNumber)}`
       );
     }
 
@@ -362,7 +362,7 @@ export const whatsappMockRoute = new Hono<{ Bindings: Bindings }>()
       } catch (error) {
         console.error("Error uploading file:", error);
         return c.redirect(
-          `/dev/whatsapp-mock?error=file_upload_failed&phone=${encodeURIComponent(phoneNumber)}`,
+          `/dev/whatsapp-mock?error=file_upload_failed&phone=${encodeURIComponent(phoneNumber)}`
         );
       }
     }
@@ -372,7 +372,7 @@ export const whatsappMockRoute = new Hono<{ Bindings: Bindings }>()
       c,
       normalizedPhone,
       message,
-      file,
+      file
     );
 
     let responseText = "";

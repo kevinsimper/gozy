@@ -4,7 +4,7 @@ import { getUserFromCookie } from "../../services/auth";
 import { findUserById } from "../../models/user";
 import { findUserDocumentsByUserId } from "../../models/userDocument";
 import { getPublishedNews } from "../../models/news";
-import { Layout } from "../../views/layout";
+import { Layout } from "../../views/dashboard/layout";
 import { DashboardPage } from "../../views/dashboard";
 import { DashboardHeader } from "../../views/dashboard/header";
 import { createPageview } from "../../models/pageview";
@@ -21,7 +21,7 @@ declare module "hono" {
   interface ContextRenderer {
     (
       content: string | Promise<string>,
-      props: { title: string; currentPath?: string },
+      props: { title: string; currentPath?: string }
     ): Response;
   }
 }
@@ -33,9 +33,8 @@ export const dashboardRoutes = new Hono<{ Bindings: Bindings }>()
       ({ children, title }, c) => {
         const currentPath = c.req.path;
         return (
-          <Layout title={title}>
+          <Layout title={title} currentPath={currentPath}>
             <div style="min-height: 100vh; background: #f9fafb;">
-              <DashboardHeader currentPath={currentPath} />
               {children}
             </div>
           </Layout>
@@ -43,8 +42,8 @@ export const dashboardRoutes = new Hono<{ Bindings: Bindings }>()
       },
       {
         docType: true,
-      },
-    ),
+      }
+    )
   )
   .use("*", async (c, next) => {
     const userId = await getUserFromCookie(c);
@@ -87,7 +86,7 @@ export const dashboardRoutes = new Hono<{ Bindings: Bindings }>()
       />,
       {
         title: "Gozy Dashboard",
-      },
+      }
     );
   })
   .route("/documents", documentsRoutes)

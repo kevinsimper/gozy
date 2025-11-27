@@ -1,31 +1,28 @@
-import { Hono } from "hono";
 import { drizzle } from "drizzle-orm/d1";
-import { usersTable } from "./db/schema";
-import { generateResponse } from "./services/gemini/client";
-import { loginRoutes } from "./routes/login";
-import { dashboardRoutes } from "./routes/dashboard/index";
-import { adminRoutes } from "./routes/admin/index";
-import { rttRoutes } from "./routes/rtt/index";
-import { apiRoutes } from "./routes/api/index";
-import { devRoutes } from "./routes/dev/index";
-import { logout } from "./services/auth";
-import { jsxRenderer } from "hono/jsx-renderer";
+import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { Layout } from "./views/layout";
+import { jsxRenderer } from "hono/jsx-renderer";
+import { marked } from "marked";
+import { redirectIfSignedIn } from "./lib/auth";
+import { AppLink, lk } from "./lib/links";
+import { rateLimitMiddleware } from "./lib/ratelimit/middleware";
+import { getQrCodeByShortCode, recordScan } from "./models/qrcodes";
+import { adminRoutes } from "./routes/admin/index";
+import { apiRoutes } from "./routes/api/index";
+import { dashboardRoutes } from "./routes/dashboard/index";
+import { devRoutes } from "./routes/dev/index";
+import { loginRoutes } from "./routes/login";
+import { rttRoutes } from "./routes/rtt/index";
+import { handleDocumentReminders } from "./scheduled/reminders";
+import { logout } from "./services/auth";
+import { Layout } from "./views/dashboard/layout";
 import { LandingPage } from "./views/landing";
 import { SignupPage } from "./views/public/SignupPage";
-import { PublicLayout } from "./views/public/layout";
-import { AppLink, lk } from "./lib/links";
-import { redirectIfSignedIn } from "./lib/auth";
-import { rateLimitMiddleware } from "./lib/ratelimit/middleware";
-import { handleDocumentReminders } from "./scheduled/reminders";
-import { getQrCodeByShortCode, recordScan } from "./models/qrcodes";
-import { marked } from "marked";
+import { raw } from "hono/html";
 // @ts-ignore
 import termsMarkdown from "./views/legal/terms.md";
 // @ts-ignore
 import privacyMarkdown from "./views/legal/privacy.md";
-import { raw } from "hono/html";
 
 export type Bindings = {
   DB: D1Database;
@@ -45,6 +42,11 @@ export type Bindings = {
 const app = new Hono<{ Bindings: Bindings }>();
 
 app.use("*", rateLimitMiddleware);
+app.route("/dashboard", dashboardRoutes);
+app.route("/admin", adminRoutes);
+app.route("/rtt", rttRoutes);
+app.route("/api", apiRoutes);
+app.route("/dev", devRoutes);
 
 app.use(
   "*",
@@ -54,16 +56,11 @@ app.use(
     },
     {
       docType: true,
-    },
-  ),
+    }
+  )
 );
 
 app.route("/login", loginRoutes);
-app.route("/dashboard", dashboardRoutes);
-app.route("/admin", adminRoutes);
-app.route("/rtt", rttRoutes);
-app.route("/api", apiRoutes);
-app.route("/dev", devRoutes);
 
 app.get("/", (c) => {
   return c.render(<LandingPage />, {
@@ -77,11 +74,9 @@ app.get("/signup", async (c) => {
     return redirect;
   }
 
-  return c.html(
-    <PublicLayout title="Gozy - Opret konto">
-      <SignupPage />
-    </PublicLayout>,
-  );
+  return c.render(<SignupPage />, {
+    title: "Gozy - Opret konto",
+  });
 });
 
 app.post("/logout", (c) => {
@@ -95,7 +90,7 @@ app.get("/terms", (c) => {
     <div class="max-w-4xl mx-auto p-8 bg-white rounded-lg shadow-md mt-10 markdown-content">
       {raw(content)}
     </div>,
-    { title: "Betingelser for Anvendelse" },
+    { title: "Betingelser for Anvendelse" }
   );
 });
 
@@ -105,7 +100,7 @@ app.get("/privacy", (c) => {
     <div class="max-w-4xl mx-auto p-8 bg-white rounded-lg shadow-md mt-10 markdown-content">
       {raw(content)}
     </div>,
-    { title: "Privatlivspolitik" },
+    { title: "Privatlivspolitik" }
   );
 });
 
@@ -141,7 +136,7 @@ app.onError((error, c) => {
   console.error("Unhandled error:", error);
   console.error(
     "Error stack:",
-    error instanceof Error ? error.stack : "No stack available",
+    error instanceof Error ? error.stack : "No stack available"
   );
 
   const acceptHeader = c.req.header("Accept") || "";
@@ -185,7 +180,7 @@ app.onError((error, c) => {
           </div>
         </div>
       </Layout>,
-      500,
+      500
     );
   }
 

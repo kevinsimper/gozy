@@ -1,10 +1,12 @@
 import { html, raw } from "hono/html";
 import { PropsWithChildren } from "hono/jsx";
-import { Header } from "./components/Header";
-import { Footer } from "./components/Footer";
+import { Header } from "../components/Header";
+import { Footer } from "../components/Footer";
+import { DashboardHeader } from "./header";
 
 interface LayoutProps {
   title: string;
+  currentPath?: string;
   children?: any;
 }
 
@@ -13,7 +15,7 @@ export function Layout(props: PropsWithChildren<LayoutProps>) {
     <html lang="da">
       <head>
         <meta charset="UTF-8" />
-        <title>${props.title}</title>
+        <title>{props.title}</title>
         <link rel="icon" href="/gozy_logo.png" type="image/png" />
         <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
         <script
@@ -65,9 +67,8 @@ export function Layout(props: PropsWithChildren<LayoutProps>) {
         </style>
       </head>
       <body class="flex flex-col min-h-screen">
-        <Header />
+        <DashboardHeader currentPath={props.currentPath} />
         <main class="flex-grow">{props.children}</main>
-        <Footer />
       </body>
     </html>
   );

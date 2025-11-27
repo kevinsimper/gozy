@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { jsxRenderer } from "hono/jsx-renderer";
-import { Layout } from "../../views/layout";
+import { Layout } from "../../views/dashboard/layout";
 import { getAllWhatsappMessages } from "../../models/whatsapp-message";
 import { Bindings } from "../../index";
 
@@ -13,8 +13,8 @@ export const whatsappMessagesRoute = new Hono<{ Bindings: Bindings }>()
       },
       {
         docType: true,
-      },
-    ),
+      }
+    )
   )
   .get("/whatsapp-messages", async (c) => {
     const messages = await getAllWhatsappMessages(c, 100);
@@ -200,6 +200,6 @@ export const whatsappMessagesRoute = new Hono<{ Bindings: Bindings }>()
       </div>,
       {
         title: "WhatsApp Messages - Gozy Dev",
-      },
+      }
     );
   });
