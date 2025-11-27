@@ -5,6 +5,8 @@ import {
 } from "../services/resend";
 import { createNotification } from "../models/notification";
 
+const FROM_EMAIL = "Gozy <noreply@gozy.dk>";
+
 type SendEmailParams = {
   to: string | string[];
   subject: string;
@@ -21,7 +23,7 @@ export async function sendEmail({
   const resend = new Resend(resendApiKey);
 
   return resend.emails.send({
-    from: "onboarding@resend.dev",
+    from: FROM_EMAIL,
     to,
     subject,
     html,
@@ -42,11 +44,13 @@ export async function sendAndLogEmail(
   const resend = new Resend(c.env.RESEND_API_KEY);
 
   const result = await resend.emails.send({
-    from: "onboarding@resend.dev",
+    from: FROM_EMAIL,
     to,
     subject,
     html,
   });
+
+  const status = result.error ? "failed" : "sent";
 
   const recipients = Array.isArray(to) ? to : [to];
   for (const recipient of recipients) {
@@ -55,6 +59,7 @@ export async function sendAndLogEmail(
       recipient,
       subject,
       content: html,
+      status,
       userId,
     });
   }

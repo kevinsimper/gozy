@@ -106,6 +106,15 @@ export function AdminNotifications({ notifications }: AdminNotificationsProps) {
                       >
                         {notification.channel}
                       </span>
+                      <span
+                        class={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                          notification.status === "sent"
+                            ? "bg-green-900 text-green-300"
+                            : "bg-red-900 text-red-300"
+                        }`}
+                      >
+                        {notification.status}
+                      </span>
                       <span class="text-gray-400 text-xs">
                         {notification.recipient}
                       </span>

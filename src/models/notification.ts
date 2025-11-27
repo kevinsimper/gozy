@@ -11,6 +11,7 @@ export async function createNotification(
     recipient: string;
     subject?: string;
     content: string;
+    status: "sent" | "failed";
     userId?: number;
   },
 ): Promise<Notification> {
@@ -22,6 +23,7 @@ export async function createNotification(
       recipient: data.recipient,
       subject: data.subject,
       content: data.content,
+      status: data.status,
       userId: data.userId,
     })
     .returning()

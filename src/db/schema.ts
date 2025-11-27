@@ -643,6 +643,9 @@ export const notificationsTable = sqliteTable(
     recipient: text().notNull(),
     subject: text(),
     content: text().notNull(),
+    status: text({ enum: ["sent", "failed"] })
+      .notNull()
+      .default("sent"),
     userId: int("user_id"),
     createdAt: int("created_at", { mode: "timestamp" })
       .notNull()
