@@ -15,7 +15,6 @@ import { loginRoutes } from "./routes/login";
 import { rttRoutes } from "./routes/rtt/index";
 import { handleDocumentReminders } from "./scheduled/reminders";
 import { logout } from "./services/auth";
-import { Layout } from "./views/dashboard/layout";
 import { LandingPage } from "./views/landing";
 import { SignupPage } from "./views/public/SignupPage";
 import { raw } from "hono/html";
@@ -23,6 +22,7 @@ import { raw } from "hono/html";
 import termsMarkdown from "./views/legal/terms.md";
 // @ts-ignore
 import privacyMarkdown from "./views/legal/privacy.md";
+import { Layout } from "./views/public/layout";
 
 export type Bindings = {
   DB: D1Database;
@@ -48,82 +48,78 @@ app.route("/rtt", rttRoutes);
 app.route("/api", apiRoutes);
 app.route("/dev", devRoutes);
 
-app.use(
-  "*",
-  jsxRenderer(
-    ({ children, title }) => {
-      return <Layout title={title}>{children}</Layout>;
-    },
-    {
-      docType: true,
-    }
+const publicApp = new Hono<{ Bindings: Bindings }>()
+  .use(
+    "*",
+    jsxRenderer(
+      ({ children, title }) => {
+        return <Layout title={title}>{children}</Layout>;
+      },
+      {
+        docType: true,
+      },
+    ),
   )
-);
+  .route("/login", loginRoutes)
+  .get("/", (c) => {
+    return c.render(<LandingPage />, {
+      title: "Gozy - Platformen for Taxichauffører",
+    });
+  })
+  .get("/signup", async (c) => {
+    const redirect = await redirectIfSignedIn(c);
+    if (redirect) {
+      return redirect;
+    }
 
-app.route("/login", loginRoutes);
+    return c.render(<SignupPage />, {
+      title: "Gozy - Opret konto",
+    });
+  })
+  .post("/logout", (c) => {
+    logout(c);
+    return c.redirect(lk(AppLink.Login));
+  })
+  .get("/terms", (c) => {
+    const content = marked(termsMarkdown);
+    return c.render(
+      <div class="max-w-4xl mx-auto p-8 bg-white rounded-lg shadow-md mt-10 markdown-content">
+        {raw(content)}
+      </div>,
+      { title: "Betingelser for Anvendelse" },
+    );
+  })
+  .get("/privacy", (c) => {
+    const content = marked(privacyMarkdown);
+    return c.render(
+      <div class="max-w-4xl mx-auto p-8 bg-white rounded-lg shadow-md mt-10 markdown-content">
+        {raw(content)}
+      </div>,
+      { title: "Privatlivspolitik" },
+    );
+  })
+  .get("/qr/:shortCode", async (c) => {
+    const shortCode = c.req.param("shortCode");
+    const db = drizzle(c.env.DB);
 
-app.get("/", (c) => {
-  return c.render(<LandingPage />, {
-    title: "Gozy - Platformen for Taxichauffører",
-  });
-});
+    const qrCode = await getQrCodeByShortCode(db, shortCode);
 
-app.get("/signup", async (c) => {
-  const redirect = await redirectIfSignedIn(c);
-  if (redirect) {
-    return redirect;
-  }
+    if (!qrCode) {
+      return c.notFound();
+    }
 
-  return c.render(<SignupPage />, {
-    title: "Gozy - Opret konto",
-  });
-});
+    const userAgent = c.req.header("user-agent");
+    const country = c.req.header("cf-ipcountry");
 
-app.post("/logout", (c) => {
-  logout(c);
-  return c.redirect(lk(AppLink.Login));
-});
+    await recordScan(db, qrCode.id, {
+      userAgent,
+      country,
+    });
 
-app.get("/terms", (c) => {
-  const content = marked(termsMarkdown);
-  return c.render(
-    <div class="max-w-4xl mx-auto p-8 bg-white rounded-lg shadow-md mt-10 markdown-content">
-      {raw(content)}
-    </div>,
-    { title: "Betingelser for Anvendelse" }
-  );
-});
-
-app.get("/privacy", (c) => {
-  const content = marked(privacyMarkdown);
-  return c.render(
-    <div class="max-w-4xl mx-auto p-8 bg-white rounded-lg shadow-md mt-10 markdown-content">
-      {raw(content)}
-    </div>,
-    { title: "Privatlivspolitik" }
-  );
-});
-
-app.get("/qr/:shortCode", async (c) => {
-  const shortCode = c.req.param("shortCode");
-  const db = drizzle(c.env.DB);
-
-  const qrCode = await getQrCodeByShortCode(db, shortCode);
-
-  if (!qrCode) {
-    return c.notFound();
-  }
-
-  const userAgent = c.req.header("user-agent");
-  const country = c.req.header("cf-ipcountry");
-
-  await recordScan(db, qrCode.id, {
-    userAgent,
-    country,
+    return c.redirect(qrCode.redirectUrl);
   });
 
-  return c.redirect(qrCode.redirectUrl);
-});
+app.route("/", publicApp);
 
 app.onError((error, c) => {
   if (error instanceof HTTPException) {
@@ -136,7 +132,7 @@ app.onError((error, c) => {
   console.error("Unhandled error:", error);
   console.error(
     "Error stack:",
-    error instanceof Error ? error.stack : "No stack available"
+    error instanceof Error ? error.stack : "No stack available",
   );
 
   const acceptHeader = c.req.header("Accept") || "";
@@ -180,7 +176,7 @@ app.onError((error, c) => {
           </div>
         </div>
       </Layout>,
-      500
+      500,
     );
   }
 

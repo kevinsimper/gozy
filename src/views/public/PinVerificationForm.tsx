@@ -8,7 +8,7 @@ interface PinVerificationFormProps {
 
 export function PinVerificationForm(props: PinVerificationFormProps) {
   return (
-    <div class="bg-white rounded-lg shadow-lg p-8">
+    <div class="p-8 lg:p-12 max-w-lg mx-auto">
       <div class="mb-6">
         <h1 class="text-3xl font-bold text-gray-900 mb-2">Indtast PIN-kode</h1>
         <p class="text-gray-600">

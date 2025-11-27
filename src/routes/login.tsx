@@ -64,7 +64,7 @@ export const loginRoutes = new Hono<{ Bindings: Bindings }>()
         />,
         {
           title: "Gozy - Log ind",
-        }
+        },
       );
     }
 
@@ -80,7 +80,7 @@ export const loginRoutes = new Hono<{ Bindings: Bindings }>()
     await updateLoginPin(c, user.id, pin, expiresAt);
 
     console.log(
-      `Generated PIN ${pin} for user ${user.id} (${user.phoneNumber})`
+      `Generated PIN ${pin} for user ${user.id} (${user.phoneNumber})`,
     );
 
     try {
@@ -94,7 +94,7 @@ export const loginRoutes = new Hono<{ Bindings: Bindings }>()
         />,
         {
           title: "Gozy - Log ind",
-        }
+        },
       );
     }
 
@@ -102,7 +102,7 @@ export const loginRoutes = new Hono<{ Bindings: Bindings }>()
       <PinVerificationForm phoneNumber={parsed.data.phoneNumber} />,
       {
         title: "Gozy - Indtast PIN",
-      }
+      },
     );
   })
   .post("/verify", async (c) => {
@@ -119,7 +119,7 @@ export const loginRoutes = new Hono<{ Bindings: Bindings }>()
         />,
         {
           title: "Gozy - Indtast PIN",
-        }
+        },
       );
     }
 
@@ -133,7 +133,7 @@ export const loginRoutes = new Hono<{ Bindings: Bindings }>()
         />,
         {
           title: "Gozy - Indtast PIN",
-        }
+        },
       );
     }
 
@@ -145,7 +145,7 @@ export const loginRoutes = new Hono<{ Bindings: Bindings }>()
         />,
         {
           title: "Gozy - Indtast PIN",
-        }
+        },
       );
     }
 
@@ -158,7 +158,7 @@ export const loginRoutes = new Hono<{ Bindings: Bindings }>()
         />,
         {
           title: "Gozy - Indtast PIN",
-        }
+        },
       );
     }
 
@@ -170,7 +170,7 @@ export const loginRoutes = new Hono<{ Bindings: Bindings }>()
         />,
         {
           title: "Gozy - Indtast PIN",
-        }
+        },
       );
     }
 

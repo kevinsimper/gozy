@@ -21,7 +21,7 @@ declare module "hono" {
   interface ContextRenderer {
     (
       content: string | Promise<string>,
-      props: { title: string; currentPath?: string }
+      props: { title: string; currentPath?: string },
     ): Response;
   }
 }
@@ -34,16 +34,14 @@ export const dashboardRoutes = new Hono<{ Bindings: Bindings }>()
         const currentPath = c.req.path;
         return (
           <Layout title={title} currentPath={currentPath}>
-            <div style="min-height: 100vh; background: #f9fafb;">
-              {children}
-            </div>
+            {children}
           </Layout>
         );
       },
       {
         docType: true,
-      }
-    )
+      },
+    ),
   )
   .use("*", async (c, next) => {
     const userId = await getUserFromCookie(c);
@@ -86,7 +84,7 @@ export const dashboardRoutes = new Hono<{ Bindings: Bindings }>()
       />,
       {
         title: "Gozy Dashboard",
-      }
+      },
     );
   })
   .route("/documents", documentsRoutes)

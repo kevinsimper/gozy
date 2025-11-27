@@ -2,9 +2,8 @@ import { AppLink, lk, WHATSAPP_CONTACT_URL } from "../../lib/links";
 
 export function SignupPage() {
   return (
-    <div class="bg-white rounded-lg shadow-lg p-8">
+    <div class="p-8 lg:my-12 max-w-lg mx-auto">
       <div class="mb-6">
-        <img src="/gozy_logo.png" alt="Gozy" class="h-12 mb-4" />
         <h1 class="text-3xl font-bold text-gray-900 mb-2">
           Opret din konto via WhatsApp
         </h1>

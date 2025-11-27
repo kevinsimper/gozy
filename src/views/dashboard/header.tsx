@@ -10,7 +10,7 @@ export function DashboardHeader(props: DashboardHeaderProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white/95 backdrop-blur shadow-sm">
+      <header className="w-full border-b border-gray-200 bg-white/95 backdrop-blur shadow-sm">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">

@@ -7,10 +7,11 @@ interface LoginFormProps {
 
 export function LoginForm(props: LoginFormProps) {
   return (
-    <div class="bg-white rounded-lg shadow-lg p-8">
+    <div class="p-8 max-w-md mx-auto">
       <div class="mb-6">
-        <img src="/gozy_logo.png" alt="Gozy" class="h-12 mb-2" />
-        <p class="text-gray-600">Log ind med dit telefonnummer</p>
+        <p class="text-gray-600 text-center text-lg font-semibold">
+          Log ind med dit telefonnummer
+        </p>
       </div>
 
       {props.error && <ErrorMessage message={props.error} />}
