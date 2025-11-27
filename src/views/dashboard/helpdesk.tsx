@@ -1,10 +1,12 @@
-import type { ArticleWithQuestionCount } from "../../models/helpdesk";
+import type { ArticleWithQuestions } from "../../models/helpdesk";
 import { AppLink, lk } from "../../lib/links";
 
-function ArticleCard({ article }: { article: ArticleWithQuestionCount }) {
+function ArticleCard({ article }: { article: ArticleWithQuestions }) {
   return (
     <a
-      href={lk(AppLink.DashboardHelpdeskArticle, { publicId: article.publicId })}
+      href={lk(AppLink.DashboardHelpdeskArticle, {
+        publicId: article.publicId,
+      })}
       className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow p-6 flex flex-col no-underline cursor-pointer"
     >
       <div className="flex items-start justify-between mb-4">
@@ -44,21 +46,37 @@ export function HelpdeskPage({
   articles,
   query,
 }: {
-  articles: ArticleWithQuestionCount[];
+  articles: ArticleWithQuestions[];
   query?: string;
 }) {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold text-gray-900 mb-4">Helpdesk</h1>
       <p className="text-lg text-gray-700 mb-8">
-        Her finder du en samling af artikler og svar på ofte stillede spørgsmål. Søg efter emner eller gennemse kategorier for at finde den information du har brug for.
+        Her finder du en samling af artikler og svar på ofte stillede spørgsmål.
+        Søg efter emner eller gennemse kategorier for at finde den information
+        du har brug for.
       </p>
 
-      <form method="get" action={lk(AppLink.DashboardHelpdesk)} className="mb-10">
+      <form
+        method="get"
+        action={lk(AppLink.DashboardHelpdesk)}
+        className="mb-10"
+      >
         <div className="relative max-w-2xl">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            <svg
+              className="h-5 w-5 text-gray-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
             </svg>
           </div>
           <input
@@ -73,11 +91,25 @@ export function HelpdeskPage({
 
       {articles.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 rounded-lg border border-gray-200 border-dashed">
-          <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <svg
+            className="mx-auto h-12 w-12 text-gray-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
           </svg>
-          <h3 className="mt-2 text-sm font-medium text-gray-900">Ingen resultater fundet</h3>
-          <p className="mt-1 text-sm text-gray-500">Prøv at søge efter noget andet.</p>
+          <h3 className="mt-2 text-sm font-medium text-gray-900">
+            Ingen resultater fundet
+          </h3>
+          <p className="mt-1 text-sm text-gray-500">
+            Prøv at søge efter noget andet.
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

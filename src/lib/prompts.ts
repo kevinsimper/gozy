@@ -69,7 +69,7 @@ Onboarding er afsluttet.
 
 ## Vigtige regler
 - Hvis du skal gemme et dokument: tjek ALTID først om brugeren allerede har det dokumenttype ved at kalde get_user_documents først
-- Når bruger beder om at se eller få et dokument: kald get_user_documents først, find det rigtige dokument, og brug derefter send_document_link med documentets publicId
+- Når bruger beder om at se eller få et dokument: kald get_user_documents først, find det rigtige dokument, og brug derefter send_document_image med documentets publicId
 ${isNewUser ? "" : "- Når bruger beder om bil-tilbud: SKAL følge proceduren nedenfor nøjagtigt"}
 - Når bruger siger "Check in": SKAL følge check-in proceduren nedenfor nøjagtigt
 - Når bruger spørger om RTT lokationer (adresse, telefon, åbningstider, osv): SKAL ALTID kalde lookup_rtt_location_info først - brug ALDRIG hukommelse eller opfundet information

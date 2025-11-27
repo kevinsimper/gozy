@@ -22,7 +22,7 @@ function extractPhoneNumber(whatsappId: string): string {
 
 export const whatsappWebhookRoutes = new Hono<{ Bindings: Bindings }>().post(
   "/",
-  async (c) => {
+  async (c): Promise<Response> => {
     const body = await c.req.parseBody();
     const parsed = whatsappWebhookSchema.safeParse(body);
 
@@ -60,8 +60,6 @@ export const whatsappWebhookRoutes = new Hono<{ Bindings: Bindings }>().post(
       if (result.val.skipAutoReply) {
         return c.json({
           success: true,
-          manualMode: true,
-          response: null,
         });
       }
       return c.json({

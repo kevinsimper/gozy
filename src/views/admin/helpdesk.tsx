@@ -1,10 +1,10 @@
 import type { HelpdeskArticle, HelpdeskQuestion } from "../../db/schema";
 import type { HForm } from "../../services/hform/form";
 import { lk, AppLink } from "../../lib/links";
-import type { ArticleWithQuestionCount } from "../../models/helpdesk";
+import type { ArticleWithQuestions } from "../../models/helpdesk";
 
 type HelpdeskListViewProps = {
-  articles: ArticleWithQuestionCount[];
+  articles: ArticleWithQuestions[];
   form: ReturnType<typeof HForm>;
   formData?: Record<string, unknown>;
   formErrors?: Record<string, string | undefined>;
@@ -58,7 +58,7 @@ export function HelpdeskListView({
                     </div>
                     <div class="ml-4 flex-shrink-0 text-right">
                       <div class="text-sm font-medium text-blue-400">
-                        {article.questionCount}
+                        {article.questions.length}
                       </div>
                       <div class="text-xs text-gray-500">questions</div>
                       {article.embedding && (

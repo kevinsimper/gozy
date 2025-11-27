@@ -22,8 +22,9 @@ import {
 } from "../../models/rttlocation";
 import { createTaxiId, findTaxiIdsByUserId } from "../../models/taxiid";
 import { type FunctionCall } from "@google/genai";
-import { createFile } from "../../models/file";
+import { createFile, findFileById } from "../../models/file";
 import { copyFileToContext } from "../file-storage";
+import { getDocumentTypeLabel } from "../documentTypes";
 import { createWhatsAppBotClient } from "../../services/whatsapp-bot/client";
 
 export async function handleFunctionCall(
@@ -340,31 +341,6 @@ export async function handleFunctionCall(
         locationName: location.name,
       },
     };
-  } else if (functionCall.name === "send_document_link") {
-    const args = functionCall.args as {
-      documentPublicId: string;
-      message?: string;
-    };
-
-    const baseUrl = "https://gozy.ks.workers.dev";
-    const documentUrl = `${baseUrl}/dashboard/documents/${args.documentPublicId}/edit`;
-
-    const defaultMessage = `Her er linket til dit dokument: ${documentUrl}`;
-    const messageToUser = args.message
-      ? `${args.message}\n\n${documentUrl}`
-      : defaultMessage;
-
-    console.log(
-      `Sending document link for ${args.documentPublicId} to user ${userId}`,
-    );
-
-    return {
-      name: functionCall.name,
-      response: {
-        success: true,
-        messageToUser,
-      },
-    };
   } else if (functionCall.name === "add_taxi_id") {
     const args = functionCall.args as {
       taxiId: string;
@@ -470,41 +446,49 @@ export async function handleFunctionCall(
         },
       };
     }
-  } else if (functionCall.name === "send_driver_license_image") {
-    const args = functionCall.args as { message?: string };
+  } else if (functionCall.name === "send_document_image") {
+    const args = functionCall.args as {
+      documentPublicId: string;
+      message?: string;
+    };
 
-    // Find user's driver license document
+    // Find document by publicId
     const documents = await findUserDocumentsByUserId(c, userId);
-    const driverLicense = documents.find(
-      (doc) => doc.documentType === "drivers_license",
+    const document = documents.find(
+      (doc) => doc.publicId === args.documentPublicId,
     );
 
-    if (!driverLicense) {
+    if (!document) {
       return {
         name: functionCall.name,
         response: {
           success: false,
-          messageToUser: "Du har ikke uploadet et kørekort endnu.",
+          messageToUser: "Kunne ikke finde dokumentet.",
         },
       };
     }
 
     try {
-      // Use the new abstraction to copy file to assistant-images context
+      // Get file to determine extension (for PDFs, images, etc.)
+      const sourceFile = await findFileById(c, document.fileId);
+      const extension = sourceFile?.originalFilename.split(".").pop() || "jpg";
+
+      // Copy file and send with appropriate label
       const copiedFile = await copyFileToContext(
         c,
-        driverLicense.fileId,
+        document.fileId,
         "assistant-images",
         {
-          filename: `drivers-license-${userId}.jpg`,
+          filename: `${document.documentType}-${userId}.${extension}`,
         },
       );
 
-      const defaultMessage = "Her er dit kørekort:";
+      const label = getDocumentTypeLabel(document.documentType);
+      const defaultMessage = `Her er dit ${label}:`;
       const messageToUser = args.message || defaultMessage;
 
       console.log(
-        `Sent driver's license (file ID: ${copiedFile.id}) to user ${userId}`,
+        `Sent document ${document.documentType} (file ID: ${copiedFile.id}) to user ${userId}`,
       );
 
       return {
@@ -516,12 +500,12 @@ export async function handleFunctionCall(
         },
       };
     } catch (error) {
-      console.error("Error copying driver license:", error);
+      console.error("Error copying document:", error);
       return {
         name: functionCall.name,
         response: {
           success: false,
-          messageToUser: "Kunne ikke hente dit kørekort.",
+          messageToUser: "Kunne ikke hente dokumentet.",
         },
       };
     }

@@ -1,9 +1,12 @@
 import { Hono } from "hono";
 import { drizzle } from "drizzle-orm/d1";
-import { sql, like, or, exists, and, eq, desc, getTableColumns } from "drizzle-orm";
-import { helpdeskArticlesTable, helpdeskQuestionsTable } from "../../db/schema";
+import * as schema from "../../db/schema";
 import { getUserFromCookie } from "../../services/auth";
-import { listArticles, getArticleByPublicId, getQuestionsByArticleId } from "../../models/helpdesk";
+import {
+  listArticles,
+  getArticleByPublicId,
+  getQuestionsByArticleId,
+} from "../../models/helpdesk";
 import { HelpdeskPage } from "../../views/dashboard/helpdesk";
 import type { Bindings } from "../../index";
 import { AppLink, lk } from "../../lib/links";
@@ -18,54 +21,39 @@ export const helpdeskRoutes = new Hono<{ Bindings: Bindings }>()
       return c.redirect(lk(AppLink.Login));
     }
 
-    const db = drizzle(c.env.DB);
-    
+    const db = drizzle(c.env.DB, { schema });
+
     let articles;
-    
+
     if (query) {
       const searchPattern = `%${query}%`;
-      articles = await db
-        .select({
-          ...getTableColumns(helpdeskArticlesTable),
-          questionCount: sql<number>`(
-            SELECT COUNT(*)
-            FROM ${helpdeskQuestionsTable}
-            WHERE ${helpdeskQuestionsTable.articleId} = ${helpdeskArticlesTable.id}
-          )`,
-        })
-        .from(helpdeskArticlesTable)
-        .where(
-          or(
-            like(helpdeskArticlesTable.title, searchPattern),
-            like(helpdeskArticlesTable.description, searchPattern),
-            exists(
-              db
-                .select()
-                .from(helpdeskQuestionsTable)
-                .where(
-                  and(
-                    eq(
-                      helpdeskQuestionsTable.articleId,
-                      helpdeskArticlesTable.id,
-                    ),
-                    like(helpdeskQuestionsTable.question, searchPattern),
-                  ),
-                ),
-            ),
-          ),
-        )
-        .orderBy(desc(helpdeskArticlesTable.createdAt))
-        .all();
+      const allArticles = await db.query.helpdeskArticlesTable.findMany({
+        with: {
+          questions: true,
+        },
+        orderBy: (articles, { desc }) => [desc(articles.createdAt)],
+      });
+
+      // Filter articles that match the search query in title, description, or questions
+      articles = allArticles.filter((article) => {
+        const titleMatch = article.title
+          .toLowerCase()
+          .includes(query.toLowerCase());
+        const descMatch = article.description
+          .toLowerCase()
+          .includes(query.toLowerCase());
+        const questionMatch = article.questions.some((q) =>
+          q.question.toLowerCase().includes(query.toLowerCase()),
+        );
+        return titleMatch || descMatch || questionMatch;
+      });
     } else {
       articles = await listArticles(db);
     }
 
-    return c.render(
-      <HelpdeskPage articles={articles as any} query={query} />,
-      {
-        title: "Helpdesk",
-      },
-    );
+    return c.render(<HelpdeskPage articles={articles} query={query} />, {
+      title: "Helpdesk",
+    });
   })
   .get("/:publicId", async (c) => {
     const userId = await getUserFromCookie(c);

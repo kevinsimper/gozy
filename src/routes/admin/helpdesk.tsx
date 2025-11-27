@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/d1";
 import { z } from "zod";
 import { Bindings } from "../..";
 import { requireAdmin } from "../../lib/adminAuth";
+import * as schema from "../../db/schema";
 import {
   createArticle,
   listArticles,
@@ -91,7 +92,7 @@ export const helpdeskRoutes = new Hono<{ Bindings: Bindings }>()
       return user;
     }
 
-    const db = drizzle(c.env.DB);
+    const db = drizzle(c.env.DB, { schema });
     const articles = await listArticles(db);
 
     const createForm = HForm(createFormDefinition, {
@@ -124,7 +125,7 @@ export const helpdeskRoutes = new Hono<{ Bindings: Bindings }>()
 
     if (!parseResult.success) {
       const errors = createForm.handleValidation(parseResult);
-      const db = drizzle(c.env.DB);
+      const db = drizzle(c.env.DB, { schema });
       const articles = await listArticles(db);
 
       return c.render(

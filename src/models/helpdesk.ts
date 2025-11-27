@@ -1,4 +1,4 @@
-import { eq, sql, desc } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
 import {
   helpdeskArticlesTable,
@@ -6,9 +6,10 @@ import {
   type HelpdeskArticle,
   type HelpdeskQuestion,
 } from "../db/schema";
+import * as schema from "../db/schema";
 
-export type ArticleWithQuestionCount = HelpdeskArticle & {
-  questionCount: number;
+export type ArticleWithQuestions = HelpdeskArticle & {
+  questions: HelpdeskQuestion[];
 };
 
 export async function createArticle(
@@ -55,26 +56,14 @@ export async function getArticleByPublicId(
 }
 
 export async function listArticles(
-  db: DrizzleD1Database,
-): Promise<ArticleWithQuestionCount[]> {
-  const articles = await db
-    .select({
-      id: helpdeskArticlesTable.id,
-      publicId: helpdeskArticlesTable.publicId,
-      title: helpdeskArticlesTable.title,
-      description: helpdeskArticlesTable.description,
-      embedding: helpdeskArticlesTable.embedding,
-      createdAt: helpdeskArticlesTable.createdAt,
-      updatedAt: helpdeskArticlesTable.updatedAt,
-      questionCount: sql<number>`(
-        SELECT COUNT(*)
-        FROM ${helpdeskQuestionsTable}
-        WHERE ${helpdeskQuestionsTable.articleId} = ${helpdeskArticlesTable.id}
-      )`,
-    })
-    .from(helpdeskArticlesTable)
-    .orderBy(desc(helpdeskArticlesTable.createdAt))
-    .all();
+  db: DrizzleD1Database<typeof schema>,
+): Promise<ArticleWithQuestions[]> {
+  const articles = await db.query.helpdeskArticlesTable.findMany({
+    with: {
+      questions: true,
+    },
+    orderBy: (articles, { desc }) => [desc(articles.createdAt)],
+  });
 
   return articles;
 }

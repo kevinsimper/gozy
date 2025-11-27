@@ -7,7 +7,6 @@ import {
   updateDriverInfoFunction,
   saveMessageFileToDocumentsFunction,
   getUserDocumentsFunction,
-  sendDocumentLinkFunction,
   createVehicleOfferFunction,
   updateVehicleOfferFunction,
   getOpenOffersFunction,
@@ -18,7 +17,7 @@ import {
   addTaxiIdFunction,
   getTaxiIdsFunction,
   sendRandomDogImageFunction,
-  sendDriverLicenseImageFunction,
+  sendDocumentImageFunction,
 } from "./functions";
 import {
   findUserByPhoneNumber,
@@ -132,7 +131,6 @@ export async function generateAssistantResponse(
       updateDriverInfoFunction,
       saveMessageFileToDocumentsFunction,
       getUserDocumentsFunction,
-      sendDocumentLinkFunction,
       createVehicleOfferFunction,
       updateVehicleOfferFunction,
       getOpenOffersFunction,
@@ -143,7 +141,7 @@ export async function generateAssistantResponse(
       addTaxiIdFunction,
       getTaxiIdsFunction,
       sendRandomDogImageFunction,
-      sendDriverLicenseImageFunction,
+      sendDocumentImageFunction,
     ];
 
     let currentHistory: Content[] = conversationHistory;

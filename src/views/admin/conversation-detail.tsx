@@ -108,17 +108,17 @@ export function ConversationDetail({
                       {timestamp.toLocaleString("da-DK")}
                     </span>
                   </div>
-                  {message.file &&
-                    message.file.mimeType.startsWith("image/") && (
-                      <img
-                        src={lk(AppLink.ApiFiles, {
-                          publicId: message.publicId,
-                        })}
-                        alt="Attached image"
-                        class="max-w-full rounded mb-2"
-                        style="max-height: 200px;"
-                      />
-                    )}
+                  {message.file && (
+                    <a
+                      href={lk(AppLink.AdminTableDetail, {
+                        tableName: "files",
+                        id: String(message.file.id),
+                      })}
+                      class="inline-block text-blue-400 hover:text-blue-300 underline text-sm mb-2"
+                    >
+                      {message.file.originalFilename}
+                    </a>
+                  )}
                   <p class="whitespace-pre-wrap text-sm">{message.content}</p>
                 </div>
               </div>

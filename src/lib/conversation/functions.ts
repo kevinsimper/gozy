@@ -199,25 +199,6 @@ export const updatePreferredLocationFunction = createGeminiFunctionDeclaration({
   schema: updatePreferredLocationSchema,
 });
 
-const sendDocumentLinkSchema = z.object({
-  documentPublicId: z
-    .string()
-    .describe("The publicId of the document to send a link for"),
-  message: z
-    .string()
-    .optional()
-    .describe(
-      "Optional custom message to include with the link (in Danish). If not provided, a default message will be used.",
-    ),
-});
-
-export const sendDocumentLinkFunction = createGeminiFunctionDeclaration({
-  name: "send_document_link",
-  description:
-    "Sends a link to the user's document dashboard where they can view or download the document. Use this when the user asks to see a specific document. Call get_user_documents first to get the documentPublicId.",
-  schema: sendDocumentLinkSchema,
-});
-
 const addTaxiIdSchema = z.object({
   taxiId: z.string().describe("The Taxi ID number to add"),
 });
@@ -252,18 +233,16 @@ export const sendRandomDogImageFunction = createGeminiFunctionDeclaration({
   schema: sendRandomDogImageSchema,
 });
 
-const sendDriverLicenseImageSchema = z.object({
-  message: z
+const sendDocumentImageSchema = z.object({
+  documentPublicId: z
     .string()
-    .optional()
-    .describe(
-      "Optional custom message to include with the driver's license (in Danish)",
-    ),
+    .describe("The publicId of the document to send as an image"),
+  message: z.string().optional().describe("Optional custom message in Danish"),
 });
 
-export const sendDriverLicenseImageFunction = createGeminiFunctionDeclaration({
-  name: "send_driver_license_image",
+export const sendDocumentImageFunction = createGeminiFunctionDeclaration({
+  name: "send_document_image",
   description:
-    "Sends the user's driver's license image when they request to see it. Use this instead of send_document_link for driver's licenses.",
-  schema: sendDriverLicenseImageSchema,
+    "Sends the user's document as an image or PDF. Call get_user_documents first to get the documentPublicId.",
+  schema: sendDocumentImageSchema,
 });
