@@ -20,6 +20,12 @@ import { redirectIfSignedIn } from "./lib/auth";
 import { rateLimitMiddleware } from "./lib/ratelimit/middleware";
 import { handleDocumentReminders } from "./scheduled/reminders";
 import { getQrCodeByShortCode, recordScan } from "./models/qrcodes";
+import { marked } from "marked";
+// @ts-ignore
+import termsMarkdown from "./views/legal/terms.md";
+// @ts-ignore
+import privacyMarkdown from "./views/legal/privacy.md";
+import { raw } from "hono/html";
 
 export type Bindings = {
   DB: D1Database;
@@ -41,7 +47,7 @@ const app = new Hono<{ Bindings: Bindings }>();
 app.use("*", rateLimitMiddleware);
 
 app.use(
-  "/",
+  "*",
   jsxRenderer(
     ({ children, title }) => {
       return <Layout title={title}>{children}</Layout>;
@@ -81,6 +87,26 @@ app.get("/signup", async (c) => {
 app.post("/logout", (c) => {
   logout(c);
   return c.redirect(lk(AppLink.Login));
+});
+
+app.get("/terms", (c) => {
+  const content = marked(termsMarkdown);
+  return c.render(
+    <div class="max-w-4xl mx-auto p-8 bg-white rounded-lg shadow-md mt-10 markdown-content">
+      {raw(content)}
+    </div>,
+    { title: "Betingelser for Anvendelse" },
+  );
+});
+
+app.get("/privacy", (c) => {
+  const content = marked(privacyMarkdown);
+  return c.render(
+    <div class="max-w-4xl mx-auto p-8 bg-white rounded-lg shadow-md mt-10 markdown-content">
+      {raw(content)}
+    </div>,
+    { title: "Privatlivspolitik" },
+  );
 });
 
 app.get("/qr/:shortCode", async (c) => {

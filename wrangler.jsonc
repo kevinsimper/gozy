@@ -8,6 +8,12 @@
   "assets": {
     "directory": "./static",
   },
+  "rules": [
+    {
+      "type": "Text",
+      "globs": ["**/*.md"],
+    },
+  ],
   "vars": {
     "ENVIRONMENT": "dev",
     "WHATSAPP_BOT_URL": "http://localhost:3000",

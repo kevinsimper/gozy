@@ -32,8 +32,10 @@
   "dependencies": {
     "@casperlabs/ts-results": "^3.3.5",
     "@google/genai": "^1.28.0",
+    "@types/marked": "^5.0.2",
     "drizzle-orm": "^0.44.7",
     "hono": "^4.10.4",
+    "marked": "^17.0.1",
     "nanoid": "^5.1.6",
     "qrcode": "^1.5.4",
     "zod": "^4.1.12"
